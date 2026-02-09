@@ -76,11 +76,46 @@ generate_config() {
 
     echo ''
     echo '# ─── Mouse enhancements ───'
-    echo '# Click session name (left of status bar) → session/window tree picker'
+    echo '# Click session name → session/window tree picker'
     echo 'bind -n MouseDown1StatusLeft choose-tree -Zs'
     echo '# Scroll wheel on status bar → cycle windows'
     echo 'bind -n WheelUpStatus previous-window'
     echo 'bind -n WheelDownStatus next-window'
+    echo '# Double-click on pane → toggle zoom'
+    echo 'bind -n DoubleClick1Pane resize-pane -Z'
+    echo '# Middle-click on pane → paste buffer'
+    echo 'bind -n MouseDown2Pane paste-buffer'
+
+    # Right-click context menus (heredoc for complex quoting)
+cat << 'MOUSECONF'
+
+# ─── Right-click context menus ───
+# Right-click on pane
+bind -n MouseDown3Pane display-menu -T "#[align=centre]Pane" -t = -x M -y M \
+  "Horizontal Split" h "split-window -h -c '#{pane_current_path}'" \
+  "Vertical Split" v "split-window -v -c '#{pane_current_path}'" \
+  "" \
+  "#{?window_zoomed_flag,Unzoom,Zoom}" z "resize-pane -Z" \
+  "" \
+  "Swap Up" u "swap-pane -U" \
+  "Swap Down" d "swap-pane -D" \
+  "" \
+  "Kill" x "confirm-before -p 'kill pane? (y/n)' kill-pane"
+
+# Right-click on window in status bar
+bind -n MouseDown3Status display-menu -T "#[align=centre]#W" -t = -x W -y S \
+  "Rename" r "command-prompt -I '#W' 'rename-window -- \"%%\"'" \
+  "New Window" n "new-window -a -c '#{pane_current_path}'" \
+  "" \
+  "Kill" x "confirm-before -p 'kill #W? (y/n)' kill-window"
+
+# Right-click on session name
+bind -n MouseDown3StatusLeft display-menu -T "#[align=centre]#S" -t = -x M -y S \
+  "New Session" n "command-prompt -p 'session name:' 'new-session -s \"%%\"'" \
+  "Rename" r "command-prompt -I '#S' 'rename-session -- \"%%\"'" \
+  "" \
+  "Kill" x "confirm-before -p 'kill session #S? (y/n)' kill-session"
+MOUSECONF
 
     echo ''
     echo '# ─── Quick navigation (no prefix needed) ───'
