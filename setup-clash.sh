@@ -26,6 +26,14 @@ WORK_DIR=$(mktemp -d)
 cleanup() { rm -rf "$WORK_DIR"; }
 trap cleanup EXIT
 
+# Ensure dependencies
+for cmd in git unzip curl; do
+    if ! command -v "$cmd" &>/dev/null; then
+        sudo apt-get update -qq && sudo apt-get install -y -qq git unzip curl
+        break
+    fi
+done
+
 echo "=== Clash for Linux Setup ==="
 echo "Kernel: $CLASH_KERNEL"
 [ -n "$CLASH_SUB_URL" ] && echo "Subscription: (provided)"
