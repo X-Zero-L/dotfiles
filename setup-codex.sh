@@ -4,10 +4,11 @@ set -euo pipefail
 # Usage:
 #   CODEX_API_URL=https://... CODEX_API_KEY=cr_... ./setup-codex.sh
 #   ./setup-codex.sh --api-url https://... --api-key cr_...
+#   ./setup-codex.sh                # install only, configure later
 #
 # Environment variables:
-#   CODEX_API_URL     - API base URL (required)
-#   CODEX_API_KEY     - API key (required)
+#   CODEX_API_URL     - API base URL (optional, skip config if empty)
+#   CODEX_API_KEY     - API key (optional, skip config if empty)
 #   CODEX_MODEL       - Model name (default: gpt-5.2)
 #   CODEX_EFFORT      - Reasoning effort (default: xhigh)
 #   CODEX_NPM_MIRROR  - npm registry mirror (default: https://registry.npmmirror.com)
@@ -30,13 +31,9 @@ CODEX_EFFORT="${CODEX_EFFORT:-xhigh}"
 CODEX_NPM_MIRROR="${CODEX_NPM_MIRROR:-https://registry.npmmirror.com}"
 CODEX_PROVIDER="ellyecode"
 
-if [ -z "$CODEX_API_URL" ] || [ -z "$CODEX_API_KEY" ]; then
-    echo "Error: CODEX_API_URL and CODEX_API_KEY are required."
-    echo ""
-    echo "Usage:"
-    echo "  CODEX_API_URL=https://... CODEX_API_KEY=cr_... $0"
-    echo "  $0 --api-url https://... --api-key cr_..."
-    exit 1
+HAS_KEYS=0
+if [ -n "$CODEX_API_URL" ] && [ -n "$CODEX_API_KEY" ]; then
+    HAS_KEYS=1
 fi
 
 echo "=== Codex CLI Setup ==="
@@ -60,12 +57,13 @@ if command -v codex &>/dev/null; then
 fi
 npm install -g @openai/codex --registry="$CODEX_NPM_MIRROR"
 
-# Write config.toml
+# Write config (only if API keys provided)
 echo "[2/4] Writing config..."
-CODEX_DIR="$HOME/.codex"
-mkdir -p "$CODEX_DIR"
+if [ "$HAS_KEYS" -eq 1 ]; then
+    CODEX_DIR="$HOME/.codex"
+    mkdir -p "$CODEX_DIR"
 
-cat > "$CODEX_DIR/config.toml" << EOF
+    cat > "$CODEX_DIR/config.toml" << EOF
 disable_response_storage = true
 model = "$CODEX_MODEL"
 model_provider = "$CODEX_PROVIDER"
@@ -79,14 +77,20 @@ requires_openai_auth = true
 wire_api = "responses"
 EOF
 
-# Write auth.json
-echo "[3/4] Writing auth..."
-cat > "$CODEX_DIR/auth.json" << EOF
+    # Write auth.json
+    echo "[3/4] Writing auth..."
+    cat > "$CODEX_DIR/auth.json" << EOF
 {
   "OPENAI_API_KEY": "$CODEX_API_KEY"
 }
 EOF
-chmod 600 "$CODEX_DIR/auth.json"
+    chmod 600 "$CODEX_DIR/auth.json"
+else
+    echo "  Skipped (no API keys provided). Configure later:"
+    echo "    mkdir -p ~/.codex && edit ~/.codex/config.toml"
+    echo "[3/4] Writing auth..."
+    echo "  Skipped (no API keys provided)."
+fi
 
 # Add alias cx='codex --dangerously-bypass-approvals-and-sandbox'
 echo "[4/4] Adding alias..."
@@ -101,6 +105,8 @@ done
 echo ""
 echo "=== Done! ==="
 echo "Codex: $(codex --version 2>/dev/null || echo 'installed')"
-echo "Model: $CODEX_MODEL"
-echo "API:   $CODEX_API_URL"
+if [ "$HAS_KEYS" -eq 1 ]; then
+    echo "Model: $CODEX_MODEL"
+    echo "API:   $CODEX_API_URL"
+fi
 echo "Run 'source ~/.zshrc' or open a new terminal to use the 'cx' alias."

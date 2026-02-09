@@ -4,10 +4,11 @@ set -euo pipefail
 # Usage:
 #   CLAUDE_API_URL=https://... CLAUDE_API_KEY=cr_... ./setup-claude-code.sh
 #   ./setup-claude-code.sh --api-url https://... --api-key cr_...
+#   ./setup-claude-code.sh                # install only, configure later
 #
 # Environment variables:
-#   CLAUDE_API_URL    - API base URL (required)
-#   CLAUDE_API_KEY    - Auth token (required)
+#   CLAUDE_API_URL    - API base URL (optional, skip config if empty)
+#   CLAUDE_API_KEY    - Auth token (optional, skip config if empty)
 #   CLAUDE_MODEL      - Model name (default: opus)
 #   CLAUDE_NPM_MIRROR - npm registry mirror (default: https://registry.npmmirror.com)
 
@@ -26,13 +27,9 @@ CLAUDE_API_KEY="${CLAUDE_API_KEY:-}"
 CLAUDE_MODEL="${CLAUDE_MODEL:-opus}"
 CLAUDE_NPM_MIRROR="${CLAUDE_NPM_MIRROR:-https://registry.npmmirror.com}"
 
-if [ -z "$CLAUDE_API_URL" ] || [ -z "$CLAUDE_API_KEY" ]; then
-    echo "Error: CLAUDE_API_URL and CLAUDE_API_KEY are required."
-    echo ""
-    echo "Usage:"
-    echo "  CLAUDE_API_URL=https://... CLAUDE_API_KEY=cr_... $0"
-    echo "  $0 --api-url https://... --api-key cr_..."
-    exit 1
+HAS_KEYS=0
+if [ -n "$CLAUDE_API_URL" ] && [ -n "$CLAUDE_API_KEY" ]; then
+    HAS_KEYS=1
 fi
 
 echo "=== Claude Code Setup ==="
@@ -49,14 +46,14 @@ if ! command -v node &>/dev/null; then
     exit 1
 fi
 
-# Install Claude Code
+# [1] Install Claude Code
 echo "[1/4] Installing Claude Code..."
 if command -v claude &>/dev/null; then
     echo "  Claude Code already installed, upgrading..."
 fi
 npm install -g @anthropic-ai/claude-code --registry="$CLAUDE_NPM_MIRROR"
 
-# Skip onboarding
+# [2] Skip onboarding
 echo "[2/4] Configuring onboarding..."
 CLAUDE_JSON="$HOME/.claude.json"
 node -e "
@@ -69,13 +66,14 @@ data.hasCompletedOnboarding = true;
 fs.writeFileSync(path, JSON.stringify(data, null, 2));
 " "$CLAUDE_JSON"
 
-# Write settings
+# [3] Write settings (only if API keys provided)
 echo "[3/4] Writing settings..."
-CLAUDE_SETTINGS_DIR="$HOME/.claude"
-mkdir -p "$CLAUDE_SETTINGS_DIR"
-CLAUDE_SETTINGS="$CLAUDE_SETTINGS_DIR/settings.json"
+if [ "$HAS_KEYS" -eq 1 ]; then
+    CLAUDE_SETTINGS_DIR="$HOME/.claude"
+    mkdir -p "$CLAUDE_SETTINGS_DIR"
+    CLAUDE_SETTINGS="$CLAUDE_SETTINGS_DIR/settings.json"
 
-node -e "
+    node -e "
 const fs = require('fs');
 const path = process.argv[1];
 const settings = fs.existsSync(path)
@@ -92,8 +90,13 @@ settings.alwaysThinkingEnabled = true;
 settings.model = process.argv[4];
 fs.writeFileSync(path, JSON.stringify(settings, null, 2));
 " "$CLAUDE_SETTINGS" "$CLAUDE_API_URL" "$CLAUDE_API_KEY" "$CLAUDE_MODEL"
+else
+    echo "  Skipped (no API keys provided). Configure later with:"
+    echo "    claude config set env.ANTHROPIC_BASE_URL <url>"
+    echo "    claude config set env.ANTHROPIC_AUTH_TOKEN <key>"
+fi
 
-# Add alias cc='claude --dangerously-skip-permissions' to shell rc
+# [4] Add alias
 echo "[4/4] Adding alias..."
 ALIAS_LINE="alias cc='claude --dangerously-skip-permissions'"
 for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
@@ -106,6 +109,8 @@ done
 echo ""
 echo "=== Done! ==="
 echo "Claude Code: $(claude --version 2>/dev/null || echo 'installed')"
-echo "Model:       $CLAUDE_MODEL"
-echo "API URL:     $CLAUDE_API_URL"
+if [ "$HAS_KEYS" -eq 1 ]; then
+    echo "Model:       $CLAUDE_MODEL"
+    echo "API URL:     $CLAUDE_API_URL"
+fi
 echo "Run 'source ~/.zshrc' or open a new terminal to use the 'cc' alias."
