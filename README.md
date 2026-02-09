@@ -49,7 +49,7 @@ Verbose mode (show raw script output instead of spinner):
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all --verbose
 ```
 
-Available components: `shell`, `clash`, `node`, `uv`, `docker`, `claude-code`, `codex`, `gemini`, `skills`
+Available components: `shell`, `tmux`, `clash`, `node`, `uv`, `docker`, `claude-code`, `codex`, `gemini`, `skills`
 
 ## Components
 
@@ -80,6 +80,31 @@ Via proxy:
 ```bash
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
 ```
+
+#### Tmux (`setup-tmux.sh`)
+
+Installs [tmux](https://github.com/tmux/tmux), [TPM](https://github.com/tmux-plugins/tpm) plugin manager, [Catppuccin](https://github.com/catppuccin/tmux) theme, and essential plugins (sensible, vim-tmux-navigator, yank, resurrect, continuum). Requires `sudo`.
+
+Default (no custom keybindings):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tmux.sh | bash
+```
+
+With custom keybindings (Ctrl+a prefix, `|` and `-` splits, vim-style resize):
+
+```bash
+export TMUX_KEYBINDS=1
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tmux.sh | bash
+```
+
+Via proxy:
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tmux.sh | bash
+```
+
+Config: `TMUX_KEYBINDS`, `TMUX_MOUSE`, `TMUX_STATUS_POS`, `GH_PROXY` — see [Configuration Reference](#configuration-reference).
 
 #### Clash Proxy (`setup-clash.sh`)
 
@@ -325,6 +350,14 @@ All environment variables across all scripts in one table.
 |----------|-------|---------|-------------|
 | `GH_PROXY` | `install.sh` | _(empty)_ | GitHub proxy URL for script downloads |
 
+### Tmux
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `TMUX_KEYBINDS` | `0` | Enable custom keybindings: Ctrl+a prefix, \| and - splits, vim-style resize (`1` to enable) |
+| `TMUX_MOUSE` | `1` | Enable mouse support (`0` to disable) |
+| `TMUX_STATUS_POS` | `top` | Status bar position (`top` or `bottom`) |
+
 ### Clash
 
 | Variable | Default | Description |
@@ -424,13 +457,14 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh
 Or install components individually in this order:
 
 1. `setup-shell.sh` — Shell environment (zsh, plugins, Starship)
-2. `setup-docker.sh` — Docker Engine + Compose
-3. `setup-uv.sh` — uv + Python
-4. `setup-node.sh` — nvm + Node.js
-5. `setup-claude-code.sh` — Claude Code
-6. `setup-codex.sh` — Codex CLI
-7. `setup-gemini.sh` — Gemini CLI
-8. `setup-skills.sh` — Agent skills
+2. `setup-tmux.sh` — Tmux + Catppuccin + plugins
+3. `setup-docker.sh` — Docker Engine + Compose
+4. `setup-uv.sh` — uv + Python
+5. `setup-node.sh` — nvm + Node.js
+6. `setup-claude-code.sh` — Claude Code
+7. `setup-codex.sh` — Codex CLI
+8. `setup-gemini.sh` — Gemini CLI
+9. `setup-skills.sh` — Agent skills
 
 ## Notes
 

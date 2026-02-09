@@ -49,7 +49,7 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all --verbose
 ```
 
-可用组件：`shell`、`clash`、`node`、`uv`、`docker`、`claude-code`、`codex`、`gemini`、`skills`
+可用组件：`shell`、`tmux`、`clash`、`node`、`uv`、`docker`、`claude-code`、`codex`、`gemini`、`skills`
 
 ## 组件详解
 
@@ -80,6 +80,31 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shel
 ```bash
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
 ```
+
+#### Tmux (`setup-tmux.sh`)
+
+安装 [tmux](https://github.com/tmux/tmux)、[TPM](https://github.com/tmux-plugins/tpm) 插件管理器、[Catppuccin](https://github.com/catppuccin/tmux) 主题及常用插件（sensible、vim-tmux-navigator、yank、resurrect、continuum）。需要 `sudo`。
+
+默认配置（不修改键位）：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tmux.sh | bash
+```
+
+启用自定义键位（Ctrl+a 前缀、`|` 和 `-` 分屏、vim 风格调整大小）：
+
+```bash
+export TMUX_KEYBINDS=1
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tmux.sh | bash
+```
+
+通过代理：
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tmux.sh | bash
+```
+
+配置项：`TMUX_KEYBINDS`、`TMUX_MOUSE`、`TMUX_STATUS_POS`、`GH_PROXY` — 详见[配置速查表](#配置速查表)。
 
 #### Clash 代理 (`setup-clash.sh`)
 
@@ -325,6 +350,14 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 |------|--------|--------|------|
 | `GH_PROXY` | `install.sh` | _（空）_ | GitHub 代理地址，用于加速脚本下载 |
 
+### Tmux
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `TMUX_KEYBINDS` | `0` | 启用自定义键位：Ctrl+a 前缀、\| 和 - 分屏、vim 风格调整大小（设为 `1` 启用） |
+| `TMUX_MOUSE` | `1` | 启用鼠标支持（设为 `0` 禁用） |
+| `TMUX_STATUS_POS` | `top` | 状态栏位置（`top` 或 `bottom`） |
+
 ### Clash
 
 | 变量 | 默认值 | 说明 |
@@ -424,13 +457,14 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh
 或按以下顺序逐个安装：
 
 1. `setup-shell.sh` — Shell 环境（zsh、插件、Starship）
-2. `setup-docker.sh` — Docker Engine + Compose
-3. `setup-uv.sh` — uv + Python
-4. `setup-node.sh` — nvm + Node.js
-5. `setup-claude-code.sh` — Claude Code
-6. `setup-codex.sh` — Codex CLI
-7. `setup-gemini.sh` — Gemini CLI
-8. `setup-skills.sh` — 代理技能
+2. `setup-tmux.sh` — Tmux + Catppuccin + 插件
+3. `setup-docker.sh` — Docker Engine + Compose
+4. `setup-uv.sh` — uv + Python
+5. `setup-node.sh` — nvm + Node.js
+6. `setup-claude-code.sh` — Claude Code
+7. `setup-codex.sh` — Codex CLI
+8. `setup-gemini.sh` — Gemini CLI
+9. `setup-skills.sh` — 代理技能
 
 ## 注意事项
 
