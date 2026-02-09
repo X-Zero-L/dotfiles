@@ -10,6 +10,10 @@ Automated setup scripts for Debian/Ubuntu systems.
 
 Use `install.sh` for a one-stop interactive or non-interactive installation.
 
+<p align="center">
+  <img src="assets/demo.gif" alt="install.sh demo" width="700">
+</p>
+
 Interactive TUI — select what to install:
 
 ```bash

@@ -10,6 +10,10 @@ Debian/Ubuntu 系统自动化配置脚本。
 
 使用 `install.sh` 进行一站式交互或非交互安装。
 
+<p align="center">
+  <img src="assets/demo.gif" alt="install.sh 演示" width="700">
+</p>
+
 交互式 TUI — 选择要安装的组件：
 
 ```bash
