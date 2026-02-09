@@ -27,6 +27,7 @@ TMUX_KEYBINDS="${TMUX_KEYBINDS:-0}"
 TMUX_MOUSE="${TMUX_MOUSE:-1}"
 TMUX_STATUS_POS="${TMUX_STATUS_POS:-top}"
 GH_PROXY="${GH_PROXY:-}"
+_GH="github.com"
 
 echo "=== Tmux Setup ==="
 
@@ -45,8 +46,8 @@ TPM_DIR="$HOME/.tmux/plugins/tpm"
 if [ -d "$TPM_DIR" ]; then
     echo "  Already installed, skipping."
 else
-    CLONE_URL="https://github.com/tmux-plugins/tpm"
-    [ -n "$GH_PROXY" ] && CLONE_URL="${GH_PROXY%/}/https://github.com/tmux-plugins/tpm"
+    CLONE_URL="https://${_GH}/tmux-plugins/tpm"
+    [ -n "$GH_PROXY" ] && CLONE_URL="${GH_PROXY%/}/https://${_GH}/tmux-plugins/tpm"
     git clone --depth 1 "$CLONE_URL" "$TPM_DIR"
 fi
 
@@ -213,8 +214,8 @@ else
             echo "  $plugin_name: already installed"
             continue
         fi
-        CLONE_URL="https://github.com/$plugin"
-        [ -n "$GH_PROXY" ] && CLONE_URL="${GH_PROXY%/}/https://github.com/$plugin"
+        CLONE_URL="https://${_GH}/$plugin"
+        [ -n "$GH_PROXY" ] && CLONE_URL="${GH_PROXY%/}/https://${_GH}/$plugin"
         echo "  $plugin_name: installing..."
         git clone --depth 1 "$CLONE_URL" "$PLUGIN_DIR/$plugin_name" 2>/dev/null
     done
