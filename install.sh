@@ -80,7 +80,7 @@ setup_colors() {
 
 # --- [C] Component Registry --------------------------------------------------
 
-COMP_IDS=(shell tmux clash node uv go docker claude-code codex gemini skills)
+COMP_IDS=(shell tmux clash node uv go docker tailscale claude-code codex gemini skills)
 
 COMP_NAMES=(
     "Shell Environment"
@@ -90,6 +90,7 @@ COMP_NAMES=(
     "uv + Python"
     "Go (goenv)"
     "Docker"
+    "Tailscale"
     "Claude Code"
     "Codex CLI"
     "Gemini CLI"
@@ -104,6 +105,7 @@ COMP_DESCS=(
     "uv package manager"
     "goenv + Go"
     "Docker Engine + Compose + mirrors"
+    "Tailscale VPN mesh network"
     "Claude Code CLI"
     "OpenAI Codex CLI"
     "Gemini CLI"
@@ -118,6 +120,7 @@ COMP_SCRIPTS=(
     setup-uv.sh
     setup-go.sh
     setup-docker.sh
+    setup-tailscale.sh
     setup-claude-code.sh
     setup-codex.sh
     setup-gemini.sh
@@ -125,19 +128,19 @@ COMP_SCRIPTS=(
 )
 
 # Dependencies: space-separated indices that must run first (empty = none)
-COMP_DEPS=("" "" "" "" "" "" "" "3" "3" "3" "3")
+COMP_DEPS=("" "" "" "" "" "" "" "" "3" "3" "3" "3")
 
-# Whether component needs API keys
-COMP_NEEDS_KEYS=(0 0 0 0 0 0 0 1 1 1 0)
+# Whether component needs API keys (2 = token-only, 1 = url+key)
+COMP_NEEDS_KEYS=(0 0 0 0 0 0 0 2 1 1 1 0)
 
 # Whether component needs sudo
-COMP_NEEDS_SUDO=(1 1 0 0 0 0 1 0 0 0 0)
+COMP_NEEDS_SUDO=(1 1 0 0 0 0 1 1 0 0 0 0)
 
 # Selection state
-COMP_SELECTED=(0 0 0 0 0 0 0 0 0 0 0)
+COMP_SELECTED=(0 0 0 0 0 0 0 0 0 0 0 0)
 
 # Install-only mode: tool installed but API not configured (keys missing)
-COMP_INSTALL_ONLY=(0 0 0 0 0 0 0 0 0 0 0)
+COMP_INSTALL_ONLY=(0 0 0 0 0 0 0 0 0 0 0 0)
 
 # --- [D] Utility Functions ----------------------------------------------------
 
@@ -228,13 +231,14 @@ Interactive dotfiles installer with checkbox selection.
 Options:
   --all                  Install all components
   --components LIST      Comma-separated component list:
-                         shell,tmux,clash,node,uv,go,docker,claude-code,codex,gemini,skills
+                         shell,tmux,clash,node,uv,go,docker,tailscale,claude-code,codex,gemini,skills
   --gh-proxy URL         GitHub proxy URL (e.g., https://gh-proxy.org)
   -v, --verbose          Show raw script output (default: clean spinner)
   -h, --help             Show this help
 
 Environment variables:
   GH_PROXY               Same as --gh-proxy
+  TAILSCALE_AUTH_KEY     Auth key for Tailscale auto-connect
   CLAUDE_API_URL/KEY     API credentials for Claude Code
   CODEX_API_URL/KEY      API credentials for Codex CLI
   GEMINI_API_URL/KEY     API credentials for Gemini CLI
@@ -403,7 +407,7 @@ render_menu() {
         if [[ "${COMP_NEEDS_SUDO[$i]}" -eq 1 ]]; then
             tags+=" ${YELLOW}sudo${NC}"
         fi
-        if [[ "${COMP_NEEDS_KEYS[$i]}" -eq 1 ]]; then
+        if [[ "${COMP_NEEDS_KEYS[$i]}" -ge 1 ]]; then
             tags+=" ${MAGENTA}key${NC}"
         fi
         [[ -n "$tags" ]] && printf " ${DIM}[${NC}${tags} ${DIM}]${NC}"
@@ -532,7 +536,7 @@ show_plan() {
         if [[ "${COMP_NEEDS_SUDO[$idx]}" -eq 1 ]]; then
             suffix+=" ${YELLOW}sudo${NC}"
         fi
-        if [[ "${COMP_NEEDS_KEYS[$idx]}" -eq 1 ]]; then
+        if [[ "${COMP_NEEDS_KEYS[$idx]}" -ge 1 ]]; then
             if [[ "${COMP_INSTALL_ONLY[$idx]}" -eq 1 ]]; then
                 suffix+=" ${DIM}install only${NC}"
             else
@@ -553,6 +557,7 @@ show_plan() {
 get_env_names() {
     local idx=$1
     case "${COMP_IDS[$idx]}" in
+        tailscale)   ENV_URL_NAME="";               ENV_KEY_NAME="TAILSCALE_AUTH_KEY" ;;
         claude-code) ENV_URL_NAME="CLAUDE_API_URL"; ENV_KEY_NAME="CLAUDE_API_KEY" ;;
         codex)       ENV_URL_NAME="CODEX_API_URL";  ENV_KEY_NAME="CODEX_API_KEY" ;;
         gemini)      ENV_URL_NAME="GEMINI_API_URL"; ENV_KEY_NAME="GEMINI_API_KEY" ;;
@@ -562,14 +567,19 @@ get_env_names() {
 collect_api_keys() {
     local needs_input=0
     for i in "${!COMP_SELECTED[@]}"; do
-        if [[ "${COMP_SELECTED[$i]}" -eq 1 && "${COMP_NEEDS_KEYS[$i]}" -eq 1 ]]; then
+        if [[ "${COMP_SELECTED[$i]}" -eq 1 && "${COMP_NEEDS_KEYS[$i]}" -ge 1 ]]; then
             local ENV_URL_NAME="" ENV_KEY_NAME=""
             get_env_names "$i"
-            local current_url="${!ENV_URL_NAME:-}"
             local current_key="${!ENV_KEY_NAME:-}"
-            if [[ -z "$current_url" || -z "$current_key" ]]; then
-                needs_input=1
-                break
+            if [[ "${COMP_NEEDS_KEYS[$i]}" -eq 1 ]]; then
+                local current_url="${!ENV_URL_NAME:-}"
+                if [[ -z "$current_url" || -z "$current_key" ]]; then
+                    needs_input=1; break
+                fi
+            else
+                if [[ -z "$current_key" ]]; then
+                    needs_input=1; break
+                fi
             fi
         fi
     done
@@ -582,37 +592,54 @@ collect_api_keys() {
     printf "\n"
 
     for i in "${!COMP_SELECTED[@]}"; do
-        if [[ "${COMP_SELECTED[$i]}" -eq 1 && "${COMP_NEEDS_KEYS[$i]}" -eq 1 ]]; then
+        if [[ "${COMP_SELECTED[$i]}" -eq 1 && "${COMP_NEEDS_KEYS[$i]}" -ge 1 ]]; then
             local ENV_URL_NAME="" ENV_KEY_NAME=""
             get_env_names "$i"
-            local current_url="${!ENV_URL_NAME:-}"
             local current_key="${!ENV_KEY_NAME:-}"
+            local key_type="${COMP_NEEDS_KEYS[$i]}"
 
             printf "  ${BOLD}${WHITE}${COMP_NAMES[$i]}${NC}\n"
 
-            if [[ -z "$current_url" ]]; then
-                printf "  ${DIM}API URL:${NC} "
-                read -r current_url </dev/tty
-                if [[ -n "$current_url" ]]; then
-                    export "$ENV_URL_NAME=$current_url"
+            # URL prompt (only for url+key components)
+            local current_url=""
+            if [[ "$key_type" -eq 1 ]]; then
+                current_url="${!ENV_URL_NAME:-}"
+                if [[ -z "$current_url" ]]; then
+                    printf "  ${DIM}API URL:${NC} "
+                    read -r current_url </dev/tty
+                    if [[ -n "$current_url" ]]; then
+                        export "$ENV_URL_NAME=$current_url"
+                    fi
+                else
+                    printf "  ${DIM}API URL:${NC} ${GREEN}%s${NC}\n" "$current_url"
                 fi
-            else
-                printf "  ${DIM}API URL:${NC} ${GREEN}%s${NC}\n" "$current_url"
             fi
 
+            # Key/token prompt
+            local key_label="API Key"
+            [[ "$key_type" -eq 2 ]] && key_label="Auth Key"
+
             if [[ -z "$current_key" ]]; then
-                printf "  ${DIM}API Key:${NC} "
+                printf "  ${DIM}%s:${NC} " "$key_label"
                 read_secret
                 current_key="$REPLY_SECRET"
                 if [[ -n "$current_key" ]]; then
                     export "$ENV_KEY_NAME=$current_key"
                 fi
             else
-                printf "  ${DIM}API Key:${NC} ${GREEN}%s${NC}\n" "${current_key:0:8}••••••••"
+                printf "  ${DIM}%s:${NC} ${GREEN}%s${NC}\n" "$key_label" "${current_key:0:8}••••••••"
             fi
 
-            if [[ -z "$current_url" || -z "$current_key" ]]; then
-                printf "  ${SYM_WARN} ${YELLOW}Install only${NC} ${DIM}(configure API later)${NC}\n"
+            # Check completeness
+            local is_complete=1
+            if [[ "$key_type" -eq 1 && ( -z "$current_url" || -z "$current_key" ) ]]; then
+                is_complete=0
+            elif [[ "$key_type" -eq 2 && -z "$current_key" ]]; then
+                is_complete=0
+            fi
+
+            if [[ $is_complete -eq 0 ]]; then
+                printf "  ${SYM_WARN} ${YELLOW}Install only${NC} ${DIM}(configure later)${NC}\n"
                 COMP_INSTALL_ONLY[$i]=1
             else
                 printf "  ${SYM_CHECK} ${DIM}Configured${NC}\n"
@@ -624,15 +651,22 @@ collect_api_keys() {
 
 validate_api_keys() {
     for i in "${!COMP_SELECTED[@]}"; do
-        if [[ "${COMP_SELECTED[$i]}" -eq 1 && "${COMP_NEEDS_KEYS[$i]}" -eq 1 ]]; then
+        if [[ "${COMP_SELECTED[$i]}" -eq 1 && "${COMP_NEEDS_KEYS[$i]}" -ge 1 ]]; then
             local ENV_URL_NAME="" ENV_KEY_NAME=""
             get_env_names "$i"
-            local current_url="${!ENV_URL_NAME:-}"
             local current_key="${!ENV_KEY_NAME:-}"
+            local key_type="${COMP_NEEDS_KEYS[$i]}"
 
-            if [[ -z "$current_url" || -z "$current_key" ]]; then
-                printf "  ${SYM_WARN} ${YELLOW}%s${NC} ${DIM}install only (set %s and %s to configure)${NC}\n" \
-                    "${COMP_NAMES[$i]}" "$ENV_URL_NAME" "$ENV_KEY_NAME"
+            if [[ "$key_type" -eq 1 ]]; then
+                local current_url="${!ENV_URL_NAME:-}"
+                if [[ -z "$current_url" || -z "$current_key" ]]; then
+                    printf "  ${SYM_WARN} ${YELLOW}%s${NC} ${DIM}install only (set %s and %s to configure)${NC}\n" \
+                        "${COMP_NAMES[$i]}" "$ENV_URL_NAME" "$ENV_KEY_NAME"
+                    COMP_INSTALL_ONLY[$i]=1
+                fi
+            elif [[ "$key_type" -eq 2 && -z "$current_key" ]]; then
+                printf "  ${SYM_WARN} ${YELLOW}%s${NC} ${DIM}install only (set %s to configure)${NC}\n" \
+                    "${COMP_NAMES[$i]}" "$ENV_KEY_NAME"
                 COMP_INSTALL_ONLY[$i]=1
             fi
         fi
@@ -825,8 +859,13 @@ run_all_selected() {
                 fi
                 local ENV_URL_NAME="" ENV_KEY_NAME=""
                 get_env_names "$i"
-                printf "  ${DIM}•${NC} ${BOLD}%s${NC}: configure with ${CYAN}%s${NC} and ${CYAN}%s${NC}\n" \
-                    "${COMP_NAMES[$i]}" "$ENV_URL_NAME" "$ENV_KEY_NAME"
+                if [[ -n "$ENV_URL_NAME" ]]; then
+                    printf "  ${DIM}•${NC} ${BOLD}%s${NC}: configure with ${CYAN}%s${NC} and ${CYAN}%s${NC}\n" \
+                        "${COMP_NAMES[$i]}" "$ENV_URL_NAME" "$ENV_KEY_NAME"
+                else
+                    printf "  ${DIM}•${NC} ${BOLD}%s${NC}: run ${CYAN}sudo tailscale up${NC} to connect\n" \
+                        "${COMP_NAMES[$i]}"
+                fi
             fi
         fi
     done
