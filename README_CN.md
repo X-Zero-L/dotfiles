@@ -36,6 +36,15 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all --verbose
 ```
 
+预配置 API 密钥（用于编码代理）：
+
+```bash
+export CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥
+export CODEX_API_URL=https://你的API地址  CODEX_API_KEY=你的密钥
+export GEMINI_API_URL=https://你的API地址 GEMINI_API_KEY=你的密钥
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all
+```
+
 可用组件：`shell`、`clash`、`node`、`uv`、`docker`、`claude-code`、`codex`、`gemini`、`skills`
 
 ## 脚本说明
@@ -142,6 +151,20 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash -s -- --api-url https://你的API地址 --api-key 你的密钥
 ```
 
+提前配置环境变量：
+
+```bash
+export CLAUDE_API_URL=https://你的API地址
+export CLAUDE_API_KEY=你的密钥
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
+```
+
+只安装不配置（稍后配置）：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
+```
+
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
 | `CLAUDE_API_URL` | _（可选）_ | API 基础地址（留空则只安装不配置） |
@@ -167,6 +190,20 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash -s -- --api-url https://你的API地址 --api-key 你的密钥
+```
+
+提前配置环境变量：
+
+```bash
+export CODEX_API_URL=https://你的API地址
+export CODEX_API_KEY=你的密钥
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
+```
+
+只安装不配置（稍后配置）：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
 ```
 
 | 变量 | 默认值 | 说明 |
@@ -195,6 +232,20 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash -s -- --api-url https://你的API地址 --api-key 你的密钥
+```
+
+提前配置环境变量：
+
+```bash
+export GEMINI_API_URL=https://你的API地址
+export GEMINI_API_KEY=你的密钥
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
+```
+
+只安装不配置（稍后配置）：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
 ```
 
 | 变量 | 默认值 | 说明 |
@@ -322,23 +373,19 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.s
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
 ```
 
-**6. Claude Code**
+**6–8. 编码代理**（先配置环境变量，再安装）
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥 bash
+export CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥
+export CODEX_API_URL=https://你的API地址  CODEX_API_KEY=你的密钥
+export GEMINI_API_URL=https://你的API地址 GEMINI_API_KEY=你的密钥
+
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
 ```
 
-**7. Codex CLI**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | CODEX_API_URL=https://你的API地址 CODEX_API_KEY=你的密钥 bash
-```
-
-**8. Gemini CLI**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | GEMINI_API_URL=https://你的API地址 GEMINI_API_KEY=你的密钥 bash
-```
+> 省略任意一行 `export` 即可只安装对应工具而不配置 API（稍后手动配置）。
 
 **9. 代理技能**
 

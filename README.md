@@ -36,6 +36,15 @@ Verbose mode (show raw script output):
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all --verbose
 ```
 
+With pre-configured API keys (for coding agents):
+
+```bash
+export CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key
+export CODEX_API_URL=https://your-api-url  CODEX_API_KEY=your-key
+export GEMINI_API_URL=https://your-api-url GEMINI_API_KEY=your-key
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all
+```
+
 Available components: `shell`, `clash`, `node`, `uv`, `docker`, `claude-code`, `codex`, `gemini`, `skills`
 
 ## Scripts
@@ -142,6 +151,20 @@ With arguments:
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash -s -- --api-url https://your-api-url --api-key your-key
 ```
 
+With pre-exported env vars:
+
+```bash
+export CLAUDE_API_URL=https://your-api-url
+export CLAUDE_API_KEY=your-key
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
+```
+
+Install only (configure later):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
+```
+
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `CLAUDE_API_URL` | _(optional)_ | API base URL (skip config if empty) |
@@ -167,6 +190,20 @@ With arguments:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash -s -- --api-url https://your-api-url --api-key your-key
+```
+
+With pre-exported env vars:
+
+```bash
+export CODEX_API_URL=https://your-api-url
+export CODEX_API_KEY=your-key
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
+```
+
+Install only (configure later):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
 ```
 
 | Variable | Default | Description |
@@ -195,6 +232,20 @@ With arguments:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash -s -- --api-url https://your-api-url --api-key your-key
+```
+
+With pre-exported env vars:
+
+```bash
+export GEMINI_API_URL=https://your-api-url
+export GEMINI_API_KEY=your-key
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
+```
+
+Install only (configure later):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
 ```
 
 | Variable | Default | Description |
@@ -322,23 +373,19 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.s
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
 ```
 
-**6. Claude Code**
+**6–8. Coding Agents** (configure env vars first, then install)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key bash
+export CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key
+export CODEX_API_URL=https://your-api-url  CODEX_API_KEY=your-key
+export GEMINI_API_URL=https://your-api-url GEMINI_API_KEY=your-key
+
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
 ```
 
-**7. Codex CLI**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | CODEX_API_URL=https://your-api-url CODEX_API_KEY=your-key bash
-```
-
-**8. Gemini CLI**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | GEMINI_API_URL=https://your-api-url GEMINI_API_KEY=your-key bash
-```
+> Omit any `export` line to install that tool without configuring API keys (can be configured later).
 
 **9. Agent Skills**
 
