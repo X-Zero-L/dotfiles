@@ -191,7 +191,7 @@ download_script() {
         url="${BASE_URL}/${script_name}"
     fi
 
-    [[ -f "$target" ]] && return 0
+    [[ -s "$target" ]] && return 0
 
     if curl -fsSL --retry 3 --retry-delay 2 -o "$target" "$url"; then
         chmod +x "$target"
