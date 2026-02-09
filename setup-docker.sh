@@ -11,7 +11,7 @@ set -euo pipefail
 #   ./setup-docker.sh --no-compose --no-experimental
 #
 # Environment variables:
-#   DOCKER_MIRROR       - Registry mirror URL(s), comma-separated (default: https://docker.1ms.run)
+#   DOCKER_MIRROR       - Registry mirror URL(s), comma-separated (default: empty, no mirror)
 #   DOCKER_PROXY        - HTTP/HTTPS proxy for daemon and containers (default: empty)
 #   DOCKER_NO_PROXY     - No-proxy list for daemon (default: localhost,127.0.0.0/8)
 #   DOCKER_DATA_ROOT    - Docker data root directory (default: /var/lib/docker)
@@ -38,7 +38,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-DOCKER_MIRROR="${DOCKER_MIRROR:-https://docker.1ms.run}"
+DOCKER_MIRROR="${DOCKER_MIRROR:-}"
 DOCKER_PROXY="${DOCKER_PROXY:-}"
 DOCKER_NO_PROXY="${DOCKER_NO_PROXY:-localhost,127.0.0.0/8}"
 DOCKER_DATA_ROOT="${DOCKER_DATA_ROOT:-}"
@@ -109,8 +109,11 @@ if os.path.isfile(path):
     except (json.JSONDecodeError, IOError):
         pass
 
-# Registry mirrors
-data['registry-mirrors'] = [m.strip() for m in mirrors_raw.split(',') if m.strip()]
+# Registry mirrors (only if provided)
+if mirrors_raw.strip():
+    data['registry-mirrors'] = [m.strip() for m in mirrors_raw.split(',') if m.strip()]
+elif 'registry-mirrors' in data:
+    del data['registry-mirrors']
 
 # Log driver
 data['log-driver'] = 'json-file'
@@ -152,17 +155,20 @@ else
     # Fallback: build JSON manually, attempt merge if jq or python3 unavailable
     echo "  Warning: python3 not found, writing daemon.json (existing keys not managed by this script are preserved only with python3)."
 
-    # Build mirrors array
-    IFS=',' read -ra MIRROR_ARRAY <<< "$DOCKER_MIRROR"
-    MIRRORS_JSON="["
-    for i in "${!MIRROR_ARRAY[@]}"; do
-        m="${MIRROR_ARRAY[$i]}"
-        m="${m#"${m%%[![:space:]]*}"}"
-        m="${m%"${m##*[![:space:]]}"}"
-        [ "$i" -gt 0 ] && MIRRORS_JSON+=","
-        MIRRORS_JSON+="\"$m\""
-    done
-    MIRRORS_JSON+="]"
+    # Build mirrors array (only if provided)
+    MIRRORS_JSON=""
+    if [ -n "$DOCKER_MIRROR" ]; then
+        IFS=',' read -ra MIRROR_ARRAY <<< "$DOCKER_MIRROR"
+        MIRRORS_JSON="["
+        for i in "${!MIRROR_ARRAY[@]}"; do
+            m="${MIRROR_ARRAY[$i]}"
+            m="${m#"${m%%[![:space:]]*}"}"
+            m="${m%"${m##*[![:space:]]}"}"
+            [ "$i" -gt 0 ] && MIRRORS_JSON+=","
+            MIRRORS_JSON+="\"$m\""
+        done
+        MIRRORS_JSON+="]"
+    fi
 
     # Build address pools array
     POOLS_JSON="["
@@ -187,7 +193,9 @@ else
 
     {
         echo '{'
-        echo "  \"registry-mirrors\": $MIRRORS_JSON,"
+        if [ -n "$MIRRORS_JSON" ]; then
+            echo "  \"registry-mirrors\": $MIRRORS_JSON,"
+        fi
         echo '  "log-driver": "json-file",'
         echo '  "log-opts": {'
         echo "    \"max-size\": \"$DOCKER_LOG_SIZE\","
@@ -202,7 +210,11 @@ else
     } | sudo tee "$DAEMON_JSON" > /dev/null
 fi
 
-echo "  Mirrors:      $DOCKER_MIRROR"
+if [ -n "$DOCKER_MIRROR" ]; then
+    echo "  Mirrors:      $DOCKER_MIRROR"
+else
+    echo "  Mirrors:      (none)"
+fi
 echo "  Log:          json-file (max-size=$DOCKER_LOG_SIZE, max-file=$DOCKER_LOG_FILES)"
 echo "  Experimental: $DOCKER_EXPERIMENTAL"
 echo "  Addr pools:   $DOCKER_ADDR_POOLS"
