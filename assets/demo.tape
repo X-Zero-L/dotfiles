@@ -56,7 +56,7 @@ Type "y"
 Enter
 
 # Wait for downloads + installation (already installed, should be fast)
-Sleep 40s
+Sleep 8s
 
 # Show final result
-Sleep 3s
+Sleep 4s
