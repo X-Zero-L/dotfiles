@@ -70,10 +70,16 @@ if [ -f "$ZSHRC" ] && ! grep -q 'starship init zsh' "$ZSHRC"; then
     echo 'eval "$(starship init zsh)"' >> "$ZSHRC"
 fi
 
-# 6. Apply Starship Catppuccin Powerline preset
-echo "[6/6] Applying Starship Catppuccin Powerline preset..."
+# 6. Apply Starship preset
+echo "[6/6] Applying Starship preset..."
 mkdir -p "$HOME/.config"
-starship preset catppuccin-powerline -o "$HOME/.config/starship.toml"
+if starship preset catppuccin-powerline -o "$HOME/.config/starship.toml" 2>/dev/null; then
+    echo "  Applied catppuccin-powerline preset."
+elif starship preset pastel-powerline -o "$HOME/.config/starship.toml" 2>/dev/null; then
+    echo "  Applied pastel-powerline preset (catppuccin-powerline unavailable in this version)."
+else
+    echo "  Warning: Could not apply preset, using default Starship config."
+fi
 
 # 7. Change default shell to zsh (use sudo to avoid password prompt)
 echo "Changing default shell to zsh..."
