@@ -81,9 +81,14 @@ fi
 # [4/5] Configure daemon.json
 echo "[4/5] Configuring Docker daemon..."
 DAEMON_JSON="/etc/docker/daemon.json"
+sudo mkdir -p /etc/docker
+
+# Snapshot existing config to detect changes
+OLD_DAEMON_JSON=""
+[ -f "$DAEMON_JSON" ] && OLD_DAEMON_JSON=$(sudo cat "$DAEMON_JSON" 2>/dev/null || true)
 
 if command -v python3 &>/dev/null; then
-    # Merge with existing daemon.json using python3
+    # Merge with existing daemon.json using python3 (preserves unknown keys)
     sudo python3 -c "
 import json, sys, os
 
@@ -127,7 +132,10 @@ if pools_raw:
             # Split on last colon to handle IPv4 CIDR like 172.17.0.0/12:24
             idx = entry.rfind(':')
             base = entry[:idx]
-            size = int(entry[idx+1:])
+            try:
+                size = int(entry[idx+1:])
+            except ValueError:
+                continue
             pools.append({'base': base, 'size': size})
     if pools:
         data['default-address-pools'] = pools
@@ -139,9 +147,8 @@ with open(path, 'w') as f:
   "$DOCKER_LOG_SIZE" "$DOCKER_LOG_FILES" "$DOCKER_EXPERIMENTAL" \
   "$DOCKER_ADDR_POOLS"
 else
-    # Fallback: build JSON manually (overwrites existing file)
-    echo "  Warning: python3 not found, writing daemon.json from scratch."
-    sudo mkdir -p /etc/docker
+    # Fallback: build JSON manually, attempt merge if jq or python3 unavailable
+    echo "  Warning: python3 not found, writing daemon.json (existing keys not managed by this script are preserved only with python3)."
 
     # Build mirrors array
     IFS=',' read -ra MIRROR_ARRAY <<< "$DOCKER_MIRROR"
@@ -199,18 +206,33 @@ echo "  Experimental: $DOCKER_EXPERIMENTAL"
 echo "  Addr pools:   $DOCKER_ADDR_POOLS"
 [ -n "$DOCKER_DATA_ROOT" ] && echo "  Data root:    $DOCKER_DATA_ROOT"
 
+# Detect if daemon config actually changed
+NEW_DAEMON_JSON=$(sudo cat "$DAEMON_JSON" 2>/dev/null || true)
+DAEMON_CHANGED=0
+if [ "$OLD_DAEMON_JSON" != "$NEW_DAEMON_JSON" ]; then
+    DAEMON_CHANGED=1
+fi
+
 # [5/5] Configure proxy (only if DOCKER_PROXY is set)
 echo "[5/5] Configuring proxy..."
+PROXY_CHANGED=0
 if [ -n "$DOCKER_PROXY" ]; then
     # Daemon-level proxy (systemd drop-in)
     PROXY_DIR="/etc/systemd/system/docker.service.d"
-    sudo mkdir -p "$PROXY_DIR"
-    sudo tee "$PROXY_DIR/proxy.conf" > /dev/null << EOF
-[Service]
-Environment="HTTP_PROXY=$DOCKER_PROXY"
-Environment="HTTPS_PROXY=$DOCKER_PROXY"
-Environment="NO_PROXY=$DOCKER_NO_PROXY"
-EOF
+    PROXY_CONF="$PROXY_DIR/proxy.conf"
+    NEW_PROXY_CONF="[Service]
+Environment=\"HTTP_PROXY=$DOCKER_PROXY\"
+Environment=\"HTTPS_PROXY=$DOCKER_PROXY\"
+Environment=\"NO_PROXY=$DOCKER_NO_PROXY\""
+
+    OLD_PROXY_CONF=""
+    [ -f "$PROXY_CONF" ] && OLD_PROXY_CONF=$(sudo cat "$PROXY_CONF" 2>/dev/null || true)
+
+    if [ "$OLD_PROXY_CONF" != "$NEW_PROXY_CONF" ]; then
+        sudo mkdir -p "$PROXY_DIR"
+        printf '%s\n' "$NEW_PROXY_CONF" | sudo tee "$PROXY_CONF" > /dev/null
+        PROXY_CHANGED=1
+    fi
     echo "  Daemon proxy: $DOCKER_PROXY"
 
     # Container-level proxy (~/.docker/config.json)
@@ -243,7 +265,6 @@ with open(path, 'w') as f:
     f.write('\n')
 " "$DOCKER_CONFIG" "$DOCKER_PROXY" "$DOCKER_NO_PROXY"
     else
-        # Fallback: write directly
         cat > "$DOCKER_CONFIG" << CEOF
 {
   "proxies": {
@@ -257,14 +278,17 @@ with open(path, 'w') as f:
 CEOF
     fi
     echo "  Container proxy: $DOCKER_PROXY"
+else
+    echo "  No proxy configured (set DOCKER_PROXY to enable)."
+fi
 
-    # Reload and restart
+# Restart Docker only if configuration changed
+if [ "$DAEMON_CHANGED" -eq 1 ] || [ "$PROXY_CHANGED" -eq 1 ]; then
+    echo "  Restarting Docker to apply changes..."
     sudo systemctl daemon-reload
     sudo systemctl restart docker
 else
-    echo "  No proxy configured (set DOCKER_PROXY to enable)."
-    # Still restart to apply config changes
-    sudo systemctl restart docker
+    echo "  Configuration unchanged, skipping restart."
 fi
 
 echo ""
