@@ -20,7 +20,8 @@
 | 1 | 克隆 `clash-for-linux-install` 到临时目录（使用 `CLASH_GH_PROXY` 加速） |
 | 2 | 修补安装脚本，移除交互提示 |
 | 3 | 运行 `install.sh mihomo` 安装内核，创建 `~/clashctl/` |
-| 4 | 如提供 `CLASH_SUB_URL`，添加订阅并激活 |
+| 4 | 确保 `~/.bashrc` 和 `~/.zshrc` 都有 clashctl 块（`.zshrc` 不存在则跳过） |
+| 5 | 如提供 `CLASH_SUB_URL`，添加订阅并激活 |
 
 ## 创建的文件
 
@@ -28,7 +29,7 @@
 |------|------|
 | `~/clashctl/` | 安装目录 |
 | `~/clashctl/scripts/cmd/clashctl.sh` | 管理脚本（由 Shell 源加载） |
-| `~/.bashrc` / `~/.zshrc` | 由 clash 安装器修改，添加 clashctl 加载 |
+| `~/.bashrc` / `~/.zshrc` | 添加 clashctl 块（加载 clashctl.sh + 自动 watch_proxy） |
 
 ## Shell 函数
 
@@ -52,6 +53,7 @@
 ## 重复运行行为
 
 - 安装：`~/clashctl/` 存在且含 `clashctl.sh` 则跳过。
+- RC 文件：已有 `clashctl START` 块则跳过。`.zshrc` 不存在则跳过。
 - 订阅：提供 `CLASH_SUB_URL` 时会重新添加并激活。
 
 ## 依赖

@@ -20,7 +20,8 @@ Sets up a local proxy (default: mihomo kernel) that can be toggled with `clashon
 | 1 | Clone `clash-for-linux-install` to a temp directory (uses `CLASH_GH_PROXY` if set) |
 | 2 | Patch the installer script to remove interactive prompts |
 | 3 | Run `install.sh mihomo` to install kernel and create `~/clashctl/` |
-| 4 | If `CLASH_SUB_URL` is provided, add subscription and activate it |
+| 4 | Ensure clashctl block is in both `~/.bashrc` and `~/.zshrc` (skips `.zshrc` if it doesn't exist yet) |
+| 5 | If `CLASH_SUB_URL` is provided, add subscription and activate it |
 
 ## Files Created
 
@@ -28,7 +29,7 @@ Sets up a local proxy (default: mihomo kernel) that can be toggled with `clashon
 |------|-------------|
 | `~/clashctl/` | Installation directory |
 | `~/clashctl/scripts/cmd/clashctl.sh` | Management script (sourced by shell) |
-| `~/.bashrc` / `~/.zshrc` | Modified by clash installer to source clashctl |
+| `~/.bashrc` / `~/.zshrc` | clashctl block added (sources clashctl.sh + auto watch_proxy) |
 
 ## Shell Functions
 
@@ -52,6 +53,7 @@ After installation, these functions are available (via sourced `clashctl.sh`):
 ## Re-run Behavior
 
 - Installation: skipped if `~/clashctl/` exists with `clashctl.sh`.
+- RC files: skipped if `clashctl START` block already present. `.zshrc` skipped if file doesn't exist.
 - Subscription: re-added and activated if `CLASH_SUB_URL` is provided.
 
 ## Dependencies
