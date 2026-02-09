@@ -200,7 +200,7 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemi
 
 ### `setup-docker.sh` — Docker
 
-安装 [Docker Engine](https://docs.docker.com/engine/install/)、Docker Compose 插件，配置镜像加速和可选代理。
+安装 [Docker Engine](https://docs.docker.com/engine/install/)、Docker Compose 插件，配置镜像加速、日志轮转、地址池和可选代理。
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
@@ -233,7 +233,7 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-dock
 通过参数：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash -s -- --mirror https://mirror.example.com --proxy http://localhost:7890 --data-root /data/docker
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash -s -- --mirror https://mirror.example.com --data-root /data/docker --log-size 50m --log-files 5
 ```
 
 | 变量 | 默认值 | 说明 |
@@ -242,6 +242,10 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-dock
 | `DOCKER_PROXY` | _（空）_ | 守护进程和容器的 HTTP/HTTPS 代理 |
 | `DOCKER_NO_PROXY` | `localhost,127.0.0.0/8` | 不走代理的地址列表 |
 | `DOCKER_DATA_ROOT` | _（空）_ | Docker 数据存储目录（默认 `/var/lib/docker`） |
+| `DOCKER_LOG_SIZE` | `20m` | 单个日志文件最大大小 |
+| `DOCKER_LOG_FILES` | `3` | 最多保留日志文件数 |
+| `DOCKER_EXPERIMENTAL` | `1` | 启用实验性功能（设为 `0` 禁用） |
+| `DOCKER_ADDR_POOLS` | `172.17.0.0/12:24,192.168.0.0/16:24` | 默认地址池（`base/cidr:size`，逗号分隔） |
 | `DOCKER_COMPOSE` | `1` | 安装 docker-compose-plugin（设为 `0` 跳过） |
 
 ### `setup-skills.sh` — 代理技能

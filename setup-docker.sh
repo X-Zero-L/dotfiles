@@ -5,23 +5,35 @@ set -euo pipefail
 #   ./setup-docker.sh
 #   ./setup-docker.sh --mirror https://mirror1.example.com,https://mirror2.example.com
 #   ./setup-docker.sh --proxy http://localhost:7890
-#   ./setup-docker.sh --no-compose
+#   ./setup-docker.sh --data-root /data/docker
+#   ./setup-docker.sh --log-size 50m --log-files 5
+#   ./setup-docker.sh --addr-pools 172.17.0.0/12:24,192.168.0.0/16:24
+#   ./setup-docker.sh --no-compose --no-experimental
 #
 # Environment variables:
-#   DOCKER_MIRROR    - Registry mirror URL(s), comma-separated (default: https://docker.1ms.run)
-#   DOCKER_PROXY     - HTTP/HTTPS proxy for daemon and containers (default: empty)
-#   DOCKER_NO_PROXY  - No-proxy list for daemon (default: localhost,127.0.0.0/8)
-#   DOCKER_DATA_ROOT - Docker data root directory (default: /var/lib/docker)
-#   DOCKER_COMPOSE   - Install docker-compose-plugin: 1=yes 0=no (default: 1)
+#   DOCKER_MIRROR       - Registry mirror URL(s), comma-separated (default: https://docker.1ms.run)
+#   DOCKER_PROXY        - HTTP/HTTPS proxy for daemon and containers (default: empty)
+#   DOCKER_NO_PROXY     - No-proxy list for daemon (default: localhost,127.0.0.0/8)
+#   DOCKER_DATA_ROOT    - Docker data root directory (default: /var/lib/docker)
+#   DOCKER_LOG_SIZE     - Max size per log file (default: 20m)
+#   DOCKER_LOG_FILES    - Max number of log files (default: 3)
+#   DOCKER_EXPERIMENTAL - Enable experimental features: 1=yes 0=no (default: 1)
+#   DOCKER_ADDR_POOLS   - Address pools, format: base/cidr:size,... (default: 172.17.0.0/12:24,192.168.0.0/16:24)
+#   DOCKER_COMPOSE      - Install docker-compose-plugin: 1=yes 0=no (default: 1)
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --mirror)     DOCKER_MIRROR="$2"; shift 2 ;;
-        --proxy)      DOCKER_PROXY="$2"; shift 2 ;;
-        --no-proxy)   DOCKER_NO_PROXY="$2"; shift 2 ;;
-        --data-root)  DOCKER_DATA_ROOT="$2"; shift 2 ;;
-        --no-compose) DOCKER_COMPOSE=0; shift ;;
+        --mirror)          DOCKER_MIRROR="$2"; shift 2 ;;
+        --proxy)           DOCKER_PROXY="$2"; shift 2 ;;
+        --no-proxy)        DOCKER_NO_PROXY="$2"; shift 2 ;;
+        --data-root)       DOCKER_DATA_ROOT="$2"; shift 2 ;;
+        --log-size)        DOCKER_LOG_SIZE="$2"; shift 2 ;;
+        --log-files)       DOCKER_LOG_FILES="$2"; shift 2 ;;
+        --experimental)    DOCKER_EXPERIMENTAL=1; shift ;;
+        --no-experimental) DOCKER_EXPERIMENTAL=0; shift ;;
+        --addr-pools)      DOCKER_ADDR_POOLS="$2"; shift 2 ;;
+        --no-compose)      DOCKER_COMPOSE=0; shift ;;
         *) shift ;;
     esac
 done
@@ -30,6 +42,10 @@ DOCKER_MIRROR="${DOCKER_MIRROR:-https://docker.1ms.run}"
 DOCKER_PROXY="${DOCKER_PROXY:-}"
 DOCKER_NO_PROXY="${DOCKER_NO_PROXY:-localhost,127.0.0.0/8}"
 DOCKER_DATA_ROOT="${DOCKER_DATA_ROOT:-}"
+DOCKER_LOG_SIZE="${DOCKER_LOG_SIZE:-20m}"
+DOCKER_LOG_FILES="${DOCKER_LOG_FILES:-3}"
+DOCKER_EXPERIMENTAL="${DOCKER_EXPERIMENTAL:-1}"
+DOCKER_ADDR_POOLS="${DOCKER_ADDR_POOLS:-172.17.0.0/12:24,192.168.0.0/16:24}"
 DOCKER_COMPOSE="${DOCKER_COMPOSE:-1}"
 
 echo "=== Docker Setup ==="
@@ -62,30 +78,24 @@ else
     echo "  Added $USER to docker group."
 fi
 
-# [4/5] Configure registry mirrors
-echo "[4/5] Configuring registry mirrors..."
+# [4/5] Configure daemon.json
+echo "[4/5] Configuring Docker daemon..."
 DAEMON_JSON="/etc/docker/daemon.json"
-
-# Build mirrors JSON array from comma-separated string
-IFS=',' read -ra MIRROR_ARRAY <<< "$DOCKER_MIRROR"
-MIRRORS_JSON="["
-for i in "${!MIRROR_ARRAY[@]}"; do
-    m="${MIRROR_ARRAY[$i]}"
-    # Trim whitespace
-    m="${m#"${m%%[![:space:]]*}"}"
-    m="${m%"${m##*[![:space:]]}"}"
-    [ "$i" -gt 0 ] && MIRRORS_JSON+=","
-    MIRRORS_JSON+="\"$m\""
-done
-MIRRORS_JSON+="]"
 
 if command -v python3 &>/dev/null; then
     # Merge with existing daemon.json using python3
     sudo python3 -c "
 import json, sys, os
-path = sys.argv[1]
-mirrors = json.loads(sys.argv[2])
-data_root = sys.argv[3]
+
+path        = sys.argv[1]
+mirrors_raw = sys.argv[2]
+data_root   = sys.argv[3]
+log_size    = sys.argv[4]
+log_files   = sys.argv[5]
+experimental = sys.argv[6] == '1'
+pools_raw   = sys.argv[7]
+
+# Load existing
 data = {}
 if os.path.isfile(path):
     try:
@@ -93,24 +103,101 @@ if os.path.isfile(path):
             data = json.load(f)
     except (json.JSONDecodeError, IOError):
         pass
-data['registry-mirrors'] = mirrors
+
+# Registry mirrors
+data['registry-mirrors'] = [m.strip() for m in mirrors_raw.split(',') if m.strip()]
+
+# Log driver
+data['log-driver'] = 'json-file'
+data['log-opts'] = {'max-size': log_size, 'max-file': log_files}
+
+# Experimental
+data['experimental'] = experimental
+
+# Data root
 if data_root:
     data['data-root'] = data_root
+
+# Address pools
+if pools_raw:
+    pools = []
+    for entry in pools_raw.split(','):
+        entry = entry.strip()
+        if ':' in entry:
+            # Split on last colon to handle IPv4 CIDR like 172.17.0.0/12:24
+            idx = entry.rfind(':')
+            base = entry[:idx]
+            size = int(entry[idx+1:])
+            pools.append({'base': base, 'size': size})
+    if pools:
+        data['default-address-pools'] = pools
+
 with open(path, 'w') as f:
     json.dump(data, f, indent=2)
     f.write('\n')
-" "$DAEMON_JSON" "$MIRRORS_JSON" "$DOCKER_DATA_ROOT"
+" "$DAEMON_JSON" "$DOCKER_MIRROR" "$DOCKER_DATA_ROOT" \
+  "$DOCKER_LOG_SIZE" "$DOCKER_LOG_FILES" "$DOCKER_EXPERIMENTAL" \
+  "$DOCKER_ADDR_POOLS"
 else
-    # Fallback: write directly (overwrites existing file)
+    # Fallback: build JSON manually (overwrites existing file)
     echo "  Warning: python3 not found, writing daemon.json from scratch."
     sudo mkdir -p /etc/docker
-    if [ -n "$DOCKER_DATA_ROOT" ]; then
-        printf '{\n  "registry-mirrors": %s,\n  "data-root": "%s"\n}\n' "$MIRRORS_JSON" "$DOCKER_DATA_ROOT" | sudo tee "$DAEMON_JSON" > /dev/null
+
+    # Build mirrors array
+    IFS=',' read -ra MIRROR_ARRAY <<< "$DOCKER_MIRROR"
+    MIRRORS_JSON="["
+    for i in "${!MIRROR_ARRAY[@]}"; do
+        m="${MIRROR_ARRAY[$i]}"
+        m="${m#"${m%%[![:space:]]*}"}"
+        m="${m%"${m##*[![:space:]]}"}"
+        [ "$i" -gt 0 ] && MIRRORS_JSON+=","
+        MIRRORS_JSON+="\"$m\""
+    done
+    MIRRORS_JSON+="]"
+
+    # Build address pools array
+    POOLS_JSON="["
+    IFS=',' read -ra POOL_ARRAY <<< "$DOCKER_ADDR_POOLS"
+    for i in "${!POOL_ARRAY[@]}"; do
+        entry="${POOL_ARRAY[$i]}"
+        entry="${entry#"${entry%%[![:space:]]*}"}"
+        entry="${entry%"${entry##*[![:space:]]}"}"
+        base="${entry%:*}"
+        size="${entry##*:}"
+        [ "$i" -gt 0 ] && POOLS_JSON+=","
+        POOLS_JSON+="{\"base\":\"$base\",\"size\":$size}"
+    done
+    POOLS_JSON+="]"
+
+    # Experimental
+    if [ "$DOCKER_EXPERIMENTAL" = "1" ]; then
+        EXP_JSON="true"
     else
-        printf '{\n  "registry-mirrors": %s\n}\n' "$MIRRORS_JSON" | sudo tee "$DAEMON_JSON" > /dev/null
+        EXP_JSON="false"
     fi
+
+    {
+        echo '{'
+        echo "  \"registry-mirrors\": $MIRRORS_JSON,"
+        echo '  "log-driver": "json-file",'
+        echo '  "log-opts": {'
+        echo "    \"max-size\": \"$DOCKER_LOG_SIZE\","
+        echo "    \"max-file\": \"$DOCKER_LOG_FILES\""
+        echo '  },'
+        echo "  \"experimental\": $EXP_JSON,"
+        echo "  \"default-address-pools\": $POOLS_JSON"
+        if [ -n "$DOCKER_DATA_ROOT" ]; then
+            echo "  ,\"data-root\": \"$DOCKER_DATA_ROOT\""
+        fi
+        echo '}'
+    } | sudo tee "$DAEMON_JSON" > /dev/null
 fi
-echo "  Mirrors: $DOCKER_MIRROR"
+
+echo "  Mirrors:      $DOCKER_MIRROR"
+echo "  Log:          json-file (max-size=$DOCKER_LOG_SIZE, max-file=$DOCKER_LOG_FILES)"
+echo "  Experimental: $DOCKER_EXPERIMENTAL"
+echo "  Addr pools:   $DOCKER_ADDR_POOLS"
+[ -n "$DOCKER_DATA_ROOT" ] && echo "  Data root:    $DOCKER_DATA_ROOT"
 
 # [5/5] Configure proxy (only if DOCKER_PROXY is set)
 echo "[5/5] Configuring proxy..."
@@ -176,7 +263,7 @@ CEOF
     sudo systemctl restart docker
 else
     echo "  No proxy configured (set DOCKER_PROXY to enable)."
-    # Still restart to apply mirror changes
+    # Still restart to apply config changes
     sudo systemctl restart docker
 fi
 
@@ -186,8 +273,5 @@ echo "Docker:  $(docker --version 2>/dev/null || echo 'installed')"
 if [ "$DOCKER_COMPOSE" != "0" ]; then
     echo "Compose: $(docker compose version 2>/dev/null || echo 'installed')"
 fi
-echo "Mirrors: $DOCKER_MIRROR"
-[ -n "$DOCKER_DATA_ROOT" ] && echo "Data:    $DOCKER_DATA_ROOT"
-[ -n "$DOCKER_PROXY" ] && echo "Proxy:   $DOCKER_PROXY"
 echo ""
 echo "Run 'newgrp docker' or re-login to use Docker without sudo."

@@ -200,7 +200,7 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemi
 
 ### `setup-docker.sh` — Docker
 
-Installs [Docker Engine](https://docs.docker.com/engine/install/), Docker Compose plugin, configures registry mirrors and optional proxy.
+Installs [Docker Engine](https://docs.docker.com/engine/install/), Docker Compose plugin, configures registry mirrors, log rotation, address pools, and optional proxy.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
@@ -233,7 +233,7 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-dock
 With arguments:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash -s -- --mirror https://mirror.example.com --proxy http://localhost:7890 --data-root /data/docker
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash -s -- --mirror https://mirror.example.com --data-root /data/docker --log-size 50m --log-files 5
 ```
 
 | Variable | Default | Description |
@@ -242,6 +242,10 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-dock
 | `DOCKER_PROXY` | _(empty)_ | HTTP/HTTPS proxy for daemon and containers |
 | `DOCKER_NO_PROXY` | `localhost,127.0.0.0/8` | No-proxy list for daemon |
 | `DOCKER_DATA_ROOT` | _(empty)_ | Docker data directory (default: `/var/lib/docker`) |
+| `DOCKER_LOG_SIZE` | `20m` | Max size per log file |
+| `DOCKER_LOG_FILES` | `3` | Max number of log files to keep |
+| `DOCKER_EXPERIMENTAL` | `1` | Enable experimental features (`0` to disable) |
+| `DOCKER_ADDR_POOLS` | `172.17.0.0/12:24,192.168.0.0/16:24` | Default address pools (`base/cidr:size`, comma-separated) |
 | `DOCKER_COMPOSE` | `1` | Install docker-compose-plugin (`0` to skip) |
 
 ### `setup-skills.sh` — Agent Skills
