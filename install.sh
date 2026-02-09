@@ -775,6 +775,9 @@ run_all_selected() {
     # Post-install hints
     local has_hints=0
 
+    local needs_reload=0
+    local has_shell=0
+
     for id in "${installed_ids[@]}"; do
         case "$id" in
             docker)
@@ -785,14 +788,26 @@ run_all_selected() {
                 printf "  ${DIM}•${NC} Run ${CYAN}newgrp docker${NC} or re-login to use Docker without sudo\n"
                 ;;
             shell)
-                if [[ $has_hints -eq 0 ]]; then
-                    printf "\n  ${BOLD}${SYM_WARN} Post-install${NC}\n"
-                    has_hints=1
-                fi
-                printf "  ${DIM}•${NC} Run ${CYAN}exec zsh${NC} to switch to your new shell\n"
+                has_shell=1
+                needs_reload=1
+                ;;
+            node|uv|go|clash|tmux|claude-code|codex|gemini|skills)
+                needs_reload=1
                 ;;
         esac
     done
+
+    if [[ $needs_reload -eq 1 ]]; then
+        if [[ $has_hints -eq 0 ]]; then
+            printf "\n  ${BOLD}${SYM_WARN} Post-install${NC}\n"
+            has_hints=1
+        fi
+        if [[ $has_shell -eq 1 ]]; then
+            printf "  ${DIM}•${NC} Run ${CYAN}exec zsh${NC} to switch to your new shell and load all changes\n"
+        else
+            printf "  ${DIM}•${NC} Run ${CYAN}exec \$SHELL${NC} to reload your shell\n"
+        fi
+    fi
 
     # Show hints for unconfigured API components
     for i in "${!COMP_INSTALL_ONLY[@]}"; do
