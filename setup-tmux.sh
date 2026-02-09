@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Usage:
+#   ./setup-tmux.sh                    # default (no custom keybindings)
+#   TMUX_KEYBINDS=1 ./setup-tmux.sh    # enable custom keybindings
+#   ./setup-tmux.sh --keybinds         # same as above
+#
+# Environment variables:
+#   TMUX_KEYBINDS    - Enable custom keybindings (default: 0)
+#                      Adds: Ctrl+a prefix, | and - splits, vim-style resize
+#   TMUX_MOUSE       - Enable mouse support (default: 1)
+#   TMUX_STATUS_POS  - Status bar position: top/bottom (default: top)
+#   GH_PROXY         - GitHub proxy URL for git clone
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --keybinds)    TMUX_KEYBINDS=1; shift ;;
+        --no-mouse)    TMUX_MOUSE=0; shift ;;
+        --status-pos)  TMUX_STATUS_POS="$2"; shift 2 ;;
+        *) shift ;;
+    esac
+done
+
+TMUX_KEYBINDS="${TMUX_KEYBINDS:-0}"
+TMUX_MOUSE="${TMUX_MOUSE:-1}"
+TMUX_STATUS_POS="${TMUX_STATUS_POS:-top}"
+GH_PROXY="${GH_PROXY:-}"
+
+echo "=== Tmux Setup ==="
+
+# [1/4] Install tmux
+echo "[1/4] Installing tmux..."
+if command -v tmux &>/dev/null; then
+    echo "  Already installed, skipping."
+else
+    sudo apt-get update -qq
+    sudo apt-get install -y -qq tmux
+fi
+
+# [2/4] Install TPM
+echo "[2/4] Installing TPM..."
+TPM_DIR="$HOME/.tmux/plugins/tpm"
+if [ -d "$TPM_DIR" ]; then
+    echo "  Already installed, skipping."
+else
+    CLONE_URL="https://github.com/tmux-plugins/tpm"
+    [ -n "$GH_PROXY" ] && CLONE_URL="${GH_PROXY%/}/https://github.com/tmux-plugins/tpm"
+    git clone --depth 1 "$CLONE_URL" "$TPM_DIR"
+fi
+
+# [3/4] Write config
+echo "[3/4] Writing config..."
+TMUX_CONF="$HOME/.tmux.conf"
+
+generate_config() {
+    echo '# ─── General ───'
+    echo 'set -g default-terminal "tmux-256color"'
+    echo 'set -ag terminal-overrides ",xterm-256color:RGB"'
+    echo 'set -g base-index 1'
+    echo 'setw -g pane-base-index 1'
+    echo 'set -g renumber-windows on'
+    echo 'set -g set-clipboard on'
+    echo 'set -g detach-on-destroy off'
+
+    if [ "$TMUX_MOUSE" -eq 1 ]; then
+        echo ''
+        echo '# ─── Mouse ───'
+        echo 'set -g mouse on'
+    fi
+
+    echo ''
+    echo '# ─── Status bar ───'
+    echo "set -g status-position ${TMUX_STATUS_POS}"
+
+    if [ "$TMUX_KEYBINDS" -eq 1 ]; then
+        echo ''
+        echo '# ─── Custom keybindings ───'
+        echo '# Prefix: Ctrl+a'
+        echo 'unbind C-b'
+        echo 'set -g prefix C-a'
+        echo 'bind C-a send-prefix'
+        echo ''
+        echo '# Intuitive splits'
+        echo 'bind | split-window -h -c "#{pane_current_path}"'
+        echo 'bind - split-window -v -c "#{pane_current_path}"'
+        echo ''
+        echo '# Vim-style pane resize'
+        echo 'bind -r H resize-pane -L 5'
+        echo 'bind -r J resize-pane -D 5'
+        echo 'bind -r K resize-pane -U 5'
+        echo 'bind -r L resize-pane -R 5'
+    fi
+
+    echo ''
+    echo '# ─── Catppuccin theme ───'
+    echo 'set -g @catppuccin_flavor "mocha"'
+    echo 'set -g @catppuccin_window_status_style "rounded"'
+
+    echo ''
+    echo '# ─── Plugins ───'
+    echo "set -g @plugin 'tmux-plugins/tpm'"
+    echo "set -g @plugin 'tmux-plugins/tmux-sensible'"
+    echo "set -g @plugin 'catppuccin/tmux'"
+    echo "set -g @plugin 'christoomey/vim-tmux-navigator'"
+    echo "set -g @plugin 'tmux-plugins/tmux-yank'"
+    echo "set -g @plugin 'tmux-plugins/tmux-resurrect'"
+    echo "set -g @plugin 'tmux-plugins/tmux-continuum'"
+
+    echo ''
+    echo '# ─── Plugin settings ───'
+    echo "set -g @continuum-restore 'on'"
+
+    echo ''
+    echo '# ─── Initialize TPM (keep at bottom) ───'
+    echo "run '~/.tmux/plugins/tpm/tpm'"
+}
+
+WANT_CONF=$(generate_config)
+if [ -f "$TMUX_CONF" ] && [ "$(cat "$TMUX_CONF")" = "$WANT_CONF" ]; then
+    echo "  Already configured, skipping."
+else
+    printf '%s\n' "$WANT_CONF" > "$TMUX_CONF"
+    echo "  Config written."
+fi
+
+# [4/4] Install plugins
+echo "[4/4] Installing plugins..."
+PLUGIN_DIR="$HOME/.tmux/plugins"
+PLUGINS=(
+    "tmux-plugins/tmux-sensible"
+    "catppuccin/tmux"
+    "christoomey/vim-tmux-navigator"
+    "tmux-plugins/tmux-yank"
+    "tmux-plugins/tmux-resurrect"
+    "tmux-plugins/tmux-continuum"
+)
+
+ALL_PRESENT=1
+for plugin in "${PLUGINS[@]}"; do
+    plugin_name=$(basename "$plugin")
+    if [ ! -d "$PLUGIN_DIR/$plugin_name" ]; then
+        ALL_PRESENT=0
+        break
+    fi
+done
+
+if [ "$ALL_PRESENT" -eq 1 ]; then
+    echo "  All plugins already installed, skipping."
+else
+    for plugin in "${PLUGINS[@]}"; do
+        plugin_name=$(basename "$plugin")
+        if [ -d "$PLUGIN_DIR/$plugin_name" ]; then
+            echo "  $plugin_name: already installed"
+            continue
+        fi
+        CLONE_URL="https://github.com/$plugin"
+        [ -n "$GH_PROXY" ] && CLONE_URL="${GH_PROXY%/}/https://github.com/$plugin"
+        echo "  $plugin_name: installing..."
+        git clone --depth 1 "$CLONE_URL" "$PLUGIN_DIR/$plugin_name" 2>/dev/null
+    done
+fi
+
+echo ""
+echo "=== Done! ==="
+echo "Tmux: $(tmux -V 2>/dev/null || echo 'installed')"
+echo "Theme: Catppuccin Mocha"
+echo "Plugins: sensible, catppuccin, vim-tmux-navigator, yank, resurrect, continuum"
+if [ "$TMUX_KEYBINDS" -eq 1 ]; then
+    echo "Keybinds: custom (Ctrl+a prefix, | and - splits)"
+else
+    echo "Keybinds: default (set TMUX_KEYBINDS=1 to customize)"
+fi
