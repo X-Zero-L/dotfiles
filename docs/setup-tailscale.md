@@ -19,7 +19,7 @@ Installs [Tailscale](https://tailscale.com/) VPN mesh network, optionally connec
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `TAILSCALE_AUTH_KEY` | _(empty)_ | Auth key for automatic `tailscale up`. Leave empty to install only. |
+| `TAILSCALE_AUTH_KEY` | _(empty)_ | Auth key for automatic `tailscale up`. Leave empty to install only. Create one at [Tailscale Admin Console](https://login.tailscale.com/admin/machines/new-linux). |
 
 ## Re-run Behavior
 

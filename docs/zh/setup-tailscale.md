@@ -19,7 +19,7 @@
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `TAILSCALE_AUTH_KEY` | _（空）_ | 自动连接的 Auth Key。留空则仅安装。 |
+| `TAILSCALE_AUTH_KEY` | _（空）_ | 自动连接的 Auth Key。留空则仅安装。前往 [Tailscale 管理后台](https://login.tailscale.com/admin/machines/new-linux) 创建。 |
 
 ## 重复运行行为
 
