@@ -74,6 +74,29 @@ generate_config() {
     echo '# ─── Status bar ───'
     echo "set -g status-position ${TMUX_STATUS_POS}"
 
+    echo ''
+    echo '# ─── Mouse enhancements ───'
+    echo '# Click session name (left of status bar) → session/window tree picker'
+    echo 'bind -n MouseDown1StatusLeft choose-tree -Zs'
+    echo '# Scroll wheel on status bar → cycle windows'
+    echo 'bind -n WheelUpStatus previous-window'
+    echo 'bind -n WheelDownStatus next-window'
+
+    echo ''
+    echo '# ─── Quick navigation (no prefix needed) ───'
+    echo '# Alt+1..9 → switch to window by number'
+    echo 'bind -n M-1 select-window -t 1'
+    echo 'bind -n M-2 select-window -t 2'
+    echo 'bind -n M-3 select-window -t 3'
+    echo 'bind -n M-4 select-window -t 4'
+    echo 'bind -n M-5 select-window -t 5'
+    echo 'bind -n M-6 select-window -t 6'
+    echo 'bind -n M-7 select-window -t 7'
+    echo 'bind -n M-8 select-window -t 8'
+    echo 'bind -n M-9 select-window -t 9'
+    echo '# Alt+n → new window'
+    echo 'bind -n M-n new-window -c "#{pane_current_path}"'
+
     if [ "$TMUX_KEYBINDS" -eq 1 ]; then
         echo ''
         echo '# ─── Custom keybindings ───'
