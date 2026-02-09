@@ -30,6 +30,12 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --components shell,node,docker
 ```
 
+详细模式（显示原始脚本输出）：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all --verbose
+```
+
 可用组件：`shell`、`clash`、`node`、`uv`、`docker`、`claude-code`、`codex`、`gemini`、`skills`
 
 ## 脚本说明

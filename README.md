@@ -30,6 +30,12 @@ Specific components:
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --components shell,node,docker
 ```
 
+Verbose mode (show raw script output):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all --verbose
+```
+
 Available components: `shell`, `clash`, `node`, `uv`, `docker`, `claude-code`, `codex`, `gemini`, `skills`
 
 ## Scripts
