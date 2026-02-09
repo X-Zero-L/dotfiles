@@ -206,8 +206,8 @@ cache_sudo() {
 print_banner() {
     printf "\n"
     printf "  ${CYAN}${BOLD}┌──────────────────────────────────────────┐${NC}\n"
-    printf "  ${CYAN}${BOLD}│${NC}  ${BOLD}${WHITE}Dotfiles Installer${NC}                       ${CYAN}${BOLD}│${NC}\n"
-    printf "  ${CYAN}${BOLD}│${NC}  ${DIM}${_GH}/${REPO}${NC}          ${CYAN}${BOLD}│${NC}\n"
+    printf "  ${CYAN}${BOLD}│${NC}  ${BOLD}${WHITE}Dotfiles Installer${NC}                      ${CYAN}${BOLD}│${NC}\n"
+    printf "  ${CYAN}${BOLD}│${NC}  ${DIM}${_GH}/${REPO}${NC}           ${CYAN}${BOLD}│${NC}\n"
     printf "  ${CYAN}${BOLD}└──────────────────────────────────────────┘${NC}\n"
     printf "\n"
 }
@@ -736,7 +736,7 @@ run_all_selected() {
     # Summary
     printf "\n"
     printf "  ${BOLD}${CYAN}┌──────────────────────────────────────────┐${NC}\n"
-    printf "  ${BOLD}${CYAN}│${NC}  ${BOLD}${WHITE}Installation Summary${NC}                     ${BOLD}${CYAN}│${NC}\n"
+    printf "  ${BOLD}${CYAN}│${NC}  ${BOLD}${WHITE}Installation Summary${NC}                    ${BOLD}${CYAN}│${NC}\n"
     printf "  ${BOLD}${CYAN}└──────────────────────────────────────────┘${NC}\n"
     printf "\n"
 
