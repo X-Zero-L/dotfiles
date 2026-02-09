@@ -34,7 +34,9 @@ BASE_URL="https://${_RAW}/${REPO}/${BRANCH}"
 GH_PROXY="${GH_PROXY:-}"
 NON_INTERACTIVE=0
 INTERACTIVE=0
+VERBOSE=0
 TMPDIR_INSTALL=""
+LOG_FILE=""
 CURSOR_HIDDEN=0
 
 # --- [B] ANSI Colors ---------------------------------------------------------
@@ -130,11 +132,56 @@ COMP_SELECTED=(0 0 0 0 0 0 0 0 0)
 
 # --- [D] Utility Functions ----------------------------------------------------
 
+SUDO_KEEPALIVE_PID=""
+
 cleanup() {
     [[ "$CURSOR_HIDDEN" -eq 1 ]] && printf '\033[?25h' 2>/dev/null
+    [[ -n "${SUDO_KEEPALIVE_PID:-}" ]] && kill "$SUDO_KEEPALIVE_PID" 2>/dev/null || true
     [[ -n "${TMPDIR_INSTALL:-}" && -d "${TMPDIR_INSTALL:-}" ]] && rm -rf "$TMPDIR_INSTALL"
 }
 trap cleanup EXIT INT TERM
+
+# Spinner animation while a background process runs
+# Usage: spinner PID "message"
+spinner() {
+    local pid=$1
+    local msg="$2"
+    local frames=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
+    local i=0
+
+    # Fallback for non-unicode terminals
+    if [[ -z "$BOLD" ]]; then
+        frames=('-' '\' '|' '/')
+    fi
+
+    printf "${HIDE_CURSOR}" 2>/dev/null
+    while kill -0 "$pid" 2>/dev/null; do
+        printf "\r  ${CYAN}%s${NC} ${DIM}%s${NC}  " "${frames[$i]}" "$msg"
+        i=$(( (i + 1) % ${#frames[@]} ))
+        sleep 0.1
+    done
+    printf "\r${CLEAR_LINE}"
+    printf "${SHOW_CURSOR}" 2>/dev/null
+}
+
+# Pre-cache sudo credentials to avoid password prompts mid-installation
+cache_sudo() {
+    local needs_sudo=0
+    for i in "${!COMP_SELECTED[@]}"; do
+        if [[ "${COMP_SELECTED[$i]}" -eq 1 && "${COMP_NEEDS_SUDO[$i]}" -eq 1 ]]; then
+            needs_sudo=1
+            break
+        fi
+    done
+
+    if [[ $needs_sudo -eq 1 ]]; then
+        printf "  ${DIM}Some components require sudo. Caching credentials...${NC}\n"
+        sudo -v
+        # Keep sudo alive in background
+        ( while true; do sudo -n true 2>/dev/null; sleep 50; done ) &
+        SUDO_KEEPALIVE_PID=$!
+    fi
+}
 
 print_banner() {
     printf "\n"
@@ -160,6 +207,7 @@ Options:
   --components LIST      Comma-separated component list:
                          shell,clash,node,uv,docker,claude-code,codex,gemini,skills
   --gh-proxy URL         GitHub proxy URL (e.g., https://gh-proxy.org)
+  -v, --verbose          Show raw script output (default: clean spinner)
   -h, --help             Show this help
 
 Environment variables:
@@ -582,10 +630,7 @@ run_component() {
     local total=$3
     local script="${COMP_SCRIPTS[$idx]}"
     local script_path="${TMPDIR_INSTALL}/${script}"
-
-    printf "\n"
-    printf "  ${BOLD}${CYAN}[%d/%d]${NC} ${BOLD}${WHITE}%s${NC}\n" "$step" "$total" "${COMP_NAMES[$idx]}"
-    printf "  ${CYAN}────────────────────────────────────────${NC}\n"
+    local comp_log="${LOG_FILE}.${COMP_IDS[$idx]}"
 
     # Reload env between components
     load_env
@@ -595,14 +640,39 @@ run_component() {
         export CLASH_GH_PROXY="$GH_PROXY"
     fi
 
-    if bash "$script_path"; then
+    if [[ "$VERBOSE" -eq 1 ]]; then
+        # Verbose: show raw output
+        printf "\n"
+        printf "  ${BOLD}${CYAN}[%d/%d]${NC} ${BOLD}${WHITE}%s${NC}\n" "$step" "$total" "${COMP_NAMES[$idx]}"
         printf "  ${CYAN}────────────────────────────────────────${NC}\n"
-        printf "  ${SYM_CHECK} ${GREEN}%s${NC}\n" "${COMP_NAMES[$idx]}"
-        return 0
+
+        if bash "$script_path" 2>&1 | tee "$comp_log"; then
+            printf "  ${CYAN}────────────────────────────────────────${NC}\n"
+            printf "  ${SYM_CHECK} ${GREEN}%s${NC}\n" "${COMP_NAMES[$idx]}"
+            return 0
+        else
+            printf "  ${CYAN}────────────────────────────────────────${NC}\n"
+            printf "  ${SYM_CROSS} ${RED}%s${NC}\n" "${COMP_NAMES[$idx]}"
+            return 1
+        fi
     else
-        printf "  ${CYAN}────────────────────────────────────────${NC}\n"
-        printf "  ${SYM_CROSS} ${RED}%s${NC}\n" "${COMP_NAMES[$idx]}"
-        return 1
+        # Clean mode: spinner + log file
+        bash "$script_path" > "$comp_log" 2>&1 &
+        local pid=$!
+
+        spinner "$pid" "Installing ${COMP_NAMES[$idx]}..."
+
+        if wait "$pid"; then
+            printf "  ${SYM_CHECK} ${BOLD}${CYAN}[%d/%d]${NC} %s\n" "$step" "$total" "${COMP_NAMES[$idx]}"
+            return 0
+        else
+            printf "  ${SYM_CROSS} ${BOLD}${CYAN}[%d/%d]${NC} ${RED}%s${NC}\n" "$step" "$total" "${COMP_NAMES[$idx]}"
+            # Show last lines of log on failure
+            printf "  ${DIM}── last 15 lines ──${NC}\n"
+            tail -n 15 "$comp_log" 2>/dev/null | sed 's/^/    /'
+            printf "  ${DIM}── full log: %s ──${NC}\n" "$comp_log"
+            return 1
+        fi
     fi
 }
 
@@ -615,12 +685,15 @@ run_all_selected() {
     local failed=0
     local failed_names=()
     local succeeded_names=()
+    local installed_ids=()
 
+    printf "\n"
     for idx in "${ordered[@]}"; do
         ((step++))
         if run_component "$idx" "$step" "$total"; then
             ((succeeded++))
             succeeded_names+=("${COMP_NAMES[$idx]}")
+            installed_ids+=("${COMP_IDS[$idx]}")
         else
             ((failed++))
             failed_names+=("${COMP_NAMES[$idx]}")
@@ -650,8 +723,34 @@ run_all_selected() {
     if [[ $failed -gt 0 ]]; then
         printf " ${DIM}/${NC} ${RED}${BOLD}%d failed${NC}" "$failed"
     fi
-    printf "\n\n"
+    printf "\n"
 
+    # Post-install hints
+    local has_hints=0
+    for id in "${installed_ids[@]}"; do
+        case "$id" in
+            docker)
+                if [[ $has_hints -eq 0 ]]; then
+                    printf "\n  ${BOLD}${SYM_WARN} Post-install${NC}\n"
+                    has_hints=1
+                fi
+                printf "  ${DIM}•${NC} Run ${CYAN}newgrp docker${NC} or re-login to use Docker without sudo\n"
+                ;;
+            shell)
+                if [[ $has_hints -eq 0 ]]; then
+                    printf "\n  ${BOLD}${SYM_WARN} Post-install${NC}\n"
+                    has_hints=1
+                fi
+                printf "  ${DIM}•${NC} Run ${CYAN}exec zsh${NC} to switch to your new shell\n"
+                ;;
+        esac
+    done
+
+    if [[ $failed -gt 0 ]]; then
+        printf "\n  ${DIM}Logs: ${NC}${CYAN}${LOG_FILE}.*${NC}\n"
+    fi
+
+    printf "\n"
     return "$failed"
 }
 
@@ -683,6 +782,10 @@ parse_args() {
             --gh-proxy)
                 GH_PROXY="$2"
                 shift 2
+                ;;
+            --verbose|-v)
+                VERBOSE=1
+                shift
                 ;;
             --help|-h)
                 show_help
@@ -725,6 +828,7 @@ main() {
 
     # Create temp directory for downloads
     TMPDIR_INSTALL=$(mktemp -d)
+    LOG_FILE="/tmp/dotfiles-install-$(date +%Y%m%d-%H%M%S)"
 
     # Banner
     print_banner
@@ -787,6 +891,9 @@ main() {
         exit 0
     fi
 
+    # Pre-cache sudo credentials before noisy installation begins
+    cache_sudo
+
     # Download all needed scripts
     # shellcheck disable=SC2086
     if ! download_all_needed $ordered; then
@@ -798,13 +905,12 @@ main() {
     run_all_selected "$ordered"
     local result=$?
 
-    # Final message
+    # Final message (post-install hints are already in the summary box)
     if [[ $result -eq 0 ]]; then
-        printf "  ${SYM_CHECK} ${GREEN}${BOLD}All components installed successfully!${NC}\n"
+        printf "  ${SYM_CHECK} ${GREEN}${BOLD}All done!${NC}\n\n"
     else
-        printf "  ${SYM_WARN} ${YELLOW}${BOLD}Some components failed. Check output above.${NC}\n"
+        printf "  ${SYM_WARN} ${YELLOW}${BOLD}Some components failed. See logs above.${NC}\n\n"
     fi
-    printf "  ${DIM}Run${NC} ${CYAN}source ~/.zshrc${NC} ${DIM}or open a new terminal to apply changes.${NC}\n\n"
 
     exit "$result"
 }
