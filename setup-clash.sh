@@ -49,6 +49,32 @@ else
     bash install.sh "$CLASH_KERNEL"
 fi
 
+# Ensure clashctl is sourced in both .bashrc and .zshrc
+# (upstream installer may only write to .bashrc if zsh isn't installed yet)
+CLASH_BLOCK="# clashctl START
+# Load clashctl commands
+. $CLASHCTL
+# Auto-enable proxy environment
+watch_proxy
+# clashctl END"
+
+for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
+    # Create .bashrc if missing; skip .zshrc if zsh not installed yet
+    if [ ! -f "$rc" ]; then
+        if [ "$rc" = "$HOME/.bashrc" ]; then
+            touch "$rc"
+        else
+            continue
+        fi
+    fi
+    if grep -q "clashctl START" "$rc"; then
+        echo "  clashctl block already in $(basename "$rc"), skipping."
+    else
+        printf '\n%s\n' "$CLASH_BLOCK" >> "$rc"
+        echo "  Added clashctl block to $(basename "$rc")."
+    fi
+done
+
 # Add subscription after installation in a clean bash subprocess,
 # since clashctl.sh has unbound variables incompatible with set -u.
 if [ -n "$CLASH_SUB_URL" ]; then
