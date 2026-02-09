@@ -12,8 +12,11 @@ Installs zsh, Oh My Zsh, plugins (autosuggestions, syntax-highlighting, z), Star
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
+```
 
-# Via proxy
+Via proxy:
+
+```bash
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
 ```
 
@@ -23,8 +26,11 @@ Installs [clash-for-linux](https://github.com/nelvko/clash-for-linux-install) wi
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
+```
 
-# Via proxy
+Via proxy:
+
+```bash
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
 ```
 
@@ -40,11 +46,17 @@ Installs [nvm](https://github.com/nvm-sh/nvm) and Node.js.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
+```
 
-# Specific version
+Specific version:
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash -s -- 22
+```
 
-# Via proxy
+Via proxy:
+
+```bash
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
 ```
 
@@ -52,17 +64,47 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 |----------|---------|-------------|
 | `NODE_VERSION` | `24` | Node.js major version to install (can also be passed as first argument) |
 
+### `setup-uv.sh` — uv + Python
+
+Installs [uv](https://docs.astral.sh/uv/) package manager, optionally installs a Python version.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
+```
+
+With Python:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | UV_PYTHON=3.12 bash
+```
+
+Via proxy:
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `UV_PYTHON` | _(empty)_ | Python version to install (can also be passed as first argument) |
+
 ### `setup-claude-code.sh` — Claude Code
 
 Installs [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI and configures API settings.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key bash
+```
 
-# Via proxy
+Via proxy:
+
+```bash
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key bash
+```
 
-# Or with arguments
+With arguments:
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash -s -- --api-url https://your-api-url --api-key your-key
 ```
 
@@ -75,20 +117,39 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clau
 
 ## Full Setup
 
-> Recommended order: proxy → shell → node → claude code.
+> Recommended order: proxy → shell → uv → node → claude code.
+
+**1. Proxy** (so subsequent downloads are faster)
 
 ```bash
-# 1. Proxy (so subsequent downloads are faster)
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
+```
+
+```bash
 source ~/.bashrc && clashon
+```
 
-# 2. Shell environment
+**2. Shell environment**
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
+```
 
-# 3. Node.js
+**3. uv + Python**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | UV_PYTHON=3.12 bash
+```
+
+**4. Node.js**
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
+```
 
-# 4. Claude Code
+**5. Claude Code**
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key bash
 ```
 

@@ -12,8 +12,11 @@ Debian/Ubuntu 系统自动化配置脚本。
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
+```
 
-# 通过代理
+通过代理：
+
+```bash
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
 ```
 
@@ -23,8 +26,11 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://你的订阅链接'
+```
 
-# 通过代理
+通过代理：
+
+```bash
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://你的订阅链接'
 ```
 
@@ -40,11 +46,17 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
+```
 
-# 指定版本
+指定版本：
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash -s -- 22
+```
 
-# 通过代理
+通过代理：
+
+```bash
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
 ```
 
@@ -52,17 +64,47 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 |------|--------|------|
 | `NODE_VERSION` | `24` | Node.js 主版本号（也可作为第一个参数传入） |
 
+### `setup-uv.sh` — uv + Python
+
+安装 [uv](https://docs.astral.sh/uv/) 包管理器，可选安装 Python 版本。
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
+```
+
+同时安装 Python：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | UV_PYTHON=3.12 bash
+```
+
+通过代理：
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
+```
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `UV_PYTHON` | _（空）_ | 要安装的 Python 版本（也可作为第一个参数传入） |
+
 ### `setup-claude-code.sh` — Claude Code
 
 安装 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI 并配置 API。
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥 bash
+```
 
-# 通过代理
+通过代理：
+
+```bash
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥 bash
+```
 
-# 或通过参数
+通过参数：
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash -s -- --api-url https://你的API地址 --api-key 你的密钥
 ```
 
@@ -75,20 +117,39 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clau
 
 ## 完整安装
 
-> 建议顺序：代理 → shell → node → claude code。
+> 建议顺序：代理 → shell → uv → node → claude code。
+
+**1. 代理**（后续下载更快）
 
 ```bash
-# 1. 先配代理（后续下载更快）
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://你的订阅链接'
+```
+
+```bash
 source ~/.bashrc && clashon
+```
 
-# 2. Shell 环境
+**2. Shell 环境**
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
+```
 
-# 3. Node.js
+**3. uv + Python**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | UV_PYTHON=3.12 bash
+```
+
+**4. Node.js**
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
+```
 
-# 4. Claude Code
+**5. Claude Code**
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥 bash
 ```
 
