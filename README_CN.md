@@ -49,7 +49,7 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all --verbose
 ```
 
-可用组件：`shell`、`tmux`、`clash`、`node`、`uv`、`docker`、`claude-code`、`codex`、`gemini`、`skills`
+可用组件：`shell`、`tmux`、`clash`、`node`、`uv`、`go`、`docker`、`claude-code`、`codex`、`gemini`、`skills`
 
 ## 组件详解
 
@@ -206,6 +206,29 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.s
 
 ```bash
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
+```
+
+#### Go (`setup-go.sh`)
+
+安装 [goenv](https://github.com/go-nv/goenv) 和 Go。
+
+默认安装最新版 Go：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-go.sh | bash
+```
+
+指定版本：
+
+```bash
+export GO_VERSION=1.23.0
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-go.sh | bash
+```
+
+通过代理：
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-go.sh | GH_PROXY=https://gh-proxy.org bash
 ```
 
 ---
@@ -378,6 +401,12 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 |------|--------|------|
 | `UV_PYTHON` | _（空）_ | 要安装的 Python 版本（也可作为第一个参数传入） |
 
+### Go
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `GO_VERSION` | `latest` | 要安装的 Go 版本（也可作为第一个参数传入） |
+
 ### Docker
 
 | 变量 | 默认值 | 说明 |
@@ -460,11 +489,12 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh
 2. `setup-tmux.sh` — Tmux + Catppuccin + 插件
 3. `setup-docker.sh` — Docker Engine + Compose
 4. `setup-uv.sh` — uv + Python
-5. `setup-node.sh` — nvm + Node.js
-6. `setup-claude-code.sh` — Claude Code
-7. `setup-codex.sh` — Codex CLI
-8. `setup-gemini.sh` — Gemini CLI
-9. `setup-skills.sh` — 代理技能
+5. `setup-go.sh` — goenv + Go
+6. `setup-node.sh` — nvm + Node.js
+7. `setup-claude-code.sh` — Claude Code
+8. `setup-codex.sh` — Codex CLI
+9. `setup-gemini.sh` — Gemini CLI
+10. `setup-skills.sh` — 代理技能
 
 ## 详细文档
 

@@ -22,6 +22,7 @@ Detailed documentation for each setup script. For quick start, see the [main REA
 |--------|-------------|
 | [setup-node.sh](setup-node.md) | nvm + Node.js |
 | [setup-uv.sh](setup-uv.md) | uv package manager + Python |
+| [setup-go.sh](setup-go.md) | goenv + Go |
 
 ### AI Coding Agents
 

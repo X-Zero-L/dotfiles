@@ -49,7 +49,7 @@ Verbose mode (show raw script output instead of spinner):
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all --verbose
 ```
 
-Available components: `shell`, `tmux`, `clash`, `node`, `uv`, `docker`, `claude-code`, `codex`, `gemini`, `skills`
+Available components: `shell`, `tmux`, `clash`, `node`, `uv`, `go`, `docker`, `claude-code`, `codex`, `gemini`, `skills`
 
 ## Components
 
@@ -206,6 +206,29 @@ Via proxy:
 
 ```bash
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
+```
+
+#### Go (`setup-go.sh`)
+
+Installs [goenv](https://github.com/go-nv/goenv) and Go.
+
+Default (latest Go):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-go.sh | bash
+```
+
+Specific version:
+
+```bash
+export GO_VERSION=1.23.0
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-go.sh | bash
+```
+
+Via proxy:
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-go.sh | GH_PROXY=https://gh-proxy.org bash
 ```
 
 ---
@@ -378,6 +401,12 @@ All environment variables across all scripts in one table.
 |----------|---------|-------------|
 | `UV_PYTHON` | _(empty)_ | Python version to install (also accepted as first argument) |
 
+### Go
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GO_VERSION` | `latest` | Go version to install (also accepted as first argument) |
+
 ### Docker
 
 | Variable | Default | Description |
@@ -460,11 +489,12 @@ Or install components individually in this order:
 2. `setup-tmux.sh` — Tmux + Catppuccin + plugins
 3. `setup-docker.sh` — Docker Engine + Compose
 4. `setup-uv.sh` — uv + Python
-5. `setup-node.sh` — nvm + Node.js
-6. `setup-claude-code.sh` — Claude Code
-7. `setup-codex.sh` — Codex CLI
-8. `setup-gemini.sh` — Gemini CLI
-9. `setup-skills.sh` — Agent skills
+5. `setup-go.sh` — goenv + Go
+6. `setup-node.sh` — nvm + Node.js
+7. `setup-claude-code.sh` — Claude Code
+8. `setup-codex.sh` — Codex CLI
+9. `setup-gemini.sh` — Gemini CLI
+10. `setup-skills.sh` — Agent skills
 
 ## Detailed Documentation
 
