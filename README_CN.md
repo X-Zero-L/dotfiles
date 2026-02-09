@@ -4,78 +4,207 @@
 
 Debian/Ubuntu 系统自动化配置脚本。
 
+> 所有脚本均支持**重复运行** — 已安装的组件会自动跳过，配置变更时自动更新。需要 `curl`、`git` 和 `sudo`。
+
 ## 快速开始
 
-交互式安装器（TUI 复选框菜单）：
+使用 `install.sh` 进行一站式交互或非交互安装。
 
 ```bash
+# 交互式 TUI — 选择要安装的组件
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash
-```
 
-通过代理：
-
-```bash
+# 通过代理（推荐国内用户）
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --gh-proxy https://gh-proxy.org
-```
 
-非交互式安装全部：
-
-```bash
+# 非交互式安装全部
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all
-```
 
-指定组件：
-
-```bash
+# 指定组件
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --components shell,node,docker
-```
 
-详细模式（显示原始脚本输出）：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all --verbose
-```
-
-预配置 API 密钥（用于编码代理）：
-
-```bash
+# 预配置 API 密钥
 export CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥
 export CODEX_API_URL=https://你的API地址  CODEX_API_KEY=你的密钥
 export GEMINI_API_URL=https://你的API地址 GEMINI_API_KEY=你的密钥
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all
+curl -fsSL .../install.sh | bash -s -- --all
+
+# 详细模式（显示原始脚本输出而非 spinner）
+curl -fsSL .../install.sh | bash -s -- --all --verbose
 ```
 
 可用组件：`shell`、`clash`、`node`、`uv`、`docker`、`claude-code`、`codex`、`gemini`、`skills`
 
-## 脚本说明
+## 组件详解
 
-### `setup-shell.sh` — Shell 环境
-
-安装 zsh、Oh My Zsh、插件（autosuggestions、syntax-highlighting、z）、Starship 提示符及 Catppuccin Powerline 主题。
+每个脚本也可以单独运行，支持直连和代理两种方式：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
+# 直连
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/<脚本名> | bash
+
+# 通过 gh-proxy 加速
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/<脚本名> | bash
 ```
 
-通过代理：
+---
+
+### 基础环境
+
+#### Shell 环境 (`setup-shell.sh`)
+
+安装 zsh、Oh My Zsh、插件（autosuggestions、syntax-highlighting、z）、Starship 提示符及 Catppuccin Powerline 主题。需要 `sudo`。
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
+curl -fsSL .../setup-shell.sh | bash
 ```
 
-### `setup-clash.sh` — Clash 代理
+#### Clash 代理 (`setup-clash.sh`)
 
 安装 [clash-for-linux](https://github.com/nelvko/clash-for-linux-install)，支持传入订阅链接。
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://你的订阅链接'
+# 传入订阅链接
+curl -fsSL .../setup-clash.sh | bash -s -- 'https://你的订阅链接'
+
+# 或通过环境变量
+export CLASH_SUB_URL='https://你的订阅链接'
+curl -fsSL .../setup-clash.sh | bash
 ```
 
-通过代理：
+配置项：`CLASH_SUB_URL`、`CLASH_KERNEL`、`CLASH_GH_PROXY` — 详见[配置速查表](#配置速查表)。
+
+#### Docker (`setup-docker.sh`)
+
+安装 [Docker Engine](https://docs.docker.com/engine/install/)、Compose 插件，配置镜像加速、日志轮转、地址池和可选代理。需要 `sudo`。
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://你的订阅链接'
+# 默认配置（内置国内镜像源）
+curl -fsSL .../setup-docker.sh | bash
+
+# 自定义配置
+export DOCKER_MIRROR=https://mirror.example.com
+export DOCKER_DATA_ROOT=/data/docker
+export DOCKER_PROXY=http://localhost:7890
+curl -fsSL .../setup-docker.sh | bash
 ```
+
+配置项：`DOCKER_MIRROR`、`DOCKER_PROXY`、`DOCKER_DATA_ROOT`、`DOCKER_LOG_SIZE` 等 — 详见[配置速查表](#配置速查表)。
+
+---
+
+### 语言环境
+
+#### Node.js (`setup-node.sh`)
+
+安装 [nvm](https://github.com/nvm-sh/nvm) 和 Node.js。
+
+```bash
+# 默认安装 Node.js 24
+curl -fsSL .../setup-node.sh | bash
+
+# 指定版本
+export NODE_VERSION=22
+curl -fsSL .../setup-node.sh | bash
+```
+
+#### uv + Python (`setup-uv.sh`)
+
+安装 [uv](https://docs.astral.sh/uv/) 包管理器，可选安装 Python 版本。
+
+```bash
+# 仅安装 uv
+curl -fsSL .../setup-uv.sh | bash
+
+# uv + Python
+export UV_PYTHON=3.12
+curl -fsSL .../setup-uv.sh | bash
+```
+
+---
+
+### AI 编码代理
+
+三个代理脚本共享相同的行为模式：
+
+- **有 API 密钥** → 安装工具 + 写入配置（已配置且一致则跳过）
+- **无 API 密钥** → 仅安装工具，稍后手动配置
+- **携带密钥重复运行** → 跳过安装，检查配置并按需更新
+
+#### Claude Code (`setup-claude-code.sh`)
+
+安装 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI。别名：`cc`。
+
+```bash
+# 安装 + 配置
+export CLAUDE_API_URL=https://你的API地址
+export CLAUDE_API_KEY=你的密钥
+curl -fsSL .../setup-claude-code.sh | bash
+
+# 只安装不配置（稍后配置）
+curl -fsSL .../setup-claude-code.sh | bash
+
+# 或通过命令行参数
+curl -fsSL .../setup-claude-code.sh | bash -s -- --api-url https://... --api-key ...
+```
+
+配置项：`CLAUDE_API_URL`、`CLAUDE_API_KEY`、`CLAUDE_MODEL`、`CLAUDE_NPM_MIRROR` — 详见[配置速查表](#配置速查表)。
+
+#### Codex CLI (`setup-codex.sh`)
+
+安装 [Codex CLI](https://github.com/openai/codex)。别名：`cx`。
+
+```bash
+export CODEX_API_URL=https://你的API地址
+export CODEX_API_KEY=你的密钥
+curl -fsSL .../setup-codex.sh | bash
+```
+
+配置项：`CODEX_API_URL`、`CODEX_API_KEY`、`CODEX_MODEL`、`CODEX_EFFORT`、`CODEX_NPM_MIRROR`。
+
+#### Gemini CLI (`setup-gemini.sh`)
+
+安装 [Gemini CLI](https://github.com/google-gemini/gemini-cli)。别名：`gm`。
+
+```bash
+export GEMINI_API_URL=https://你的API地址
+export GEMINI_API_KEY=你的密钥
+curl -fsSL .../setup-gemini.sh | bash
+```
+
+配置项：`GEMINI_API_URL`、`GEMINI_API_KEY`、`GEMINI_MODEL`、`GEMINI_NPM_MIRROR`。
+
+#### 代理技能 (`setup-skills.sh`)
+
+为所有编码代理全局安装常用 [agent skills](https://skills.sh/)。
+
+| 技能 | 来源 | 说明 |
+|------|------|------|
+| `find-skills` | [vercel-labs/skills](https://github.com/vercel-labs/skills) | 发现和安装代理技能 |
+| `pdf` | [anthropics/skills](https://github.com/anthropics/skills) | PDF 读取和处理 |
+| `gemini-cli-skill` | [X-Zero-L/gemini-cli-skill](https://github.com/X-Zero-L/gemini-cli-skill) | Gemini CLI 集成 |
+| `context7` | [intellectronica/agent-skills](https://github.com/intellectronica/agent-skills) | 库文档查询 |
+| `writing-plans` | [obra/superpowers](https://github.com/obra/superpowers) | 编写实现计划 |
+| `executing-plans` | [obra/superpowers](https://github.com/obra/superpowers) | 带检查点的计划执行 |
+| `codex` | [softaworks/agent-toolkit](https://github.com/softaworks/agent-toolkit) | Codex 代理技能 |
+
+```bash
+curl -fsSL .../setup-skills.sh | bash
+```
+
+配置项：`SKILLS_NPM_MIRROR`。
+
+## 配置速查表
+
+所有脚本的环境变量汇总。
+
+### 通用
+
+| 变量 | 作用域 | 默认值 | 说明 |
+|------|--------|--------|------|
+| `GH_PROXY` | `install.sh` | _（空）_ | GitHub 代理地址，用于加速脚本下载 |
+
+### Clash
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
@@ -83,215 +212,19 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 | `CLASH_KERNEL` | `mihomo` | 代理内核（`mihomo` 或 `clash`） |
 | `CLASH_GH_PROXY` | `https://gh-proxy.org` | GitHub 加速代理（设为空字符串可禁用） |
 
-### `setup-node.sh` — Node.js（通过 nvm）
-
-安装 [nvm](https://github.com/nvm-sh/nvm) 和 Node.js。
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
-```
-
-指定版本：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash -s -- 22
-```
-
-通过代理：
-
-```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
-```
+### Node.js
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
 | `NODE_VERSION` | `24` | Node.js 主版本号（也可作为第一个参数传入） |
 
-### `setup-uv.sh` — uv + Python
-
-安装 [uv](https://docs.astral.sh/uv/) 包管理器，可选安装 Python 版本。
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
-```
-
-同时安装 Python：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | UV_PYTHON=3.12 bash
-```
-
-通过代理：
-
-```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
-```
+### uv + Python
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
 | `UV_PYTHON` | _（空）_ | 要安装的 Python 版本（也可作为第一个参数传入） |
 
-### `setup-claude-code.sh` — Claude Code
-
-安装 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI 并配置 API。
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥 bash
-```
-
-通过代理：
-
-```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥 bash
-```
-
-通过参数：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash -s -- --api-url https://你的API地址 --api-key 你的密钥
-```
-
-提前配置环境变量：
-
-```bash
-export CLAUDE_API_URL=https://你的API地址
-export CLAUDE_API_KEY=你的密钥
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
-```
-
-只安装不配置（稍后配置）：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
-```
-
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `CLAUDE_API_URL` | _（可选）_ | API 基础地址（留空则只安装不配置） |
-| `CLAUDE_API_KEY` | _（可选）_ | 认证令牌（留空则只安装不配置） |
-| `CLAUDE_MODEL` | `opus` | 模型名称 |
-| `CLAUDE_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
-
-### `setup-codex.sh` — Codex CLI
-
-安装 [Codex CLI](https://github.com/openai/codex) 并配置 API。
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | CODEX_API_URL=https://你的API地址 CODEX_API_KEY=你的密钥 bash
-```
-
-通过代理：
-
-```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | CODEX_API_URL=https://你的API地址 CODEX_API_KEY=你的密钥 bash
-```
-
-通过参数：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash -s -- --api-url https://你的API地址 --api-key 你的密钥
-```
-
-提前配置环境变量：
-
-```bash
-export CODEX_API_URL=https://你的API地址
-export CODEX_API_KEY=你的密钥
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
-```
-
-只安装不配置（稍后配置）：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
-```
-
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `CODEX_API_URL` | _（可选）_ | API 基础地址（留空则只安装不配置） |
-| `CODEX_API_KEY` | _（可选）_ | API 密钥（留空则只安装不配置） |
-| `CODEX_MODEL` | `gpt-5.2` | 模型名称 |
-| `CODEX_EFFORT` | `xhigh` | 推理强度 |
-| `CODEX_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
-
-### `setup-gemini.sh` — Gemini CLI
-
-安装 [Gemini CLI](https://github.com/google-gemini/gemini-cli) 并配置 API。
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | GEMINI_API_URL=https://你的API地址 GEMINI_API_KEY=你的密钥 bash
-```
-
-通过代理：
-
-```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | GEMINI_API_URL=https://你的API地址 GEMINI_API_KEY=你的密钥 bash
-```
-
-通过参数：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash -s -- --api-url https://你的API地址 --api-key 你的密钥
-```
-
-提前配置环境变量：
-
-```bash
-export GEMINI_API_URL=https://你的API地址
-export GEMINI_API_KEY=你的密钥
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
-```
-
-只安装不配置（稍后配置）：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
-```
-
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `GEMINI_API_URL` | _（可选）_ | API 基础地址（留空则只安装不配置） |
-| `GEMINI_API_KEY` | _（可选）_ | API 密钥（留空则只安装不配置） |
-| `GEMINI_MODEL` | `gemini-3-pro-preview` | 模型名称 |
-| `GEMINI_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
-
-### `setup-docker.sh` — Docker
-
-安装 [Docker Engine](https://docs.docker.com/engine/install/)、Docker Compose 插件，配置镜像加速、日志轮转、地址池和可选代理。
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
-```
-
-通过代理：
-
-```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
-```
-
-自定义镜像：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | DOCKER_MIRROR=https://mirror.example.com bash
-```
-
-配置守护进程代理：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | DOCKER_PROXY=http://localhost:7890 bash
-```
-
-自定义数据目录：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | DOCKER_DATA_ROOT=/data/docker bash
-```
-
-通过参数：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash -s -- --mirror https://mirror.example.com --data-root /data/docker --log-size 50m --log-files 5
-```
+### Docker
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
@@ -305,97 +238,71 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-dock
 | `DOCKER_ADDR_POOLS` | `172.17.0.0/12:24,192.168.0.0/16:24` | 默认地址池（`base/cidr:size`，逗号分隔） |
 | `DOCKER_COMPOSE` | `1` | 安装 docker-compose-plugin（设为 `0` 跳过） |
 
-### `setup-skills.sh` — 代理技能
+### Claude Code
 
-为所有编码代理（Claude Code、Codex、Gemini CLI 等）全局安装常用 [agent skills](https://skills.sh/)。
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `CLAUDE_API_URL` | _（空）_ | API 基础地址（留空则只安装不配置） |
+| `CLAUDE_API_KEY` | _（空）_ | 认证令牌（留空则只安装不配置） |
+| `CLAUDE_MODEL` | `opus` | 模型名称 |
+| `CLAUDE_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
 
-包含的技能：
+### Codex CLI
 
-| 技能 | 来源 | 说明 |
-|------|------|------|
-| `find-skills` | [vercel-labs/skills](https://github.com/vercel-labs/skills) | 发现和安装代理技能 |
-| `pdf` | [anthropics/skills](https://github.com/anthropics/skills) | PDF 读取和处理 |
-| `gemini-cli-skill` | [X-Zero-L/gemini-cli-skill](https://github.com/X-Zero-L/gemini-cli-skill) | Gemini CLI 集成 |
-| `context7` | [intellectronica/agent-skills](https://github.com/intellectronica/agent-skills) | 库文档查询 |
-| `writing-plans` | [obra/superpowers](https://github.com/obra/superpowers) | 编写实现计划 |
-| `executing-plans` | [obra/superpowers](https://github.com/obra/superpowers) | 带检查点的计划执行 |
-| `codex` | [softaworks/agent-toolkit](https://github.com/softaworks/agent-toolkit) | Codex 代理技能 |
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `CODEX_API_URL` | _（空）_ | API 基础地址（留空则只安装不配置） |
+| `CODEX_API_KEY` | _（空）_ | API 密钥（留空则只安装不配置） |
+| `CODEX_MODEL` | `gpt-5.2` | 模型名称 |
+| `CODEX_EFFORT` | `xhigh` | 推理强度 |
+| `CODEX_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-skills.sh | bash
-```
+### Gemini CLI
 
-通过代理：
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `GEMINI_API_URL` | _（空）_ | API 基础地址（留空则只安装不配置） |
+| `GEMINI_API_KEY` | _（空）_ | API 密钥（留空则只安装不配置） |
+| `GEMINI_MODEL` | `gemini-3-pro-preview` | 模型名称 |
+| `GEMINI_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
 
-```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-skills.sh | bash
-```
+### 代理技能
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
 | `SKILLS_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
 
-## 完整安装
+## 从零开始
 
-> 建议顺序：代理 → shell → docker → uv → node → 编码代理 → 技能。
-
-**1. 代理**（后续下载更快）
+全新机器的完整配置流程。推荐顺序确保依赖关系正确。
 
 ```bash
+# ── 1. 代理（后续下载更快） ──
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://你的订阅链接'
-```
-
-```bash
 source ~/.bashrc && clashon
-```
 
-**2. Shell 环境**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
-```
-
-**3. Docker**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
-```
-
-**4. uv + Python**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | UV_PYTHON=3.12 bash
-```
-
-**5. Node.js**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
-```
-
-**6–8. 编码代理**（先配置环境变量，再安装）
-
-```bash
+# ── 2. 准备 API 密钥（可选 — 省略则只安装工具不配置） ──
 export CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥
 export CODEX_API_URL=https://你的API地址  CODEX_API_KEY=你的密钥
 export GEMINI_API_URL=https://你的API地址 GEMINI_API_KEY=你的密钥
 
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
+# ── 3. 一键安装 ──
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all
 ```
 
-> 省略任意一行 `export` 即可只安装对应工具而不配置 API（稍后手动配置）。
+或按以下顺序逐个安装：
 
-**9. 代理技能**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-skills.sh | bash
-```
+1. `setup-shell.sh` — Shell 环境（zsh、插件、Starship）
+2. `setup-docker.sh` — Docker Engine + Compose
+3. `setup-uv.sh` — uv + Python
+4. `setup-node.sh` — nvm + Node.js
+5. `setup-claude-code.sh` — Claude Code
+6. `setup-codex.sh` — Codex CLI
+7. `setup-gemini.sh` — Gemini CLI
+8. `setup-skills.sh` — 代理技能
 
 ## 注意事项
 
-- 所有脚本均支持**重复运行**，已安装的组件会自动跳过。
-- 需要 `sudo` 权限安装系统包。
 - Starship 需要终端支持 [Nerd Font](https://www.nerdfonts.com/) 才能正常显示图标。
 - 如果 `gh-proxy.org` 不可用，可到 [ghproxy.link](https://ghproxy.link/) 查找其他可用代理。
+- 携带不同的 API 密钥/配置重新运行脚本，会自动更新配置而不重复安装。
