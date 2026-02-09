@@ -128,15 +128,17 @@ if pools_raw:
     pools = []
     for entry in pools_raw.split(','):
         entry = entry.strip()
-        if ':' in entry:
-            # Split on last colon to handle IPv4 CIDR like 172.17.0.0/12:24
-            idx = entry.rfind(':')
-            base = entry[:idx]
-            try:
-                size = int(entry[idx+1:])
-            except ValueError:
-                continue
-            pools.append({'base': base, 'size': size})
+        if not entry:
+            continue
+        idx = entry.rfind(':')
+        if idx == -1:
+            continue
+        base = entry[:idx]
+        try:
+            size = int(entry[idx+1:])
+        except ValueError:
+            continue
+        pools.append({'base': base, 'size': size})
     if pools:
         data['default-address-pools'] = pools
 
