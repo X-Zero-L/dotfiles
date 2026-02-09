@@ -1,5 +1,7 @@
 # Documentation
 
+[中文](zh/README.md)
+
 Detailed documentation for each setup script. For quick start, see the [main README](../README.md).
 
 ## Scripts

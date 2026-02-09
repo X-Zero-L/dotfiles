@@ -1,5 +1,7 @@
 # 文档
 
+[English](../README.md)
+
 每个脚本的详细文档。快速上手请查看[主 README](../../README_CN.md)。
 
 ## 脚本列表

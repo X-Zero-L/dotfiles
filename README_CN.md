@@ -468,7 +468,7 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh
 
 ## 详细文档
 
-查看 [docs/](docs/) 目录获取每个脚本的详细文档 — 安装内容、创建/修改的文件、重复运行行为等。
+查看 [docs/zh/](docs/zh/) 目录获取每个脚本的详细文档 — 安装内容、创建/修改的文件、重复运行行为等。
 
 ## 注意事项
 
