@@ -50,14 +50,14 @@ if ! command -v node &>/dev/null; then
 fi
 
 # Install Claude Code
-echo "[1/3] Installing Claude Code..."
+echo "[1/4] Installing Claude Code..."
 if command -v claude &>/dev/null; then
     echo "  Claude Code already installed, upgrading..."
 fi
 npm install -g @anthropic-ai/claude-code --registry="$CLAUDE_NPM_MIRROR"
 
 # Skip onboarding
-echo "[2/3] Configuring onboarding..."
+echo "[2/4] Configuring onboarding..."
 CLAUDE_JSON="$HOME/.claude.json"
 node -e "
 const fs = require('fs');
@@ -69,7 +69,7 @@ fs.writeFileSync('$CLAUDE_JSON', JSON.stringify(data, null, 2));
 "
 
 # Write settings
-echo "[3/3] Writing settings..."
+echo "[3/4] Writing settings..."
 CLAUDE_SETTINGS_DIR="$HOME/.claude"
 mkdir -p "$CLAUDE_SETTINGS_DIR"
 CLAUDE_SETTINGS="$CLAUDE_SETTINGS_DIR/settings.json"
@@ -91,9 +91,19 @@ settings.model = process.argv[3];
 fs.writeFileSync('$CLAUDE_SETTINGS', JSON.stringify(settings, null, 2));
 " "$CLAUDE_API_URL" "$CLAUDE_API_KEY" "$CLAUDE_MODEL"
 
+# Add alias cc='claude --dangerously-skip-permissions' to shell rc
+echo "[4/4] Adding alias..."
+ALIAS_LINE="alias cc='claude --dangerously-skip-permissions'"
+for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
+    if [ -f "$rc" ] && ! grep -qF "$ALIAS_LINE" "$rc"; then
+        echo "" >> "$rc"
+        echo "$ALIAS_LINE" >> "$rc"
+    fi
+done
+
 echo ""
 echo "=== Done! ==="
 echo "Claude Code: $(claude --version 2>/dev/null || echo 'installed')"
 echo "Model:       $CLAUDE_MODEL"
 echo "API URL:     $CLAUDE_API_URL"
-echo "Run 'claude' to start."
+echo "Run 'claude' to start, or 'cc' to skip permissions."
