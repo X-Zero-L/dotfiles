@@ -10,7 +10,7 @@ set -euo pipefail
 #   CLAUDE_API_URL    - API base URL (optional, skip config if empty)
 #   CLAUDE_API_KEY    - Auth token (optional, skip config if empty)
 #   CLAUDE_MODEL      - Model name (default: opus)
-#   CLAUDE_NPM_MIRROR - npm registry mirror (default: https://registry.npmmirror.com)
+#   CLAUDE_NPM_MIRROR - npm registry mirror (auto-set when GH_PROXY is set)
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -25,7 +25,9 @@ done
 CLAUDE_API_URL="${CLAUDE_API_URL:-}"
 CLAUDE_API_KEY="${CLAUDE_API_KEY:-}"
 CLAUDE_MODEL="${CLAUDE_MODEL:-opus}"
-CLAUDE_NPM_MIRROR="${CLAUDE_NPM_MIRROR:-https://registry.npmmirror.com}"
+GH_PROXY="${GH_PROXY:-}"
+CLAUDE_NPM_MIRROR="${CLAUDE_NPM_MIRROR:-}"
+[[ -n "$GH_PROXY" && -z "$CLAUDE_NPM_MIRROR" ]] && CLAUDE_NPM_MIRROR="https://registry.npmmirror.com"
 
 HAS_KEYS=0
 if [ -n "$CLAUDE_API_URL" ] && [ -n "$CLAUDE_API_KEY" ]; then
@@ -51,7 +53,7 @@ echo "[1/4] Installing Claude Code..."
 if command -v claude &>/dev/null; then
     echo "  Already installed, skipping."
 else
-    npm install -g @anthropic-ai/claude-code --registry="$CLAUDE_NPM_MIRROR"
+    npm install -g @anthropic-ai/claude-code ${CLAUDE_NPM_MIRROR:+--registry="$CLAUDE_NPM_MIRROR"}
 fi
 
 # [2] Skip onboarding

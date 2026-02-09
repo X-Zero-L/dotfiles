@@ -11,7 +11,7 @@ set -euo pipefail
 #   CODEX_API_KEY     - API key (optional, skip config if empty)
 #   CODEX_MODEL       - Model name (default: gpt-5.2)
 #   CODEX_EFFORT      - Reasoning effort (default: xhigh)
-#   CODEX_NPM_MIRROR  - npm registry mirror (default: https://registry.npmmirror.com)
+#   CODEX_NPM_MIRROR  - npm registry mirror (auto-set when GH_PROXY is set)
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -28,7 +28,9 @@ CODEX_API_URL="${CODEX_API_URL:-}"
 CODEX_API_KEY="${CODEX_API_KEY:-}"
 CODEX_MODEL="${CODEX_MODEL:-gpt-5.2}"
 CODEX_EFFORT="${CODEX_EFFORT:-xhigh}"
-CODEX_NPM_MIRROR="${CODEX_NPM_MIRROR:-https://registry.npmmirror.com}"
+GH_PROXY="${GH_PROXY:-}"
+CODEX_NPM_MIRROR="${CODEX_NPM_MIRROR:-}"
+[[ -n "$GH_PROXY" && -z "$CODEX_NPM_MIRROR" ]] && CODEX_NPM_MIRROR="https://registry.npmmirror.com"
 CODEX_PROVIDER="ellyecode"
 
 HAS_KEYS=0
@@ -55,7 +57,7 @@ echo "[1/4] Installing Codex CLI..."
 if command -v codex &>/dev/null; then
     echo "  Already installed, skipping."
 else
-    npm install -g @openai/codex --registry="$CODEX_NPM_MIRROR"
+    npm install -g @openai/codex ${CODEX_NPM_MIRROR:+--registry="$CODEX_NPM_MIRROR"}
 fi
 
 # Write config and auth (only if API keys provided)

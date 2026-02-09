@@ -6,9 +6,11 @@ set -euo pipefail
 #   SKILLS_NPM_MIRROR=https://registry.npmmirror.com ./setup-skills.sh
 #
 # Environment variables:
-#   SKILLS_NPM_MIRROR - npm registry mirror (default: https://registry.npmmirror.com)
+#   SKILLS_NPM_MIRROR - npm registry mirror (auto-set when GH_PROXY is set)
 
-SKILLS_NPM_MIRROR="${SKILLS_NPM_MIRROR:-https://registry.npmmirror.com}"
+GH_PROXY="${GH_PROXY:-}"
+SKILLS_NPM_MIRROR="${SKILLS_NPM_MIRROR:-}"
+[[ -n "$GH_PROXY" && -z "$SKILLS_NPM_MIRROR" ]] && SKILLS_NPM_MIRROR="https://registry.npmmirror.com"
 
 echo "=== Agent Skills Setup ==="
 
@@ -51,7 +53,7 @@ for entry in "${SKILLS[@]}"; do
     echo "[$CURRENT/$TOTAL] $repo"
 
     # shellcheck disable=SC2086
-    if npx --registry="$SKILLS_NPM_MIRROR" skills add $entry "${FLAGS[@]}"; then
+    if npx ${SKILLS_NPM_MIRROR:+--registry="$SKILLS_NPM_MIRROR"} skills add $entry "${FLAGS[@]}"; then
         SUCCEEDED=$((SUCCEEDED + 1))
     else
         echo "  Warning: failed to install $repo, continuing..."

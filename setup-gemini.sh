@@ -10,7 +10,7 @@ set -euo pipefail
 #   GEMINI_API_URL    - API base URL (optional, skip config if empty)
 #   GEMINI_API_KEY    - API key (optional, skip config if empty)
 #   GEMINI_MODEL      - Model name (default: gemini-3-pro-preview)
-#   GEMINI_NPM_MIRROR - npm registry mirror (default: https://registry.npmmirror.com)
+#   GEMINI_NPM_MIRROR - npm registry mirror (auto-set when GH_PROXY is set)
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -25,7 +25,9 @@ done
 GEMINI_API_URL="${GEMINI_API_URL:-}"
 GEMINI_API_KEY="${GEMINI_API_KEY:-}"
 GEMINI_MODEL="${GEMINI_MODEL:-gemini-3-pro-preview}"
-GEMINI_NPM_MIRROR="${GEMINI_NPM_MIRROR:-https://registry.npmmirror.com}"
+GH_PROXY="${GH_PROXY:-}"
+GEMINI_NPM_MIRROR="${GEMINI_NPM_MIRROR:-}"
+[[ -n "$GH_PROXY" && -z "$GEMINI_NPM_MIRROR" ]] && GEMINI_NPM_MIRROR="https://registry.npmmirror.com"
 
 HAS_KEYS=0
 if [ -n "$GEMINI_API_URL" ] && [ -n "$GEMINI_API_KEY" ]; then
@@ -51,7 +53,7 @@ echo "[1/3] Installing Gemini CLI..."
 if command -v gemini &>/dev/null; then
     echo "  Already installed, skipping."
 else
-    npm install -g @google/gemini-cli --registry="$GEMINI_NPM_MIRROR"
+    npm install -g @google/gemini-cli ${GEMINI_NPM_MIRROR:+--registry="$GEMINI_NPM_MIRROR"}
 fi
 
 # Write .env (only if API keys provided)
