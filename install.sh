@@ -136,18 +136,20 @@ SUDO_KEEPALIVE_PID=""
 
 cleanup() {
     [[ "$CURSOR_HIDDEN" -eq 1 ]] && printf '\033[?25h' 2>/dev/null
+    [[ -n "${SPINNER_PID:-}" ]] && kill "$SPINNER_PID" 2>/dev/null || true
     [[ -n "${SUDO_KEEPALIVE_PID:-}" ]] && kill "$SUDO_KEEPALIVE_PID" 2>/dev/null || true
     [[ -n "${TMPDIR_INSTALL:-}" && -d "${TMPDIR_INSTALL:-}" ]] && rm -rf "$TMPDIR_INSTALL"
 }
 trap cleanup EXIT INT TERM
 
-# Spinner animation while a background process runs
-# Usage: spinner PID "message"
-spinner() {
-    local pid=$1
-    local msg="$2"
+# Spinner animation (runs in background, caller must kill it)
+# Usage: start_spinner "message"  →  SPINNER_PID is set
+#        stop_spinner
+SPINNER_PID=""
+
+start_spinner() {
+    local msg="$1"
     local frames=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
-    local i=0
 
     # Fallback for non-unicode terminals
     if [[ -z "$BOLD" ]]; then
@@ -155,11 +157,23 @@ spinner() {
     fi
 
     printf "${HIDE_CURSOR}" 2>/dev/null
-    while kill -0 "$pid" 2>/dev/null; do
-        printf "\r  ${CYAN}%s${NC} ${DIM}%s${NC}  " "${frames[$i]}" "$msg"
-        i=$(( (i + 1) % ${#frames[@]} ))
-        sleep 0.1
-    done
+    (
+        local i=0
+        while true; do
+            printf "\r  ${CYAN}%s${NC} ${DIM}%s${NC}  " "${frames[$i]}" "$msg"
+            i=$(( (i + 1) % ${#frames[@]} ))
+            sleep 0.1
+        done
+    ) &
+    SPINNER_PID=$!
+}
+
+stop_spinner() {
+    if [[ -n "${SPINNER_PID:-}" ]]; then
+        kill "$SPINNER_PID" 2>/dev/null
+        wait "$SPINNER_PID" 2>/dev/null || true
+        SPINNER_PID=""
+    fi
     printf "\r${CLEAR_LINE}"
     printf "${SHOW_CURSOR}" 2>/dev/null
 }
@@ -640,6 +654,12 @@ run_component() {
         export CLASH_GH_PROXY="$GH_PROXY"
     fi
 
+    # Check script exists
+    if [[ ! -f "$script_path" ]]; then
+        printf "  ${SYM_CROSS} ${BOLD}${CYAN}[%d/%d]${NC} ${RED}%s${NC} ${DIM}(script not found)${NC}\n" "$step" "$total" "${COMP_NAMES[$idx]}"
+        return 1
+    fi
+
     if [[ "$VERBOSE" -eq 1 ]]; then
         # Verbose: show raw output
         printf "\n"
@@ -656,13 +676,15 @@ run_component() {
             return 1
         fi
     else
-        # Clean mode: spinner + log file
-        bash "$script_path" > "$comp_log" 2>&1 &
-        local pid=$!
+        # Clean mode: script in foreground, spinner in background
+        start_spinner "Installing ${COMP_NAMES[$idx]}..."
 
-        spinner "$pid" "Installing ${COMP_NAMES[$idx]}..."
+        bash "$script_path" > "$comp_log" 2>&1
+        local result=$?
 
-        if wait "$pid"; then
+        stop_spinner
+
+        if [[ $result -eq 0 ]]; then
             printf "  ${SYM_CHECK} ${BOLD}${CYAN}[%d/%d]${NC} %s\n" "$step" "$total" "${COMP_NAMES[$idx]}"
             return 0
         else
