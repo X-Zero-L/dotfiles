@@ -209,9 +209,39 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-dock
 | `DOCKER_NO_PROXY` | `localhost,127.0.0.0/8` | No-proxy list for daemon |
 | `DOCKER_COMPOSE` | `1` | Install docker-compose-plugin (`0` to skip) |
 
+### `setup-skills.sh` — Agent Skills
+
+Installs common [agent skills](https://skills.sh/) globally for all coding agents (Claude Code, Codex, Gemini CLI, etc.).
+
+Included skills:
+
+| Skill | Source | Description |
+|-------|--------|-------------|
+| `find-skills` | [vercel-labs/skills](https://github.com/vercel-labs/skills) | Discover and install agent skills |
+| `pdf` | [anthropics/skills](https://github.com/anthropics/skills) | PDF reading and manipulation |
+| `gemini-cli-skill` | [X-Zero-L/gemini-cli-skill](https://github.com/X-Zero-L/gemini-cli-skill) | Gemini CLI integration |
+| `context7` | [intellectronica/agent-skills](https://github.com/intellectronica/agent-skills) | Library documentation lookup |
+| `writing-plans` | [obra/superpowers](https://github.com/obra/superpowers) | Implementation plan writing |
+| `executing-plans` | [obra/superpowers](https://github.com/obra/superpowers) | Plan execution with checkpoints |
+| `codex` | [softaworks/agent-toolkit](https://github.com/softaworks/agent-toolkit) | Codex agent skill |
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-skills.sh | bash
+```
+
+Via proxy:
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-skills.sh | bash
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SKILLS_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror |
+
 ## Full Setup
 
-> Recommended order: proxy → shell → docker → uv → node → coding agents.
+> Recommended order: proxy → shell → docker → uv → node → coding agents → skills.
 
 **1. Proxy** (so subsequent downloads are faster)
 
@@ -263,6 +293,12 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-code
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | GEMINI_API_URL=https://your-api-url GEMINI_API_KEY=your-key bash
+```
+
+**9. Agent Skills**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-skills.sh | bash
 ```
 
 ## Notes

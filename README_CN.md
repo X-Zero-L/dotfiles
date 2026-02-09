@@ -209,9 +209,39 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-dock
 | `DOCKER_NO_PROXY` | `localhost,127.0.0.0/8` | 不走代理的地址列表 |
 | `DOCKER_COMPOSE` | `1` | 安装 docker-compose-plugin（设为 `0` 跳过） |
 
+### `setup-skills.sh` — 代理技能
+
+为所有编码代理（Claude Code、Codex、Gemini CLI 等）全局安装常用 [agent skills](https://skills.sh/)。
+
+包含的技能：
+
+| 技能 | 来源 | 说明 |
+|------|------|------|
+| `find-skills` | [vercel-labs/skills](https://github.com/vercel-labs/skills) | 发现和安装代理技能 |
+| `pdf` | [anthropics/skills](https://github.com/anthropics/skills) | PDF 读取和处理 |
+| `gemini-cli-skill` | [X-Zero-L/gemini-cli-skill](https://github.com/X-Zero-L/gemini-cli-skill) | Gemini CLI 集成 |
+| `context7` | [intellectronica/agent-skills](https://github.com/intellectronica/agent-skills) | 库文档查询 |
+| `writing-plans` | [obra/superpowers](https://github.com/obra/superpowers) | 编写实现计划 |
+| `executing-plans` | [obra/superpowers](https://github.com/obra/superpowers) | 带检查点的计划执行 |
+| `codex` | [softaworks/agent-toolkit](https://github.com/softaworks/agent-toolkit) | Codex 代理技能 |
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-skills.sh | bash
+```
+
+通过代理：
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-skills.sh | bash
+```
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `SKILLS_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
+
 ## 完整安装
 
-> 建议顺序：代理 → shell → docker → uv → node → 编码代理。
+> 建议顺序：代理 → shell → docker → uv → node → 编码代理 → 技能。
 
 **1. 代理**（后续下载更快）
 
@@ -263,6 +293,12 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-code
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | GEMINI_API_URL=https://你的API地址 GEMINI_API_KEY=你的密钥 bash
+```
+
+**9. 代理技能**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-skills.sh | bash
 ```
 
 ## 注意事项
