@@ -52,7 +52,7 @@ API 密钥通过环境变量（`_CLAUDE_URL`、`_CLAUDE_KEY`、`_CLAUDE_MODEL`�
 | `CLAUDE_API_URL` | _（空）_ | API 基础地址（留空则只安装不配置） |
 | `CLAUDE_API_KEY` | _（空）_ | 认证令牌（留空则只安装不配置） |
 | `CLAUDE_MODEL` | `opus` | 模型名称 |
-| `CLAUDE_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
+| `CLAUDE_NPM_MIRROR` | _（空）_ | npm 镜像源。设置 `GH_PROXY` 时自动启用。 |
 
 ## 重复运行行为
 

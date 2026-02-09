@@ -457,7 +457,7 @@ All environment variables across all scripts in one table.
 | `CLAUDE_API_URL` | _(empty)_ | API base URL (skip config if empty) |
 | `CLAUDE_API_KEY` | _(empty)_ | Auth token (skip config if empty) |
 | `CLAUDE_MODEL` | `opus` | Model name |
-| `CLAUDE_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror |
+| `CLAUDE_NPM_MIRROR` | _(empty)_ | npm registry mirror. Auto-set when `GH_PROXY` is set. |
 
 ### Codex CLI
 
@@ -467,7 +467,7 @@ All environment variables across all scripts in one table.
 | `CODEX_API_KEY` | _(empty)_ | API key (skip config if empty) |
 | `CODEX_MODEL` | `gpt-5.2` | Model name |
 | `CODEX_EFFORT` | `xhigh` | Reasoning effort |
-| `CODEX_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror |
+| `CODEX_NPM_MIRROR` | _(empty)_ | npm registry mirror. Auto-set when `GH_PROXY` is set. |
 
 ### Gemini CLI
 
@@ -476,13 +476,13 @@ All environment variables across all scripts in one table.
 | `GEMINI_API_URL` | _(empty)_ | API base URL (skip config if empty) |
 | `GEMINI_API_KEY` | _(empty)_ | API key (skip config if empty) |
 | `GEMINI_MODEL` | `gemini-3-pro-preview` | Model name |
-| `GEMINI_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror |
+| `GEMINI_NPM_MIRROR` | _(empty)_ | npm registry mirror. Auto-set when `GH_PROXY` is set. |
 
 ### Agent Skills
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `SKILLS_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror |
+| `SKILLS_NPM_MIRROR` | _(empty)_ | npm registry mirror. Auto-set when `GH_PROXY` is set. |
 
 ## Bootstrap Guide
 

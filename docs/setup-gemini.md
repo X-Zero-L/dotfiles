@@ -43,7 +43,7 @@ GEMINI_MODEL=gemini-3-pro-preview
 | `GEMINI_API_URL` | _(empty)_ | API base URL (skip config if empty) |
 | `GEMINI_API_KEY` | _(empty)_ | API key (skip config if empty) |
 | `GEMINI_MODEL` | `gemini-3-pro-preview` | Model name |
-| `GEMINI_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror |
+| `GEMINI_NPM_MIRROR` | _(empty)_ | npm registry mirror. Auto-set when `GH_PROXY` is set. |
 
 ## Re-run Behavior
 

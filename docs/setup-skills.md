@@ -37,7 +37,7 @@ Skills are installed to the global skills directory managed by the `skills` CLI.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `SKILLS_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror for npx |
+| `SKILLS_NPM_MIRROR` | _(empty)_ | npm registry mirror for npx. Auto-set when `GH_PROXY` is set. |
 
 ## Re-run Behavior
 

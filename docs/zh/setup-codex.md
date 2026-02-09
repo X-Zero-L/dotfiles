@@ -68,7 +68,7 @@ wire_api = "responses"
 | `CODEX_API_KEY` | _（空）_ | API 密钥（留空则只安装不配置） |
 | `CODEX_MODEL` | `gpt-5.2` | 模型名称 |
 | `CODEX_EFFORT` | `xhigh` | 推理强度 |
-| `CODEX_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
+| `CODEX_NPM_MIRROR` | _（空）_ | npm 镜像源。设置 `GH_PROXY` 时自动启用。 |
 
 ## 重复运行行为
 

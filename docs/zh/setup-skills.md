@@ -37,7 +37,7 @@ npx --registry="$SKILLS_NPM_MIRROR" skills add <repo> [--skill <name>] -g -a '*'
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `SKILLS_NPM_MIRROR` | `https://registry.npmmirror.com` | npx 使用的 npm 镜像源 |
+| `SKILLS_NPM_MIRROR` | _（空）_ | npx 使用的 npm 镜像源。设置 `GH_PROXY` 时自动启用。 |
 
 ## 重复运行行为
 

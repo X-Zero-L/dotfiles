@@ -415,6 +415,8 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
 | `NODE_VERSION` | `24` | Node.js 主版本号（也可作为第一个参数传入） |
+| `NVM_NODEJS_ORG_MIRROR` | _（空）_ | Node.js 二进制下载镜像。设置 `GH_PROXY` 时自动启用。 |
+| `NPM_REGISTRY` | _（空）_ | npm registry 地址。设置 `GH_PROXY` 时自动启用。 |
 
 ### uv + Python
 
@@ -455,7 +457,7 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 | `CLAUDE_API_URL` | _（空）_ | API 基础地址（留空则只安装不配置） |
 | `CLAUDE_API_KEY` | _（空）_ | 认证令牌（留空则只安装不配置） |
 | `CLAUDE_MODEL` | `opus` | 模型名称 |
-| `CLAUDE_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
+| `CLAUDE_NPM_MIRROR` | _（空）_ | npm 镜像源。设置 `GH_PROXY` 时自动启用。 |
 
 ### Codex CLI
 
@@ -465,7 +467,7 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 | `CODEX_API_KEY` | _（空）_ | API 密钥（留空则只安装不配置） |
 | `CODEX_MODEL` | `gpt-5.2` | 模型名称 |
 | `CODEX_EFFORT` | `xhigh` | 推理强度 |
-| `CODEX_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
+| `CODEX_NPM_MIRROR` | _（空）_ | npm 镜像源。设置 `GH_PROXY` 时自动启用。 |
 
 ### Gemini CLI
 
@@ -474,13 +476,13 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 | `GEMINI_API_URL` | _（空）_ | API 基础地址（留空则只安装不配置） |
 | `GEMINI_API_KEY` | _（空）_ | API 密钥（留空则只安装不配置） |
 | `GEMINI_MODEL` | `gemini-3-pro-preview` | 模型名称 |
-| `GEMINI_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
+| `GEMINI_NPM_MIRROR` | _（空）_ | npm 镜像源。设置 `GH_PROXY` 时自动启用。 |
 
 ### 代理技能
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `SKILLS_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
+| `SKILLS_NPM_MIRROR` | _（空）_ | npm 镜像源。设置 `GH_PROXY` 时自动启用。 |
 
 ## 从零开始
 

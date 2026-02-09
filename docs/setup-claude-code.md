@@ -52,7 +52,7 @@ API keys are passed to the Node.js config writer via environment variables (`_CL
 | `CLAUDE_API_URL` | _(empty)_ | API base URL (skip config if empty) |
 | `CLAUDE_API_KEY` | _(empty)_ | Auth token (skip config if empty) |
 | `CLAUDE_MODEL` | `opus` | Model name |
-| `CLAUDE_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror |
+| `CLAUDE_NPM_MIRROR` | _(empty)_ | npm registry mirror. Auto-set when `GH_PROXY` is set. |
 
 ## Re-run Behavior
 

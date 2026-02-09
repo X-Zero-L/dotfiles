@@ -43,7 +43,7 @@ GEMINI_MODEL=gemini-3-pro-preview
 | `GEMINI_API_URL` | _（空）_ | API 基础地址（留空则只安装不配置） |
 | `GEMINI_API_KEY` | _（空）_ | API 密钥（留空则只安装不配置） |
 | `GEMINI_MODEL` | `gemini-3-pro-preview` | 模型名称 |
-| `GEMINI_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
+| `GEMINI_NPM_MIRROR` | _（空）_ | npm 镜像源。设置 `GH_PROXY` 时自动启用。 |
 
 ## 重复运行行为
 

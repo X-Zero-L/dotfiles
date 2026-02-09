@@ -68,7 +68,7 @@ wire_api = "responses"
 | `CODEX_API_KEY` | _(empty)_ | API key (skip config if empty) |
 | `CODEX_MODEL` | `gpt-5.2` | Model name |
 | `CODEX_EFFORT` | `xhigh` | Reasoning effort |
-| `CODEX_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror |
+| `CODEX_NPM_MIRROR` | _(empty)_ | npm registry mirror. Auto-set when `GH_PROXY` is set. |
 
 ## Re-run Behavior
 
