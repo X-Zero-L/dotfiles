@@ -40,12 +40,11 @@ sed -i '/^_valid_config/d; /^_quit/d' install.sh
 
 bash install.sh "$CLASH_KERNEL"
 
-# Add subscription after installation
+# Add subscription after installation in a clean bash subprocess,
+# since clashctl.sh has unbound variables incompatible with set -u.
 if [ -n "$CLASH_SUB_URL" ]; then
     CLASHCTL="$HOME/clashctl/scripts/cmd/clashctl.sh"
     if [ -f "$CLASHCTL" ]; then
-        set +eu
-        . "$CLASHCTL"
-        clashsub add "$CLASH_SUB_URL"
+        bash -c '. "$0" && clashsub add "$1"' "$CLASHCTL" "$CLASH_SUB_URL"
     fi
 fi
