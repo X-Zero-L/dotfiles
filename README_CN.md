@@ -143,9 +143,36 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-code
 | `CODEX_EFFORT` | `xhigh` | 推理强度 |
 | `CODEX_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
 
+### `setup-gemini.sh` — Gemini CLI
+
+安装 [Gemini CLI](https://github.com/google-gemini/gemini-cli) 并配置 API。
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | GEMINI_API_URL=https://你的API地址 GEMINI_API_KEY=你的密钥 bash
+```
+
+通过代理：
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | GEMINI_API_URL=https://你的API地址 GEMINI_API_KEY=你的密钥 bash
+```
+
+通过参数：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash -s -- --api-url https://你的API地址 --api-key 你的密钥
+```
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `GEMINI_API_URL` | _（必填）_ | API 基础地址 |
+| `GEMINI_API_KEY` | _（必填）_ | API 密钥 |
+| `GEMINI_MODEL` | `gemini-3-pro-preview` | 模型名称 |
+| `GEMINI_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
+
 ## 完整安装
 
-> 建议顺序：代理 → shell → uv → node → claude code / codex。
+> 建议顺序：代理 → shell → uv → node → 编码代理。
 
 **1. 代理**（后续下载更快）
 
@@ -185,6 +212,12 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clau
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | CODEX_API_URL=https://你的API地址 CODEX_API_KEY=你的密钥 bash
+```
+
+**7. Gemini CLI**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | GEMINI_API_URL=https://你的API地址 GEMINI_API_KEY=你的密钥 bash
 ```
 
 ## 注意事项

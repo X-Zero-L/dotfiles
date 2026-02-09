@@ -143,9 +143,36 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-code
 | `CODEX_EFFORT` | `xhigh` | Reasoning effort |
 | `CODEX_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror |
 
+### `setup-gemini.sh` — Gemini CLI
+
+Installs [Gemini CLI](https://github.com/google-gemini/gemini-cli) and configures API settings.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | GEMINI_API_URL=https://your-api-url GEMINI_API_KEY=your-key bash
+```
+
+Via proxy:
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | GEMINI_API_URL=https://your-api-url GEMINI_API_KEY=your-key bash
+```
+
+With arguments:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash -s -- --api-url https://your-api-url --api-key your-key
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GEMINI_API_URL` | _(required)_ | API base URL |
+| `GEMINI_API_KEY` | _(required)_ | API key |
+| `GEMINI_MODEL` | `gemini-3-pro-preview` | Model name |
+| `GEMINI_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror |
+
 ## Full Setup
 
-> Recommended order: proxy → shell → uv → node → claude code / codex.
+> Recommended order: proxy → shell → uv → node → coding agents.
 
 **1. Proxy** (so subsequent downloads are faster)
 
@@ -185,6 +212,12 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clau
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | CODEX_API_URL=https://your-api-url CODEX_API_KEY=your-key bash
+```
+
+**7. Gemini CLI**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | GEMINI_API_URL=https://your-api-url GEMINI_API_KEY=your-key bash
 ```
 
 ## Notes
