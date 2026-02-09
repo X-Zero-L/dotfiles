@@ -12,15 +12,17 @@ echo "=== Node.js Environment Setup ==="
 
 # Install nvm
 echo "[1/2] Installing nvm..."
-if [ -d "$HOME/.nvm" ]; then
+export NVM_DIR="$HOME/.nvm"
+if [ -f "$NVM_DIR/nvm.sh" ]; then
     echo "  nvm already installed, skipping."
 else
+    # Clean up partial install
+    [ -d "$NVM_DIR" ] && rm -rf "$NVM_DIR"
     _GH="github.com"
     curl -fsSL "https://${_GH}/nvm-sh/nvm/raw/HEAD/install.sh" | bash
 fi
 
 # Load nvm into current shell
-export NVM_DIR="$HOME/.nvm"
 # shellcheck disable=SC1091
 . "$NVM_DIR/nvm.sh"
 
