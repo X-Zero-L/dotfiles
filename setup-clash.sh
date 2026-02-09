@@ -44,6 +44,7 @@ bash install.sh "$CLASH_KERNEL"
 if [ -n "$CLASH_SUB_URL" ]; then
     CLASHCTL="$HOME/clashctl/scripts/cmd/clashctl.sh"
     if [ -f "$CLASHCTL" ]; then
+        set +eu
         . "$CLASHCTL"
         clashsub add "$CLASH_SUB_URL"
     fi
