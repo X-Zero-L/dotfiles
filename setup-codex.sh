@@ -54,14 +54,14 @@ if ! command -v node &>/dev/null; then
 fi
 
 # Install Codex
-echo "[1/3] Installing Codex CLI..."
+echo "[1/4] Installing Codex CLI..."
 if command -v codex &>/dev/null; then
     echo "  Codex already installed, upgrading..."
 fi
 npm install -g @openai/codex --registry="$CODEX_NPM_MIRROR"
 
 # Write config.toml
-echo "[2/3] Writing config..."
+echo "[2/4] Writing config..."
 CODEX_DIR="$HOME/.codex"
 mkdir -p "$CODEX_DIR"
 
@@ -80,7 +80,7 @@ wire_api = "responses"
 EOF
 
 # Write auth.json
-echo "[3/3] Writing auth..."
+echo "[3/4] Writing auth..."
 cat > "$CODEX_DIR/auth.json" << EOF
 {
   "OPENAI_API_KEY": "$CODEX_API_KEY"
@@ -88,9 +88,19 @@ cat > "$CODEX_DIR/auth.json" << EOF
 EOF
 chmod 600 "$CODEX_DIR/auth.json"
 
+# Add alias cx='codex --dangerously-bypass-approvals-and-sandbox'
+echo "[4/4] Adding alias..."
+ALIAS_LINE="alias cx='codex --dangerously-bypass-approvals-and-sandbox'"
+for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
+    if [ -f "$rc" ] && ! grep -qF "$ALIAS_LINE" "$rc"; then
+        echo "" >> "$rc"
+        echo "$ALIAS_LINE" >> "$rc"
+    fi
+done
+
 echo ""
 echo "=== Done! ==="
 echo "Codex: $(codex --version 2>/dev/null || echo 'installed')"
 echo "Model: $CODEX_MODEL"
 echo "API:   $CODEX_API_URL"
-echo "Run 'codex' to start."
+echo "Run 'codex' to start, or 'cx' to skip approvals."
