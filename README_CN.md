@@ -22,7 +22,7 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 安装 [clash-for-linux](https://github.com/nelvko/clash-for-linux-install)，支持传入订阅链接。
 
 ```bash
-./setup-clash.sh 'https://你的订阅链接'
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://你的订阅链接'
 
 # 通过代理
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://你的订阅链接'
@@ -39,8 +39,13 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 安装 [nvm](https://github.com/nvm-sh/nvm) 和 Node.js。
 
 ```bash
-./setup-node.sh        # 默认安装 Node.js 24
-./setup-node.sh 22     # 指定版本
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
+
+# 指定版本
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash -s -- 22
+
+# 通过代理
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
 ```
 
 | 变量 | 默认值 | 说明 |
@@ -52,10 +57,13 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 安装 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI 并配置 API。
 
 ```bash
-CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥 ./setup-claude-code.sh
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥 bash
+
+# 通过代理
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥 bash
 
 # 或通过参数
-./setup-claude-code.sh --api-url https://你的API地址 --api-key 你的密钥
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash -s -- --api-url https://你的API地址 --api-key 你的密钥
 ```
 
 | 变量 | 默认值 | 说明 |
@@ -70,22 +78,18 @@ CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥 ./setup-claud
 > 建议顺序：代理 → shell → node → claude code。
 
 ```bash
-# 克隆仓库（无法直连时使用代理）
-git clone https://gh-proxy.org/https://github.com/X-Zero-L/dotfiles.git
-cd dotfiles
-
 # 1. 先配代理（后续下载更快）
-./setup-clash.sh 'https://你的订阅链接'
-source ~/.zshrc && clashon
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://你的订阅链接'
+source ~/.bashrc && clashon
 
 # 2. Shell 环境
-./setup-shell.sh
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
 
 # 3. Node.js
-./setup-node.sh
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
 
 # 4. Claude Code
-CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥 ./setup-claude-code.sh
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥 bash
 ```
 
 ## 注意事项

@@ -22,7 +22,7 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 Installs [clash-for-linux](https://github.com/nelvko/clash-for-linux-install) with optional subscription URL.
 
 ```bash
-./setup-clash.sh 'https://your-subscription-url'
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
 
 # Via proxy
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
@@ -39,8 +39,13 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 Installs [nvm](https://github.com/nvm-sh/nvm) and Node.js.
 
 ```bash
-./setup-node.sh        # default: Node.js 24
-./setup-node.sh 22     # specific version
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
+
+# Specific version
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash -s -- 22
+
+# Via proxy
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
 ```
 
 | Variable | Default | Description |
@@ -52,10 +57,13 @@ Installs [nvm](https://github.com/nvm-sh/nvm) and Node.js.
 Installs [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI and configures API settings.
 
 ```bash
-CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key ./setup-claude-code.sh
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key bash
 
-# Or via arguments
-./setup-claude-code.sh --api-url https://your-api-url --api-key your-key
+# Via proxy
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key bash
+
+# Or with arguments
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash -s -- --api-url https://your-api-url --api-key your-key
 ```
 
 | Variable | Default | Description |
@@ -70,22 +78,18 @@ CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key ./setup-claude-code.
 > Recommended order: proxy → shell → node → claude code.
 
 ```bash
-# Clone (via proxy if needed)
-git clone https://gh-proxy.org/https://github.com/X-Zero-L/dotfiles.git
-cd dotfiles
-
 # 1. Proxy (so subsequent downloads are faster)
-./setup-clash.sh 'https://your-subscription-url'
-source ~/.zshrc && clashon
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
+source ~/.bashrc && clashon
 
 # 2. Shell environment
-./setup-shell.sh
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
 
 # 3. Node.js
-./setup-node.sh
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
 
 # 4. Claude Code
-CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key ./setup-claude-code.sh
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key bash
 ```
 
 ## Notes
