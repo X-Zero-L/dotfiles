@@ -39,6 +39,9 @@ SKILLS=(
 
 TOTAL=${#SKILLS[@]}
 CURRENT=0
+SUCCEEDED=0
+FAILED=0
+FAILED_NAMES=()
 
 for entry in "${SKILLS[@]}"; do
     CURRENT=$((CURRENT + 1))
@@ -48,13 +51,23 @@ for entry in "${SKILLS[@]}"; do
     echo "[$CURRENT/$TOTAL] $repo"
 
     # shellcheck disable=SC2086
-    npx --registry="$SKILLS_NPM_MIRROR" skills add $entry "${FLAGS[@]}" || {
+    if npx --registry="$SKILLS_NPM_MIRROR" skills add $entry "${FLAGS[@]}"; then
+        SUCCEEDED=$((SUCCEEDED + 1))
+    else
         echo "  Warning: failed to install $repo, continuing..."
-    }
+        FAILED=$((FAILED + 1))
+        FAILED_NAMES+=("$repo")
+    fi
 done
 
 echo ""
 echo "=== Done! ==="
-echo "Installed $TOTAL skill(s) globally for all agents."
+echo "Installed $SUCCEEDED/$TOTAL skill(s) globally for all agents."
+if [ "$FAILED" -gt 0 ]; then
+    echo "Failed ($FAILED):"
+    for name in "${FAILED_NAMES[@]}"; do
+        echo "  - $name"
+    done
+fi
 echo ""
 echo "Verify with: npx skills list -g"

@@ -13,7 +13,7 @@ echo "=== uv Setup ==="
 echo "[1/2] Installing uv..."
 if command -v uv &>/dev/null; then
     echo "  uv already installed, upgrading..."
-    uv self update
+    uv self update || echo "  Warning: uv self update failed, continuing with existing version."
 else
     curl -LsSf https://astral.sh/uv/install.sh | sh
 fi
