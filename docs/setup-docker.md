@@ -28,7 +28,6 @@ The generated `daemon.json` contains:
 
 ```json
 {
-  "registry-mirrors": ["https://docker.1ms.run"],
   "log-driver": "json-file",
   "log-opts": { "max-size": "20m", "max-file": "3" },
   "experimental": true,
@@ -52,7 +51,7 @@ The generated `daemon.json` contains:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DOCKER_MIRROR` | `https://docker.1ms.run` | Registry mirror URL(s), comma-separated |
+| `DOCKER_MIRROR` | _(empty)_ | Registry mirror URL(s), comma-separated. `install.sh` auto-sets to `https://docker.1ms.run` when `--gh-proxy` is used |
 | `DOCKER_PROXY` | _(empty)_ | HTTP/HTTPS proxy for daemon and containers |
 | `DOCKER_NO_PROXY` | `localhost,127.0.0.0/8` | No-proxy list |
 | `DOCKER_DATA_ROOT` | _(empty)_ | Data directory (default: `/var/lib/docker`) |

@@ -135,7 +135,7 @@ Config: `CLASH_SUB_URL`, `CLASH_KERNEL`, `CLASH_GH_PROXY` — see [Configuration
 
 Installs [Docker Engine](https://docs.docker.com/engine/install/), Compose plugin, configures registry mirrors, log rotation, address pools, and optional proxy. Requires `sudo`.
 
-Default (includes China mirror):
+Default (no mirror, suitable for overseas):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
@@ -382,7 +382,7 @@ All environment variables across all scripts in one table.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DOCKER_MIRROR` | `https://docker.1ms.run` | Registry mirror URL(s), comma-separated |
+| `DOCKER_MIRROR` | _(empty)_ | Registry mirror URL(s), comma-separated. Auto-set to `https://docker.1ms.run` when `--gh-proxy` is used in `install.sh` |
 | `DOCKER_PROXY` | _(empty)_ | HTTP/HTTPS proxy for daemon and containers |
 | `DOCKER_NO_PROXY` | `localhost,127.0.0.0/8` | No-proxy list |
 | `DOCKER_DATA_ROOT` | _(empty)_ | Data directory (default: `/var/lib/docker`) |

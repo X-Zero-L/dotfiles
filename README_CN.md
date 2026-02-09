@@ -135,7 +135,7 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 
 安装 [Docker Engine](https://docs.docker.com/engine/install/)、Compose 插件，配置镜像加速、日志轮转、地址池和可选代理。需要 `sudo`。
 
-默认配置（内置国内镜像源）：
+默认配置（不含镜像加速，海外机器直接用）：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
@@ -382,7 +382,7 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `DOCKER_MIRROR` | `https://docker.1ms.run` | 镜像加速地址，多个用逗号分隔 |
+| `DOCKER_MIRROR` | _（空）_ | 镜像加速地址，多个用逗号分隔。通过 `install.sh` 的 `--gh-proxy` 安装时自动设为 `https://docker.1ms.run` |
 | `DOCKER_PROXY` | _（空）_ | 守护进程和容器的 HTTP/HTTPS 代理 |
 | `DOCKER_NO_PROXY` | `localhost,127.0.0.0/8` | 不走代理的地址列表 |
 | `DOCKER_DATA_ROOT` | _（空）_ | Docker 数据存储目录（默认 `/var/lib/docker`） |
