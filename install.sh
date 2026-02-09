@@ -130,6 +130,9 @@ COMP_NEEDS_SUDO=(1 0 0 0 1 0 0 0 0)
 # Selection state
 COMP_SELECTED=(0 0 0 0 0 0 0 0 0)
 
+# Install-only mode: tool installed but API not configured (keys missing)
+COMP_INSTALL_ONLY=(0 0 0 0 0 0 0 0 0)
+
 # --- [D] Utility Functions ----------------------------------------------------
 
 SUDO_KEEPALIVE_PID=""
@@ -524,7 +527,11 @@ show_plan() {
             suffix+=" ${YELLOW}sudo${NC}"
         fi
         if [[ "${COMP_NEEDS_KEYS[$idx]}" -eq 1 ]]; then
-            suffix+=" ${MAGENTA}key${NC}"
+            if [[ "${COMP_INSTALL_ONLY[$idx]}" -eq 1 ]]; then
+                suffix+=" ${DIM}install only${NC}"
+            else
+                suffix+=" ${MAGENTA}key${NC}"
+            fi
         fi
         printf "  ${CYAN}%2d${NC} ${DIM}│${NC} %-24s${DIM}%s${NC}%b\n" \
             "$step" "${COMP_NAMES[$idx]}" "${COMP_DESCS[$idx]}" "$suffix"
@@ -564,6 +571,7 @@ collect_api_keys() {
     [[ $needs_input -eq 0 ]] && return 0
 
     printf "  ${BOLD}${SYM_KEY} API Configuration${NC}\n"
+    printf "  ${DIM}Leave blank to install without configuring (can configure later)${NC}\n"
     hr
     printf "\n"
 
@@ -598,8 +606,8 @@ collect_api_keys() {
             fi
 
             if [[ -z "$current_url" || -z "$current_key" ]]; then
-                printf "  ${SYM_WARN} ${YELLOW}Skipped${NC} ${DIM}(missing credentials)${NC}\n"
-                COMP_SELECTED[$i]=0
+                printf "  ${SYM_WARN} ${YELLOW}Install only${NC} ${DIM}(configure API later)${NC}\n"
+                COMP_INSTALL_ONLY[$i]=1
             else
                 printf "  ${SYM_CHECK} ${DIM}Configured${NC}\n"
             fi
@@ -617,9 +625,9 @@ validate_api_keys() {
             local current_key="${!ENV_KEY_NAME:-}"
 
             if [[ -z "$current_url" || -z "$current_key" ]]; then
-                printf "  ${SYM_WARN} ${YELLOW}%s skipped${NC} ${DIM}(set %s and %s)${NC}\n" \
+                printf "  ${SYM_WARN} ${YELLOW}%s${NC} ${DIM}install only (set %s and %s to configure)${NC}\n" \
                     "${COMP_NAMES[$i]}" "$ENV_URL_NAME" "$ENV_KEY_NAME"
-                COMP_SELECTED[$i]=0
+                COMP_INSTALL_ONLY[$i]=1
             fi
         fi
     done
@@ -749,6 +757,7 @@ run_all_selected() {
 
     # Post-install hints
     local has_hints=0
+
     for id in "${installed_ids[@]}"; do
         case "$id" in
             docker)
@@ -766,6 +775,28 @@ run_all_selected() {
                 printf "  ${DIM}•${NC} Run ${CYAN}exec zsh${NC} to switch to your new shell\n"
                 ;;
         esac
+    done
+
+    # Show hints for unconfigured API components
+    for i in "${!COMP_INSTALL_ONLY[@]}"; do
+        if [[ "${COMP_INSTALL_ONLY[$i]}" -eq 1 ]]; then
+            # Only hint if the component actually succeeded
+            local comp_id="${COMP_IDS[$i]}"
+            local was_installed=0
+            for id in "${installed_ids[@]}"; do
+                [[ "$id" == "$comp_id" ]] && was_installed=1 && break
+            done
+            if [[ $was_installed -eq 1 ]]; then
+                if [[ $has_hints -eq 0 ]]; then
+                    printf "\n  ${BOLD}${SYM_WARN} Post-install${NC}\n"
+                    has_hints=1
+                fi
+                local ENV_URL_NAME="" ENV_KEY_NAME=""
+                get_env_names "$i"
+                printf "  ${DIM}•${NC} ${BOLD}%s${NC}: configure with ${CYAN}%s${NC} and ${CYAN}%s${NC}\n" \
+                    "${COMP_NAMES[$i]}" "$ENV_URL_NAME" "$ENV_KEY_NAME"
+            fi
+        fi
     done
 
     if [[ $failed -gt 0 ]]; then
@@ -889,28 +920,11 @@ main() {
         printf "\n"
     fi
 
-    # Collect API keys
+    # Collect API keys (components stay selected even without keys — install only)
     if [[ "$INTERACTIVE" -eq 1 ]]; then
         collect_api_keys
     else
         validate_api_keys
-    fi
-
-    # Rebuild ordered list after possible skips from missing API keys
-    ordered=""
-    for i in "${!COMP_SELECTED[@]}"; do
-        [[ "${COMP_SELECTED[$i]}" -eq 1 ]] && ordered+="$i "
-    done
-    ordered="${ordered% }"
-
-    # Check again after API key validation
-    any_selected=0
-    for s in "${COMP_SELECTED[@]}"; do
-        [[ "$s" -eq 1 ]] && any_selected=1 && break
-    done
-    if [[ "$any_selected" -eq 0 ]]; then
-        printf "  ${DIM}No components remaining after validation. Exiting.${NC}\n\n"
-        exit 0
     fi
 
     # Pre-cache sudo credentials before noisy installation begins
