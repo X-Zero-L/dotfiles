@@ -35,21 +35,46 @@ GH_PROXY="${GH_PROXY:-}"
 NON_INTERACTIVE=0
 INTERACTIVE=0
 TMPDIR_INSTALL=""
+CURSOR_HIDDEN=0
 
 # --- [B] ANSI Colors ---------------------------------------------------------
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
-CYAN='\033[0;36m'
-BOLD='\033[1m'
-DIM='\033[2m'
-NC='\033[0m'
-HIDE_CURSOR='\033[?25l'
-SHOW_CURSOR='\033[?25h'
-CLEAR_LINE='\033[2K'
+setup_colors() {
+    if [[ -t 1 ]] || [[ "${FORCE_COLOR:-}" == "1" ]]; then
+        RED='\033[0;31m'
+        GREEN='\033[0;32m'
+        YELLOW='\033[0;33m'
+        BLUE='\033[0;34m'
+        MAGENTA='\033[0;35m'
+        CYAN='\033[0;36m'
+        WHITE='\033[1;37m'
+        BOLD='\033[1m'
+        DIM='\033[2m'
+        ITALIC='\033[3m'
+        NC='\033[0m'
+        HIDE_CURSOR='\033[?25l'
+        SHOW_CURSOR='\033[?25h'
+        CLEAR_LINE='\033[2K'
+        # Symbols
+        SYM_CHECK="${GREEN}✔${NC}"
+        SYM_CROSS="${RED}✘${NC}"
+        SYM_ARROW="${CYAN}▸${NC}"
+        SYM_DOT="${DIM}○${NC}"
+        SYM_FILL="${GREEN}●${NC}"
+        SYM_WARN="${YELLOW}▲${NC}"
+        SYM_DOWN="${CYAN}↓${NC}"
+        SYM_PLAY="${CYAN}▶${NC}"
+        SYM_KEY="${MAGENTA}🔑${NC}"
+        SYM_LOCK="${DIM}🔒${NC}"
+    else
+        RED='' GREEN='' YELLOW='' BLUE='' MAGENTA='' CYAN='' WHITE=''
+        BOLD='' DIM='' ITALIC='' NC=''
+        HIDE_CURSOR='' SHOW_CURSOR='' CLEAR_LINE=''
+        SYM_CHECK='[ok]' SYM_CROSS='[fail]' SYM_ARROW='>' SYM_DOT='[ ]'
+        SYM_FILL='[x]' SYM_WARN='[!]' SYM_DOWN='[-]' SYM_PLAY='[>]'
+        SYM_KEY='[key]' SYM_LOCK='[*]'
+    fi
+}
 
 # --- [C] Component Registry --------------------------------------------------
 
@@ -105,21 +130,23 @@ COMP_SELECTED=(0 0 0 0 0 0 0 0 0)
 
 # --- [D] Utility Functions ----------------------------------------------------
 
-CURSOR_HIDDEN=0
-
 cleanup() {
-    [[ "$CURSOR_HIDDEN" -eq 1 ]] && printf "${SHOW_CURSOR}" 2>/dev/null
+    [[ "$CURSOR_HIDDEN" -eq 1 ]] && printf '\033[?25h' 2>/dev/null
     [[ -n "${TMPDIR_INSTALL:-}" && -d "${TMPDIR_INSTALL:-}" ]] && rm -rf "$TMPDIR_INSTALL"
 }
 trap cleanup EXIT INT TERM
 
 print_banner() {
     printf "\n"
-    printf "  ${BOLD}${CYAN}╔══════════════════════════════════════╗${NC}\n"
-    printf "  ${BOLD}${CYAN}║       Dotfiles Installer             ║${NC}\n"
-    printf "  ${BOLD}${CYAN}║       ${_GH}/${REPO}  ${CYAN}║${NC}\n"
-    printf "  ${BOLD}${CYAN}╚══════════════════════════════════════╝${NC}\n"
+    printf "  ${CYAN}${BOLD}┌──────────────────────────────────────────┐${NC}\n"
+    printf "  ${CYAN}${BOLD}│${NC}  ${BOLD}${WHITE}Dotfiles Installer${NC}                       ${CYAN}${BOLD}│${NC}\n"
+    printf "  ${CYAN}${BOLD}│${NC}  ${DIM}${_GH}/${REPO}${NC}          ${CYAN}${BOLD}│${NC}\n"
+    printf "  ${CYAN}${BOLD}└──────────────────────────────────────────┘${NC}\n"
     printf "\n"
+}
+
+hr() {
+    printf "  ${DIM}──────────────────────────────────────────${NC}\n"
 }
 
 show_help() {
@@ -164,7 +191,6 @@ download_script() {
         url="${BASE_URL}/${script_name}"
     fi
 
-    # Skip if already downloaded
     [[ -f "$target" ]] && return 0
 
     if curl -fsSL --retry 3 --retry-delay 2 -o "$target" "$url"; then
@@ -178,17 +204,24 @@ download_script() {
 download_all_needed() {
     local indices=("$@")
     local failed=0
+    local total=${#indices[@]}
+    local current=0
 
-    printf "  ${BOLD}Downloading scripts...${NC}\n"
+    printf "\n"
+    printf "  ${BOLD}${SYM_DOWN} Downloading scripts${NC}\n"
+    hr
     for idx in "${indices[@]}"; do
-        printf "    ${COMP_SCRIPTS[$idx]}... "
+        ((current++))
+        printf "  ${DIM}[%d/%d]${NC} %-24s" "$current" "$total" "${COMP_SCRIPTS[$idx]}"
         if download_script "${COMP_SCRIPTS[$idx]}"; then
-            printf "${GREEN}ok${NC}\n"
+            printf "${SYM_CHECK}\n"
         else
-            printf "${RED}failed${NC}\n"
+            printf "${SYM_CROSS}\n"
             ((failed++))
         fi
     done
+    hr
+    printf "\n"
 
     return "$failed"
 }
@@ -196,8 +229,8 @@ download_all_needed() {
 # --- [E] TUI Engine ----------------------------------------------------------
 
 read_key() {
-    local key
-    IFS= read -rsn1 key 2>/dev/null </dev/tty
+    local key=""
+    IFS= read -rsn1 key 2>/dev/null </dev/tty || true
 
     if [[ "$key" == $'\x1b' ]]; then
         local seq
@@ -220,6 +253,35 @@ read_key() {
     fi
 }
 
+# Read a secret with * feedback, result stored in REPLY_SECRET
+read_secret() {
+    REPLY_SECRET=""
+    local char=""
+    while true; do
+        IFS= read -rsn1 char </dev/tty || break
+        # Enter
+        if [[ "$char" == "" ]]; then
+            break
+        fi
+        # Backspace (0x7f or 0x08)
+        if [[ "$char" == $'\x7f' || "$char" == $'\x08' ]]; then
+            if [[ ${#REPLY_SECRET} -gt 0 ]]; then
+                REPLY_SECRET="${REPLY_SECRET%?}"
+                printf '\b \b' >&2
+            fi
+            continue
+        fi
+        # Ignore escape sequences
+        if [[ "$char" == $'\x1b' ]]; then
+            IFS= read -rsn2 -t 0.1 _ </dev/tty
+            continue
+        fi
+        REPLY_SECRET+="$char"
+        printf '*' >&2
+    done
+    printf '\n' >&2
+}
+
 render_menu() {
     local cursor_pos=$1
     local total=${#COMP_IDS[@]}
@@ -230,12 +292,12 @@ render_menu() {
     done
 
     # Move cursor to top of menu area
-    local menu_height=$((total + 4))
+    local menu_height=$((total + 5))
     printf "\033[%dA" "$menu_height"
 
     # Header
-    printf "${CLEAR_LINE}  ${BOLD}${CYAN}Dotfiles Installer${NC}\n"
-    printf "${CLEAR_LINE}  ${DIM}arrows: navigate | space: toggle | a: toggle all | enter: confirm | q: quit${NC}\n"
+    printf "${CLEAR_LINE}\n"
+    printf "${CLEAR_LINE}  ${DIM}↑↓${NC} navigate  ${DIM}space${NC} toggle  ${DIM}a${NC} all  ${DIM}enter${NC} confirm  ${DIM}q${NC} quit\n"
 
     # Component lines
     for i in $(seq 0 $((total - 1))); do
@@ -243,38 +305,48 @@ render_menu() {
 
         # Cursor indicator
         if [[ $i -eq $cursor_pos ]]; then
-            printf "  ${CYAN}>${NC} "
+            printf "  ${SYM_ARROW} "
         else
             printf "    "
         fi
 
         # Checkbox
         if [[ "${COMP_SELECTED[$i]}" -eq 1 ]]; then
-            printf "${GREEN}[x]${NC} "
+            printf "${SYM_FILL} "
         else
-            printf "[ ] "
+            printf "${SYM_DOT} "
         fi
 
-        # Name (padded)
-        printf "${BOLD}%-22s${NC} " "${COMP_NAMES[$i]}"
+        # Name (padded) - highlight current row
+        if [[ $i -eq $cursor_pos ]]; then
+            printf "${BOLD}${WHITE}%-22s${NC} " "${COMP_NAMES[$i]}"
+        else
+            printf "${BOLD}%-22s${NC} " "${COMP_NAMES[$i]}"
+        fi
 
         # Description
-        printf "${DIM}%-38s${NC}" "${COMP_DESCS[$i]}"
+        printf "${DIM}%-34s${NC}" "${COMP_DESCS[$i]}"
 
         # Tags
+        local tags=""
         if [[ "${COMP_NEEDS_SUDO[$i]}" -eq 1 ]]; then
-            printf " ${YELLOW}[sudo]${NC}"
+            tags+=" ${YELLOW}sudo${NC}"
         fi
         if [[ "${COMP_NEEDS_KEYS[$i]}" -eq 1 ]]; then
-            printf " ${MAGENTA}[key]${NC}"
+            tags+=" ${MAGENTA}key${NC}"
         fi
+        [[ -n "$tags" ]] && printf " ${DIM}[${NC}${tags} ${DIM}]${NC}"
 
         printf "\n"
     done
 
     # Footer
     printf "${CLEAR_LINE}\n"
-    printf "${CLEAR_LINE}  ${DIM}[%d selected]${NC}\n" "$selected_count"
+    if [[ $selected_count -gt 0 ]]; then
+        printf "${CLEAR_LINE}  ${GREEN}${BOLD}%d${NC}${DIM} component(s) selected${NC}\n" "$selected_count"
+    else
+        printf "${CLEAR_LINE}  ${DIM}No components selected${NC}\n"
+    fi
 }
 
 show_checkbox_menu() {
@@ -285,7 +357,7 @@ show_checkbox_menu() {
     CURSOR_HIDDEN=1
 
     # Reserve space
-    local menu_height=$((total + 4))
+    local menu_height=$((total + 5))
     for ((i = 0; i < menu_height; i++)); do
         printf "\n"
     done
@@ -325,7 +397,7 @@ show_checkbox_menu() {
                 ;;
             Q)
                 printf "${SHOW_CURSOR}"; CURSOR_HIDDEN=0
-                printf "\n  Aborted.\n\n"
+                printf "\n  ${DIM}Aborted.${NC}\n\n"
                 exit 0
                 ;;
         esac
@@ -359,9 +431,8 @@ resolve_dependencies() {
 
     # Report auto-added (to stderr so it's not captured by $())
     if [[ ${#auto_added[@]} -gt 0 ]]; then
-        printf "\n" >&2
         for name in "${auto_added[@]}"; do
-            printf "  ${YELLOW}+${NC} Auto-added: ${BOLD}%s${NC} (required dependency)\n" "$name" >&2
+            printf "  ${SYM_WARN} Auto-added ${BOLD}%s${NC} ${DIM}(dependency)${NC}\n" "$name" >&2
         done
     fi
 
@@ -375,15 +446,30 @@ resolve_dependencies() {
 }
 
 show_plan() {
+    # shellcheck disable=SC2206
     local ordered=($1)
     local total=${#ordered[@]}
 
-    printf "\n  ${BOLD}Installation plan:${NC}\n"
+    printf "\n"
+    printf "  ${BOLD}${SYM_PLAY} Installation plan${NC}\n"
+    hr
+
     local step=0
     for idx in "${ordered[@]}"; do
         ((step++))
-        printf "    ${CYAN}%d.${NC} %s\n" "$step" "${COMP_NAMES[$idx]}"
+        local suffix=""
+        if [[ "${COMP_NEEDS_SUDO[$idx]}" -eq 1 ]]; then
+            suffix+=" ${YELLOW}sudo${NC}"
+        fi
+        if [[ "${COMP_NEEDS_KEYS[$idx]}" -eq 1 ]]; then
+            suffix+=" ${MAGENTA}key${NC}"
+        fi
+        printf "  ${CYAN}%2d${NC} ${DIM}│${NC} %-24s${DIM}%s${NC}%b\n" \
+            "$step" "${COMP_NAMES[$idx]}" "${COMP_DESCS[$idx]}" "$suffix"
     done
+
+    hr
+    printf "  ${DIM}Total: ${BOLD}%d${NC}${DIM} component(s)${NC}\n" "$total"
     printf "\n"
 }
 
@@ -415,7 +501,9 @@ collect_api_keys() {
 
     [[ $needs_input -eq 0 ]] && return 0
 
-    printf "  ${BOLD}API Configuration${NC}\n\n"
+    printf "  ${BOLD}${SYM_KEY} API Configuration${NC}\n"
+    hr
+    printf "\n"
 
     for i in "${!COMP_SELECTED[@]}"; do
         if [[ "${COMP_SELECTED[$i]}" -eq 1 && "${COMP_NEEDS_KEYS[$i]}" -eq 1 ]]; then
@@ -424,32 +512,34 @@ collect_api_keys() {
             local current_url="${!ENV_URL_NAME:-}"
             local current_key="${!ENV_KEY_NAME:-}"
 
-            printf "  ${BOLD}${COMP_NAMES[$i]}${NC}\n"
+            printf "  ${BOLD}${WHITE}${COMP_NAMES[$i]}${NC}\n"
 
             if [[ -z "$current_url" ]]; then
-                printf "    API URL: "
+                printf "  ${DIM}API URL:${NC} "
                 read -r current_url </dev/tty
                 if [[ -n "$current_url" ]]; then
                     export "$ENV_URL_NAME=$current_url"
                 fi
             else
-                printf "    API URL: ${DIM}(from env)${NC}\n"
+                printf "  ${DIM}API URL:${NC} ${GREEN}%s${NC}\n" "$current_url"
             fi
 
             if [[ -z "$current_key" ]]; then
-                printf "    API Key: "
-                read -rs current_key </dev/tty
-                printf "\n"
+                printf "  ${DIM}API Key:${NC} "
+                read_secret
+                current_key="$REPLY_SECRET"
                 if [[ -n "$current_key" ]]; then
                     export "$ENV_KEY_NAME=$current_key"
                 fi
             else
-                printf "    API Key: ${DIM}(from env)${NC}\n"
+                printf "  ${DIM}API Key:${NC} ${GREEN}%s${NC}\n" "${current_key:0:8}••••••••"
             fi
 
             if [[ -z "$current_url" || -z "$current_key" ]]; then
-                printf "    ${YELLOW}Skipped (missing credentials)${NC}\n"
+                printf "  ${SYM_WARN} ${YELLOW}Skipped${NC} ${DIM}(missing credentials)${NC}\n"
                 COMP_SELECTED[$i]=0
+            else
+                printf "  ${SYM_CHECK} ${DIM}Configured${NC}\n"
             fi
             printf "\n"
         fi
@@ -465,7 +555,7 @@ validate_api_keys() {
             local current_key="${!ENV_KEY_NAME:-}"
 
             if [[ -z "$current_url" || -z "$current_key" ]]; then
-                printf "  ${YELLOW}Warning: %s skipped (set %s and %s)${NC}\n" \
+                printf "  ${SYM_WARN} ${YELLOW}%s skipped${NC} ${DIM}(set %s and %s)${NC}\n" \
                     "${COMP_NAMES[$i]}" "$ENV_URL_NAME" "$ENV_KEY_NAME"
                 COMP_SELECTED[$i]=0
             fi
@@ -493,8 +583,9 @@ run_component() {
     local script="${COMP_SCRIPTS[$idx]}"
     local script_path="${TMPDIR_INSTALL}/${script}"
 
-    printf "\n${BOLD}${CYAN}[%d/%d] %s${NC}\n" "$step" "$total" "${COMP_NAMES[$idx]}"
-    printf "${DIM}──────────────────────────────────────────────────────────────${NC}\n"
+    printf "\n"
+    printf "  ${BOLD}${CYAN}[%d/%d]${NC} ${BOLD}${WHITE}%s${NC}\n" "$step" "$total" "${COMP_NAMES[$idx]}"
+    printf "  ${CYAN}────────────────────────────────────────${NC}\n"
 
     # Reload env between components
     load_env
@@ -505,26 +596,31 @@ run_component() {
     fi
 
     if bash "$script_path"; then
-        printf "${DIM}──── ${NC}${GREEN}[OK]${NC} %s\n" "${COMP_NAMES[$idx]}"
+        printf "  ${CYAN}────────────────────────────────────────${NC}\n"
+        printf "  ${SYM_CHECK} ${GREEN}%s${NC}\n" "${COMP_NAMES[$idx]}"
         return 0
     else
-        printf "${DIM}──── ${NC}${RED}[FAILED]${NC} %s\n" "${COMP_NAMES[$idx]}"
+        printf "  ${CYAN}────────────────────────────────────────${NC}\n"
+        printf "  ${SYM_CROSS} ${RED}%s${NC}\n" "${COMP_NAMES[$idx]}"
         return 1
     fi
 }
 
 run_all_selected() {
+    # shellcheck disable=SC2206
     local ordered=($1)
     local total=${#ordered[@]}
     local step=0
     local succeeded=0
     local failed=0
     local failed_names=()
+    local succeeded_names=()
 
     for idx in "${ordered[@]}"; do
         ((step++))
         if run_component "$idx" "$step" "$total"; then
             ((succeeded++))
+            succeeded_names+=("${COMP_NAMES[$idx]}")
         else
             ((failed++))
             failed_names+=("${COMP_NAMES[$idx]}")
@@ -532,17 +628,29 @@ run_all_selected() {
     done
 
     # Summary
-    printf "\n${BOLD}══════════════════════════════════════════════════════════════${NC}\n"
-    printf "  ${BOLD}Installation Summary${NC}\n"
-    printf "${BOLD}══════════════════════════════════════════════════════════════${NC}\n"
-    printf "  ${GREEN}Succeeded: %d${NC}\n" "$succeeded"
-    if [[ $failed -gt 0 ]]; then
-        printf "  ${RED}Failed:    %d${NC}\n" "$failed"
-        for name in "${failed_names[@]}"; do
-            printf "    ${RED}- %s${NC}\n" "$name"
+    printf "\n"
+    printf "  ${BOLD}${CYAN}┌──────────────────────────────────────────┐${NC}\n"
+    printf "  ${BOLD}${CYAN}│${NC}  ${BOLD}${WHITE}Installation Summary${NC}                     ${BOLD}${CYAN}│${NC}\n"
+    printf "  ${BOLD}${CYAN}└──────────────────────────────────────────┘${NC}\n"
+    printf "\n"
+
+    if [[ $succeeded -gt 0 ]]; then
+        for name in "${succeeded_names[@]}"; do
+            printf "  ${SYM_CHECK} %s\n" "$name"
         done
     fi
+    if [[ $failed -gt 0 ]]; then
+        for name in "${failed_names[@]}"; do
+            printf "  ${SYM_CROSS} %s\n" "$name"
+        done
+    fi
+
     printf "\n"
+    printf "  ${DIM}Result: ${GREEN}${BOLD}%d passed${NC}" "$succeeded"
+    if [[ $failed -gt 0 ]]; then
+        printf " ${DIM}/${NC} ${RED}${BOLD}%d failed${NC}" "$failed"
+    fi
+    printf "\n\n"
 
     return "$failed"
 }
@@ -592,9 +700,11 @@ parse_args() {
 # --- [J] Main ----------------------------------------------------------------
 
 main() {
+    setup_colors
+
     # Check prerequisites
     if ! command -v curl &>/dev/null; then
-        echo "Error: 'curl' is required but not found."
+        printf "  ${SYM_CROSS} ${RED}curl is required but not found.${NC}\n"
         exit 1
     fi
 
@@ -630,7 +740,7 @@ main() {
         [[ "$s" -eq 1 ]] && any_selected=1 && break
     done
     if [[ "$any_selected" -eq 0 ]]; then
-        printf "  No components selected. Exiting.\n\n"
+        printf "  ${DIM}No components selected. Exiting.${NC}\n\n"
         exit 0
     fi
 
@@ -643,11 +753,11 @@ main() {
 
     # Confirm in interactive mode
     if [[ "$INTERACTIVE" -eq 1 ]]; then
-        printf "  Proceed? [Y/n] "
+        printf "  ${BOLD}Proceed?${NC} ${DIM}[Y/n]${NC} "
         local confirm
         read -r confirm </dev/tty
         if [[ "$confirm" =~ ^[Nn] ]]; then
-            printf "\n  Aborted.\n\n"
+            printf "\n  ${DIM}Aborted.${NC}\n\n"
             exit 0
         fi
         printf "\n"
@@ -673,14 +783,14 @@ main() {
         [[ "$s" -eq 1 ]] && any_selected=1 && break
     done
     if [[ "$any_selected" -eq 0 ]]; then
-        printf "  No components remaining after validation. Exiting.\n\n"
+        printf "  ${DIM}No components remaining after validation. Exiting.${NC}\n\n"
         exit 0
     fi
 
     # Download all needed scripts
-    printf "\n"
+    # shellcheck disable=SC2086
     if ! download_all_needed $ordered; then
-        printf "\n  ${RED}Some downloads failed. Aborting.${NC}\n\n"
+        printf "  ${SYM_CROSS} ${RED}Some downloads failed. Aborting.${NC}\n\n"
         exit 1
     fi
 
@@ -690,11 +800,11 @@ main() {
 
     # Final message
     if [[ $result -eq 0 ]]; then
-        printf "  ${GREEN}${BOLD}All components installed successfully!${NC}\n"
+        printf "  ${SYM_CHECK} ${GREEN}${BOLD}All components installed successfully!${NC}\n"
     else
-        printf "  ${YELLOW}${BOLD}Some components failed. Check output above.${NC}\n"
+        printf "  ${SYM_WARN} ${YELLOW}${BOLD}Some components failed. Check output above.${NC}\n"
     fi
-    printf "  Run ${CYAN}source ~/.zshrc${NC} or open a new terminal to apply changes.\n\n"
+    printf "  ${DIM}Run${NC} ${CYAN}source ~/.zshrc${NC} ${DIM}or open a new terminal to apply changes.${NC}\n\n"
 
     exit "$result"
 }
