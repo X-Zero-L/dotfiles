@@ -24,6 +24,12 @@ Debian/Ubuntu 系统自动化配置脚本 —— shell 环境与代理。
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
 ```
 
+通过代理下载（无法直连 GitHub 时使用）：
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
+```
+
 运行过程中会要求输入用户密码（用于 `chsh` 切换默认 shell）。
 安装完成后，运行 `exec zsh` 或打开新终端即可生效。
 
@@ -35,8 +41,8 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shel
 # 通过参数传入订阅链接
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- https://你的订阅链接
 
-# 或通过环境变量传入
-CLASH_SUB_URL=https://你的订阅链接 bash setup-clash.sh
+# 通过代理下载
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- https://你的订阅链接
 ```
 
 支持的环境变量：
@@ -51,13 +57,18 @@ CLASH_SUB_URL=https://你的订阅链接 bash setup-clash.sh
 
 ## 完整安装
 
-克隆仓库后依次执行：
+> 建议顺序：先装 clash 配好代理，再装 shell 环境，后续下载更快。
 
 ```bash
-git clone https://github.com/X-Zero-L/dotfiles.git
+# 克隆仓库（无法直连时使用代理）
+git clone https://gh-proxy.org/https://github.com/X-Zero-L/dotfiles.git
 cd dotfiles
-./setup-shell.sh
+
+# 1. 先配代理
 ./setup-clash.sh https://你的订阅链接
+
+# 2. 再装 shell 环境（此时已有代理，下载更快）
+./setup-shell.sh
 ```
 
 ## 注意事项
@@ -65,3 +76,4 @@ cd dotfiles
 - 两个脚本均支持**重复运行**，已安装的组件会自动跳过。
 - 需要 `sudo` 权限安装系统包。
 - Starship 需要终端支持 [Nerd Font](https://www.nerdfonts.com/) 才能正常显示图标。
+- 如果 `gh-proxy.org` 不可用，可到 [ghproxy.link](https://ghproxy.link/) 查找其他可用代理。

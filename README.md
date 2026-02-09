@@ -24,6 +24,12 @@ Installs and configures:
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
 ```
 
+Via proxy (for restricted network environments):
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
+```
+
 You will be prompted for your user password (used by `chsh` to change the default shell).
 After installation, run `exec zsh` or open a new terminal to apply.
 
@@ -35,8 +41,8 @@ Installs [clash-for-linux](https://github.com/nelvko/clash-for-linux-install) wi
 # Pass subscription URL as argument
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- https://your-subscription-url
 
-# Or via environment variable
-CLASH_SUB_URL=https://your-subscription-url bash setup-clash.sh
+# Via proxy
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- https://your-subscription-url
 ```
 
 Supported environment variables:
@@ -51,13 +57,18 @@ After installation, use `clashsub add <url>` to manage subscriptions and `clasho
 
 ## Full Setup
 
-Clone and run both:
+> Recommended order: install clash first to set up proxy, then install shell environment.
 
 ```bash
-git clone https://github.com/X-Zero-L/dotfiles.git
+# Clone (via proxy if needed)
+git clone https://gh-proxy.org/https://github.com/X-Zero-L/dotfiles.git
 cd dotfiles
-./setup-shell.sh
+
+# 1. Set up proxy first
 ./setup-clash.sh https://your-subscription-url
+
+# 2. Then set up shell environment (downloads from GitHub will be faster)
+./setup-shell.sh
 ```
 
 ## Notes
@@ -65,3 +76,4 @@ cd dotfiles
 - Both scripts are **idempotent** — safe to run multiple times.
 - Requires `sudo` for installing system packages.
 - Starship icons require a [Nerd Font](https://www.nerdfonts.com/) in your terminal.
+- If `gh-proxy.org` is unavailable, check [ghproxy.link](https://ghproxy.link/) for alternatives.
