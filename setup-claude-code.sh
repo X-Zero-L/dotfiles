@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Usage:
+#   CLAUDE_API_URL=https://... CLAUDE_API_KEY=cr_... ./setup-claude-code.sh
+#   ./setup-claude-code.sh --api-url https://... --api-key cr_...
+#
+# Environment variables:
+#   CLAUDE_API_URL    - API base URL (required)
+#   CLAUDE_API_KEY    - Auth token (required)
+#   CLAUDE_MODEL      - Model name (default: opus)
+#   CLAUDE_NPM_MIRROR - npm registry mirror (default: https://registry.npmmirror.com)
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --api-url)  CLAUDE_API_URL="$2"; shift 2 ;;
+        --api-key)  CLAUDE_API_KEY="$2"; shift 2 ;;
+        --model)    CLAUDE_MODEL="$2"; shift 2 ;;
+        *) shift ;;
+    esac
+done
+
+CLAUDE_API_URL="${CLAUDE_API_URL:-}"
+CLAUDE_API_KEY="${CLAUDE_API_KEY:-}"
+CLAUDE_MODEL="${CLAUDE_MODEL:-opus}"
+CLAUDE_NPM_MIRROR="${CLAUDE_NPM_MIRROR:-https://registry.npmmirror.com}"
+
+if [ -z "$CLAUDE_API_URL" ] || [ -z "$CLAUDE_API_KEY" ]; then
+    echo "Error: CLAUDE_API_URL and CLAUDE_API_KEY are required."
+    echo ""
+    echo "Usage:"
+    echo "  CLAUDE_API_URL=https://... CLAUDE_API_KEY=cr_... $0"
+    echo "  $0 --api-url https://... --api-key cr_..."
+    exit 1
+fi
+
+echo "=== Claude Code Setup ==="
+
+# Ensure node is available (load nvm if present)
+if ! command -v node &>/dev/null; then
+    export NVM_DIR="$HOME/.nvm"
+    # shellcheck disable=SC1091
+    [ -f "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+fi
+
+if ! command -v node &>/dev/null; then
+    echo "Error: Node.js not found. Run setup-node.sh first."
+    exit 1
+fi
+
+# Install Claude Code
+echo "[1/3] Installing Claude Code..."
+if command -v claude &>/dev/null; then
+    echo "  Claude Code already installed, upgrading..."
+fi
+npm install -g @anthropic-ai/claude-code --registry="$CLAUDE_NPM_MIRROR"
+
+# Skip onboarding
+echo "[2/3] Configuring onboarding..."
+CLAUDE_JSON="$HOME/.claude.json"
+node -e "
+const fs = require('fs');
+const data = fs.existsSync('$CLAUDE_JSON')
+    ? JSON.parse(fs.readFileSync('$CLAUDE_JSON', 'utf-8'))
+    : {};
+data.hasCompletedOnboarding = true;
+fs.writeFileSync('$CLAUDE_JSON', JSON.stringify(data, null, 2));
+"
+
+# Write settings
+echo "[3/3] Writing settings..."
+CLAUDE_SETTINGS_DIR="$HOME/.claude"
+mkdir -p "$CLAUDE_SETTINGS_DIR"
+CLAUDE_SETTINGS="$CLAUDE_SETTINGS_DIR/settings.json"
+
+node -e "
+const fs = require('fs');
+const settings = fs.existsSync('$CLAUDE_SETTINGS')
+    ? JSON.parse(fs.readFileSync('$CLAUDE_SETTINGS', 'utf-8'))
+    : {};
+settings.env = {
+    ...settings.env,
+    ANTHROPIC_BASE_URL: process.argv[1],
+    ANTHROPIC_AUTH_TOKEN: process.argv[2],
+    CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1'
+};
+settings.permissions = settings.permissions || { allow: [], deny: [] };
+settings.alwaysThinkingEnabled = true;
+settings.model = process.argv[3];
+fs.writeFileSync('$CLAUDE_SETTINGS', JSON.stringify(settings, null, 2));
+" "$CLAUDE_API_URL" "$CLAUDE_API_KEY" "$CLAUDE_MODEL"
+
+echo ""
+echo "=== Done! ==="
+echo "Claude Code: $(claude --version 2>/dev/null || echo 'installed')"
+echo "Model:       $CLAUDE_MODEL"
+echo "API URL:     $CLAUDE_API_URL"
+echo "Run 'claude' to start."
