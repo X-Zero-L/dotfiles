@@ -11,6 +11,7 @@ set -euo pipefail
 #   DOCKER_MIRROR    - Registry mirror URL(s), comma-separated (default: https://docker.1ms.run)
 #   DOCKER_PROXY     - HTTP/HTTPS proxy for daemon and containers (default: empty)
 #   DOCKER_NO_PROXY  - No-proxy list for daemon (default: localhost,127.0.0.0/8)
+#   DOCKER_DATA_ROOT - Docker data root directory (default: /var/lib/docker)
 #   DOCKER_COMPOSE   - Install docker-compose-plugin: 1=yes 0=no (default: 1)
 
 # Parse arguments
@@ -19,6 +20,7 @@ while [[ $# -gt 0 ]]; do
         --mirror)     DOCKER_MIRROR="$2"; shift 2 ;;
         --proxy)      DOCKER_PROXY="$2"; shift 2 ;;
         --no-proxy)   DOCKER_NO_PROXY="$2"; shift 2 ;;
+        --data-root)  DOCKER_DATA_ROOT="$2"; shift 2 ;;
         --no-compose) DOCKER_COMPOSE=0; shift ;;
         *) shift ;;
     esac
@@ -27,6 +29,7 @@ done
 DOCKER_MIRROR="${DOCKER_MIRROR:-https://docker.1ms.run}"
 DOCKER_PROXY="${DOCKER_PROXY:-}"
 DOCKER_NO_PROXY="${DOCKER_NO_PROXY:-localhost,127.0.0.0/8}"
+DOCKER_DATA_ROOT="${DOCKER_DATA_ROOT:-}"
 DOCKER_COMPOSE="${DOCKER_COMPOSE:-1}"
 
 echo "=== Docker Setup ==="
@@ -82,6 +85,7 @@ if command -v python3 &>/dev/null; then
 import json, sys, os
 path = sys.argv[1]
 mirrors = json.loads(sys.argv[2])
+data_root = sys.argv[3]
 data = {}
 if os.path.isfile(path):
     try:
@@ -90,15 +94,21 @@ if os.path.isfile(path):
     except (json.JSONDecodeError, IOError):
         pass
 data['registry-mirrors'] = mirrors
+if data_root:
+    data['data-root'] = data_root
 with open(path, 'w') as f:
     json.dump(data, f, indent=2)
     f.write('\n')
-" "$DAEMON_JSON" "$MIRRORS_JSON"
+" "$DAEMON_JSON" "$MIRRORS_JSON" "$DOCKER_DATA_ROOT"
 else
     # Fallback: write directly (overwrites existing file)
     echo "  Warning: python3 not found, writing daemon.json from scratch."
     sudo mkdir -p /etc/docker
-    printf '{\n  "registry-mirrors": %s\n}\n' "$MIRRORS_JSON" | sudo tee "$DAEMON_JSON" > /dev/null
+    if [ -n "$DOCKER_DATA_ROOT" ]; then
+        printf '{\n  "registry-mirrors": %s,\n  "data-root": "%s"\n}\n' "$MIRRORS_JSON" "$DOCKER_DATA_ROOT" | sudo tee "$DAEMON_JSON" > /dev/null
+    else
+        printf '{\n  "registry-mirrors": %s\n}\n' "$MIRRORS_JSON" | sudo tee "$DAEMON_JSON" > /dev/null
+    fi
 fi
 echo "  Mirrors: $DOCKER_MIRROR"
 
@@ -177,6 +187,7 @@ if [ "$DOCKER_COMPOSE" != "0" ]; then
     echo "Compose: $(docker compose version 2>/dev/null || echo 'installed')"
 fi
 echo "Mirrors: $DOCKER_MIRROR"
+[ -n "$DOCKER_DATA_ROOT" ] && echo "Data:    $DOCKER_DATA_ROOT"
 [ -n "$DOCKER_PROXY" ] && echo "Proxy:   $DOCKER_PROXY"
 echo ""
 echo "Run 'newgrp docker' or re-login to use Docker without sudo."

@@ -196,10 +196,16 @@ With daemon proxy:
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | DOCKER_PROXY=http://localhost:7890 bash
 ```
 
+With custom data root:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | DOCKER_DATA_ROOT=/data/docker bash
+```
+
 With arguments:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash -s -- --mirror https://mirror.example.com --proxy http://localhost:7890
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash -s -- --mirror https://mirror.example.com --proxy http://localhost:7890 --data-root /data/docker
 ```
 
 | Variable | Default | Description |
@@ -207,6 +213,7 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-dock
 | `DOCKER_MIRROR` | `https://docker.1ms.run` | Registry mirror URL(s), comma-separated for multiple |
 | `DOCKER_PROXY` | _(empty)_ | HTTP/HTTPS proxy for daemon and containers |
 | `DOCKER_NO_PROXY` | `localhost,127.0.0.0/8` | No-proxy list for daemon |
+| `DOCKER_DATA_ROOT` | _(empty)_ | Docker data directory (default: `/var/lib/docker`) |
 | `DOCKER_COMPOSE` | `1` | Install docker-compose-plugin (`0` to skip) |
 
 ### `setup-skills.sh` — Agent Skills
