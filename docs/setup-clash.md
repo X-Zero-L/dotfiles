@@ -58,8 +58,8 @@ After installation, these functions are available (via sourced `clashctl.sh`):
 
 ## Dependencies
 
-- `git`, `curl`.
-- No `sudo` required.
+- `git`, `curl`, `unzip` (auto-installed if missing).
+- `sudo` required for installing dependencies.
 
 ## Post-Install
 
