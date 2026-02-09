@@ -144,8 +144,8 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clau
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `CLAUDE_API_URL` | _（必填）_ | API 基础地址 |
-| `CLAUDE_API_KEY` | _（必填）_ | 认证令牌 |
+| `CLAUDE_API_URL` | _（可选）_ | API 基础地址（留空则只安装不配置） |
+| `CLAUDE_API_KEY` | _（可选）_ | 认证令牌（留空则只安装不配置） |
 | `CLAUDE_MODEL` | `opus` | 模型名称 |
 | `CLAUDE_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
 
@@ -171,8 +171,8 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-code
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `CODEX_API_URL` | _（必填）_ | API 基础地址 |
-| `CODEX_API_KEY` | _（必填）_ | API 密钥 |
+| `CODEX_API_URL` | _（可选）_ | API 基础地址（留空则只安装不配置） |
+| `CODEX_API_KEY` | _（可选）_ | API 密钥（留空则只安装不配置） |
 | `CODEX_MODEL` | `gpt-5.2` | 模型名称 |
 | `CODEX_EFFORT` | `xhigh` | 推理强度 |
 | `CODEX_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
@@ -199,8 +199,8 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemi
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `GEMINI_API_URL` | _（必填）_ | API 基础地址 |
-| `GEMINI_API_KEY` | _（必填）_ | API 密钥 |
+| `GEMINI_API_URL` | _（可选）_ | API 基础地址（留空则只安装不配置） |
+| `GEMINI_API_KEY` | _（可选）_ | API 密钥（留空则只安装不配置） |
 | `GEMINI_MODEL` | `gemini-3-pro-preview` | 模型名称 |
 | `GEMINI_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
 

@@ -144,8 +144,8 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clau
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CLAUDE_API_URL` | _(required)_ | API base URL |
-| `CLAUDE_API_KEY` | _(required)_ | Auth token |
+| `CLAUDE_API_URL` | _(optional)_ | API base URL (skip config if empty) |
+| `CLAUDE_API_KEY` | _(optional)_ | Auth token (skip config if empty) |
 | `CLAUDE_MODEL` | `opus` | Model name |
 | `CLAUDE_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror |
 
@@ -171,8 +171,8 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-code
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CODEX_API_URL` | _(required)_ | API base URL |
-| `CODEX_API_KEY` | _(required)_ | API key |
+| `CODEX_API_URL` | _(optional)_ | API base URL (skip config if empty) |
+| `CODEX_API_KEY` | _(optional)_ | API key (skip config if empty) |
 | `CODEX_MODEL` | `gpt-5.2` | Model name |
 | `CODEX_EFFORT` | `xhigh` | Reasoning effort |
 | `CODEX_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror |
@@ -199,8 +199,8 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemi
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `GEMINI_API_URL` | _(required)_ | API base URL |
-| `GEMINI_API_KEY` | _(required)_ | API key |
+| `GEMINI_API_URL` | _(optional)_ | API base URL (skip config if empty) |
+| `GEMINI_API_KEY` | _(optional)_ | API key (skip config if empty) |
 | `GEMINI_MODEL` | `gemini-3-pro-preview` | Model name |
 | `GEMINI_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror |
 
