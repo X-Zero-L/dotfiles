@@ -57,19 +57,17 @@ fi
 # [2] Skip onboarding
 echo "[2/4] Configuring onboarding..."
 CLAUDE_JSON="$HOME/.claude.json"
-if [ -f "$CLAUDE_JSON" ] && grep -q '"hasCompletedOnboarding".*true' "$CLAUDE_JSON" 2>/dev/null; then
-    echo "  Already configured, skipping."
-else
-    node -e "
+node -e "
 const fs = require('fs');
-const path = process.argv[1];
-const data = fs.existsSync(path)
-    ? JSON.parse(fs.readFileSync(path, 'utf-8'))
-    : {};
-data.hasCompletedOnboarding = true;
-fs.writeFileSync(path, JSON.stringify(data, null, 2));
+const p = process.argv[1];
+const data = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf-8')) : {};
+if (data.hasCompletedOnboarding === true) {
+    console.log('  Already configured, skipping.');
+} else {
+    data.hasCompletedOnboarding = true;
+    fs.writeFileSync(p, JSON.stringify(data, null, 2));
+}
 " "$CLAUDE_JSON"
-fi
 
 # [3] Write settings (only if API keys provided)
 echo "[3/4] Writing settings..."
@@ -78,27 +76,30 @@ if [ "$HAS_KEYS" -eq 1 ]; then
     mkdir -p "$CLAUDE_SETTINGS_DIR"
     CLAUDE_SETTINGS="$CLAUDE_SETTINGS_DIR/settings.json"
 
-    if [ -f "$CLAUDE_SETTINGS" ] && grep -qF "$CLAUDE_API_URL" "$CLAUDE_SETTINGS" 2>/dev/null; then
-        echo "  Already configured, skipping."
-    else
-        node -e "
+    _CLAUDE_URL="$CLAUDE_API_URL" _CLAUDE_KEY="$CLAUDE_API_KEY" \
+    _CLAUDE_MODEL="$CLAUDE_MODEL" node -e "
 const fs = require('fs');
-const path = process.argv[1];
-const settings = fs.existsSync(path)
-    ? JSON.parse(fs.readFileSync(path, 'utf-8'))
-    : {};
-settings.env = {
-    ...settings.env,
-    ANTHROPIC_BASE_URL: process.argv[2],
-    ANTHROPIC_AUTH_TOKEN: process.argv[3],
-    CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1'
-};
-settings.permissions = settings.permissions || { allow: [], deny: [] };
-settings.alwaysThinkingEnabled = true;
-settings.model = process.argv[4];
-fs.writeFileSync(path, JSON.stringify(settings, null, 2));
-" "$CLAUDE_SETTINGS" "$CLAUDE_API_URL" "$CLAUDE_API_KEY" "$CLAUDE_MODEL"
-    fi
+const p = process.argv[1];
+const url = process.env._CLAUDE_URL;
+const key = process.env._CLAUDE_KEY;
+const model = process.env._CLAUDE_MODEL;
+const settings = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf-8')) : {};
+const env = settings.env || {};
+if (env.ANTHROPIC_BASE_URL === url && env.ANTHROPIC_AUTH_TOKEN === key && settings.model === model) {
+    console.log('  Already configured, skipping.');
+} else {
+    settings.env = {
+        ...env,
+        ANTHROPIC_BASE_URL: url,
+        ANTHROPIC_AUTH_TOKEN: key,
+        CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1'
+    };
+    settings.permissions = settings.permissions || { allow: [], deny: [] };
+    settings.alwaysThinkingEnabled = true;
+    settings.model = model;
+    fs.writeFileSync(p, JSON.stringify(settings, null, 2));
+}
+" "$CLAUDE_SETTINGS"
 else
     echo "  Skipped (no API keys provided). Configure later with:"
     echo "    claude config set env.ANTHROPIC_BASE_URL <url>"

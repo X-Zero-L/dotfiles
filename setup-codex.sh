@@ -58,47 +58,63 @@ else
     npm install -g @openai/codex --registry="$CODEX_NPM_MIRROR"
 fi
 
-# Write config (only if API keys provided)
+# Write config and auth (only if API keys provided)
 echo "[2/4] Writing config..."
+echo "[3/4] Writing auth..."
 if [ "$HAS_KEYS" -eq 1 ]; then
     CODEX_DIR="$HOME/.codex"
     mkdir -p "$CODEX_DIR"
 
-    if [ -f "$CODEX_DIR/config.toml" ] && grep -qF "$CODEX_API_URL" "$CODEX_DIR/config.toml" 2>/dev/null; then
-        echo "  Already configured, skipping."
-    else
-        cat > "$CODEX_DIR/config.toml" << EOF
-disable_response_storage = true
-model = "$CODEX_MODEL"
-model_provider = "$CODEX_PROVIDER"
-model_reasoning_effort = "$CODEX_EFFORT"
-personality = "pragmatic"
+    _CODEX_URL="$CODEX_API_URL" _CODEX_KEY="$CODEX_API_KEY" \
+    _CODEX_MODEL="$CODEX_MODEL" _CODEX_EFFORT="$CODEX_EFFORT" \
+    _CODEX_PROVIDER="$CODEX_PROVIDER" node -e "
+const fs = require('fs');
+const dir = process.argv[1];
+const url = process.env._CODEX_URL;
+const key = process.env._CODEX_KEY;
+const model = process.env._CODEX_MODEL;
+const effort = process.env._CODEX_EFFORT;
+const provider = process.env._CODEX_PROVIDER;
 
-[model_providers.$CODEX_PROVIDER]
-base_url = "$CODEX_API_URL"
-name = "$CODEX_PROVIDER"
-requires_openai_auth = true
-wire_api = "responses"
-EOF
-    fi
+// Check & update config.toml
+const configPath = dir + '/config.toml';
+const wantConfig = [
+    'disable_response_storage = true',
+    'model = \"' + model + '\"',
+    'model_provider = \"' + provider + '\"',
+    'model_reasoning_effort = \"' + effort + '\"',
+    'personality = \"pragmatic\"',
+    '',
+    '[model_providers.' + provider + ']',
+    'base_url = \"' + url + '\"',
+    'name = \"' + provider + '\"',
+    'requires_openai_auth = true',
+    'wire_api = \"responses\"',
+    ''
+].join('\n');
 
-    # Write auth.json
-    echo "[3/4] Writing auth..."
-    if [ -f "$CODEX_DIR/auth.json" ] && grep -qF "$CODEX_API_KEY" "$CODEX_DIR/auth.json" 2>/dev/null; then
-        echo "  Already configured, skipping."
-    else
-        cat > "$CODEX_DIR/auth.json" << EOF
-{
-  "OPENAI_API_KEY": "$CODEX_API_KEY"
+const curConfig = fs.existsSync(configPath) ? fs.readFileSync(configPath, 'utf-8') : '';
+if (curConfig === wantConfig) {
+    console.log('  Config already up to date, skipping.');
+} else {
+    fs.writeFileSync(configPath, wantConfig);
+    console.log('  Config written.');
 }
-EOF
-        chmod 600 "$CODEX_DIR/auth.json"
-    fi
+
+// Check & update auth.json
+const authPath = dir + '/auth.json';
+const wantAuth = JSON.stringify({ OPENAI_API_KEY: key }, null, 2) + '\n';
+const curAuth = fs.existsSync(authPath) ? fs.readFileSync(authPath, 'utf-8') : '';
+if (curAuth === wantAuth) {
+    console.log('  Auth already up to date, skipping.');
+} else {
+    fs.writeFileSync(authPath, wantAuth, { mode: 0o600 });
+    console.log('  Auth written.');
+}
+" "$CODEX_DIR"
 else
     echo "  Skipped (no API keys provided). Configure later:"
     echo "    mkdir -p ~/.codex && edit ~/.codex/config.toml"
-    echo "[3/4] Writing auth..."
-    echo "  Skipped (no API keys provided)."
 fi
 
 # Add alias cx='codex --dangerously-bypass-approvals-and-sandbox'

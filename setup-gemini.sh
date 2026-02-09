@@ -59,16 +59,17 @@ echo "[2/3] Writing config..."
 if [ "$HAS_KEYS" -eq 1 ]; then
     GEMINI_DIR="$HOME/.gemini"
     mkdir -p "$GEMINI_DIR"
+    GEMINI_ENV="$GEMINI_DIR/.env"
 
-    if [ -f "$GEMINI_DIR/.env" ] && grep -qF "$GEMINI_API_URL" "$GEMINI_DIR/.env" 2>/dev/null; then
+    WANT_ENV="GOOGLE_GEMINI_BASE_URL=$GEMINI_API_URL
+GEMINI_API_KEY=$GEMINI_API_KEY
+GEMINI_MODEL=$GEMINI_MODEL"
+
+    if [ -f "$GEMINI_ENV" ] && [ "$(cat "$GEMINI_ENV")" = "$WANT_ENV" ]; then
         echo "  Already configured, skipping."
     else
-        cat > "$GEMINI_DIR/.env" << EOF
-GOOGLE_GEMINI_BASE_URL=$GEMINI_API_URL
-GEMINI_API_KEY=$GEMINI_API_KEY
-GEMINI_MODEL=$GEMINI_MODEL
-EOF
-        chmod 600 "$GEMINI_DIR/.env"
+        printf '%s\n' "$WANT_ENV" > "$GEMINI_ENV"
+        chmod 600 "$GEMINI_ENV"
     fi
 else
     echo "  Skipped (no API keys provided). Configure later:"
