@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+_GH="github.com"
+_RAW="raw.githubusercontent.com"
+GH_PROXY="${GH_PROXY:-}"
+
 echo "=== Shell Environment Setup ==="
 
 # 1. Install dependencies
@@ -14,7 +18,9 @@ if [ -d "$HOME/.oh-my-zsh" ] && [ -f "$HOME/.oh-my-zsh/oh-my-zsh.sh" ]; then
 else
     # Clean up partial install
     [ -d "$HOME/.oh-my-zsh" ] && rm -rf "$HOME/.oh-my-zsh"
-    RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    OMZ_URL="https://${_RAW}/ohmyzsh/ohmyzsh/master/tools/install.sh"
+    [ -n "$GH_PROXY" ] && OMZ_URL="${GH_PROXY%/}/${OMZ_URL}"
+    RUNZSH=no CHSH=no sh -c "$(curl -fsSL "$OMZ_URL")"
 fi
 
 ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
@@ -30,12 +36,13 @@ install_zsh_plugin() {
     else
         # Clean up partial clone
         [ -d "$dest" ] && rm -rf "$dest"
+        [ -n "$GH_PROXY" ] && url="${GH_PROXY%/}/${url}"
         git clone --depth=1 "$url" "$dest"
     fi
 }
 
-install_zsh_plugin zsh-autosuggestions https://github.com/zsh-users/zsh-autosuggestions
-install_zsh_plugin zsh-syntax-highlighting https://github.com/zsh-users/zsh-syntax-highlighting
+install_zsh_plugin zsh-autosuggestions "https://${_GH}/zsh-users/zsh-autosuggestions"
+install_zsh_plugin zsh-syntax-highlighting "https://${_GH}/zsh-users/zsh-syntax-highlighting"
 
 # 4. Configure .zshrc plugins
 echo "[4/6] Configuring .zshrc plugins..."
