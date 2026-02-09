@@ -466,6 +466,10 @@ Or install components individually in this order:
 8. `setup-gemini.sh` — Gemini CLI
 9. `setup-skills.sh` — Agent skills
 
+## Detailed Documentation
+
+See the [docs/](docs/) directory for in-depth documentation on each script — what gets installed, which files are created/modified, re-run behavior, and more.
+
 ## Notes
 
 - Starship icons require a [Nerd Font](https://www.nerdfonts.com/) in your terminal.

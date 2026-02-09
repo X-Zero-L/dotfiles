@@ -466,6 +466,10 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh
 8. `setup-gemini.sh` — Gemini CLI
 9. `setup-skills.sh` — 代理技能
 
+## 详细文档
+
+查看 [docs/](docs/) 目录获取每个脚本的详细文档 — 安装内容、创建/修改的文件、重复运行行为等。
+
 ## 注意事项
 
 - Starship 需要终端支持 [Nerd Font](https://www.nerdfonts.com/) 才能正常显示图标。
