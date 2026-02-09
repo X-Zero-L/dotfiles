@@ -4,6 +4,34 @@
 
 Debian/Ubuntu 系统自动化配置脚本。
 
+## 快速开始
+
+交互式安装器（TUI 复选框菜单）：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash
+```
+
+通过代理：
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --gh-proxy https://gh-proxy.org
+```
+
+非交互式安装全部：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all
+```
+
+指定组件：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --components shell,node,docker
+```
+
+可用组件：`shell`、`clash`、`node`、`uv`、`docker`、`claude-code`、`codex`、`gemini`、`skills`
+
 ## 脚本说明
 
 ### `setup-shell.sh` — Shell 环境
