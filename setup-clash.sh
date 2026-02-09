@@ -47,6 +47,12 @@ else
     sed -i '/^_valid_config/d; /^_quit/d' install.sh
 
     bash install.sh "$CLASH_KERNEL"
+
+    # Verify installation succeeded
+    if [ ! -f "$CLASHCTL" ]; then
+        echo "Error: Clash installation failed. Check the output above."
+        exit 1
+    fi
 fi
 
 # Ensure clashctl is sourced in both .bashrc and .zshrc
