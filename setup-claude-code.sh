@@ -61,12 +61,13 @@ echo "[2/4] Configuring onboarding..."
 CLAUDE_JSON="$HOME/.claude.json"
 node -e "
 const fs = require('fs');
-const data = fs.existsSync('$CLAUDE_JSON')
-    ? JSON.parse(fs.readFileSync('$CLAUDE_JSON', 'utf-8'))
+const path = process.argv[1];
+const data = fs.existsSync(path)
+    ? JSON.parse(fs.readFileSync(path, 'utf-8'))
     : {};
 data.hasCompletedOnboarding = true;
-fs.writeFileSync('$CLAUDE_JSON', JSON.stringify(data, null, 2));
-"
+fs.writeFileSync(path, JSON.stringify(data, null, 2));
+" "$CLAUDE_JSON"
 
 # Write settings
 echo "[3/4] Writing settings..."
@@ -76,20 +77,21 @@ CLAUDE_SETTINGS="$CLAUDE_SETTINGS_DIR/settings.json"
 
 node -e "
 const fs = require('fs');
-const settings = fs.existsSync('$CLAUDE_SETTINGS')
-    ? JSON.parse(fs.readFileSync('$CLAUDE_SETTINGS', 'utf-8'))
+const path = process.argv[1];
+const settings = fs.existsSync(path)
+    ? JSON.parse(fs.readFileSync(path, 'utf-8'))
     : {};
 settings.env = {
     ...settings.env,
-    ANTHROPIC_BASE_URL: process.argv[1],
-    ANTHROPIC_AUTH_TOKEN: process.argv[2],
+    ANTHROPIC_BASE_URL: process.argv[2],
+    ANTHROPIC_AUTH_TOKEN: process.argv[3],
     CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1'
 };
 settings.permissions = settings.permissions || { allow: [], deny: [] };
 settings.alwaysThinkingEnabled = true;
-settings.model = process.argv[3];
-fs.writeFileSync('$CLAUDE_SETTINGS', JSON.stringify(settings, null, 2));
-" "$CLAUDE_API_URL" "$CLAUDE_API_KEY" "$CLAUDE_MODEL"
+settings.model = process.argv[4];
+fs.writeFileSync(path, JSON.stringify(settings, null, 2));
+" "$CLAUDE_SETTINGS" "$CLAUDE_API_URL" "$CLAUDE_API_KEY" "$CLAUDE_MODEL"
 
 # Add alias cc='claude --dangerously-skip-permissions' to shell rc
 echo "[4/4] Adding alias..."
