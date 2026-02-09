@@ -23,7 +23,18 @@ echo "Kernel: $CLASH_KERNEL"
 git clone --branch master --depth 1 "$CLONE_URL" "$WORK_DIR/clash-for-linux-install"
 cd "$WORK_DIR/clash-for-linux-install"
 
-ARGS=("$CLASH_KERNEL")
-[ -n "$CLASH_SUB_URL" ] && ARGS+=("$CLASH_SUB_URL")
+# Patch install.sh: remove the _quit line which exec's into an interactive
+# shell with unquoted URL (breaks URLs containing & ? etc).
+# We handle subscription ourselves after installation.
+sed -i '/^_valid_config/d; /^_quit/d' install.sh
 
-bash install.sh "${ARGS[@]}"
+bash install.sh "$CLASH_KERNEL"
+
+# Add subscription after installation
+if [ -n "$CLASH_SUB_URL" ]; then
+    CLASHCTL="$HOME/clashctl/scripts/cmd/clashctl.sh"
+    if [ -f "$CLASHCTL" ]; then
+        . "$CLASHCTL"
+        clashsub add "$CLASH_SUB_URL"
+    fi
+fi
