@@ -24,6 +24,14 @@ else
     CLONE_URL="$GOENV_REPO"
 fi
 
+# Ensure dependencies
+for cmd in git curl; do
+    if ! command -v "$cmd" &>/dev/null; then
+        sudo apt-get update -qq && sudo apt-get install -y -qq git curl
+        break
+    fi
+done
+
 echo "=== Go Environment Setup ==="
 
 # [1/4] Install goenv

@@ -29,6 +29,11 @@ TMUX_STATUS_POS="${TMUX_STATUS_POS:-top}"
 GH_PROXY="${GH_PROXY:-}"
 _GH="github.com"
 
+# Ensure dependencies
+if ! command -v git &>/dev/null; then
+    sudo apt-get update -qq && sudo apt-get install -y -qq git
+fi
+
 echo "=== Tmux Setup ==="
 
 # [1/4] Install tmux

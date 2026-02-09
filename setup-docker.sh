@@ -48,6 +48,11 @@ DOCKER_EXPERIMENTAL="${DOCKER_EXPERIMENTAL:-1}"
 DOCKER_ADDR_POOLS="${DOCKER_ADDR_POOLS:-172.17.0.0/12:24,192.168.0.0/16:24}"
 DOCKER_COMPOSE="${DOCKER_COMPOSE:-1}"
 
+# Ensure dependencies
+if ! command -v curl &>/dev/null; then
+    sudo apt-get update -qq && sudo apt-get install -y -qq curl
+fi
+
 echo "=== Docker Setup ==="
 
 # [1/5] Install Docker Engine

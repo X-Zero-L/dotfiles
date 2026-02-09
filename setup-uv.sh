@@ -7,6 +7,11 @@ set -euo pipefail
 
 UV_PYTHON="${UV_PYTHON:-${1:-}}"
 
+# Ensure dependencies
+if ! command -v curl &>/dev/null; then
+    sudo apt-get update -qq && sudo apt-get install -y -qq curl
+fi
+
 echo "=== uv Setup ==="
 
 # Install uv

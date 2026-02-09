@@ -10,6 +10,11 @@ set -euo pipefail
 
 TAILSCALE_AUTH_KEY="${TAILSCALE_AUTH_KEY:-}"
 
+# Ensure dependencies
+if ! command -v curl &>/dev/null; then
+    sudo apt-get update -qq && sudo apt-get install -y -qq curl
+fi
+
 echo "=== Tailscale Setup ==="
 
 # [1/2] Install Tailscale

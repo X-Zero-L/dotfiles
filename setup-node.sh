@@ -17,6 +17,11 @@ if [[ -n "$GH_PROXY" ]]; then
     [[ -z "$NPM_REGISTRY" ]]          && NPM_REGISTRY="https://registry.npmmirror.com"
 fi
 
+# Ensure dependencies
+if ! command -v curl &>/dev/null; then
+    sudo apt-get update -qq && sudo apt-get install -y -qq curl
+fi
+
 echo "=== Node.js Environment Setup ==="
 
 # Install nvm
