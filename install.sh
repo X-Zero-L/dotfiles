@@ -268,7 +268,7 @@ download_script() {
 
     [[ -s "$target" ]] && return 0
 
-    if curl -fsSL --retry 3 --retry-delay 2 -o "$target" "$url"; then
+    if curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o "$target" "$url"; then
         chmod +x "$target"
         return 0
     else
