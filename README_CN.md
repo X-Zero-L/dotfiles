@@ -115,9 +115,37 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clau
 | `CLAUDE_MODEL` | `opus` | 模型名称 |
 | `CLAUDE_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
 
+### `setup-codex.sh` — Codex CLI
+
+安装 [Codex CLI](https://github.com/openai/codex) 并配置 API。
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | CODEX_API_URL=https://你的API地址 CODEX_API_KEY=你的密钥 bash
+```
+
+通过代理：
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | CODEX_API_URL=https://你的API地址 CODEX_API_KEY=你的密钥 bash
+```
+
+通过参数：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash -s -- --api-url https://你的API地址 --api-key 你的密钥
+```
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `CODEX_API_URL` | _（必填）_ | API 基础地址 |
+| `CODEX_API_KEY` | _（必填）_ | API 密钥 |
+| `CODEX_MODEL` | `gpt-5.2` | 模型名称 |
+| `CODEX_EFFORT` | `xhigh` | 推理强度 |
+| `CODEX_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
+
 ## 完整安装
 
-> 建议顺序：代理 → shell → uv → node → claude code。
+> 建议顺序：代理 → shell → uv → node → claude code / codex。
 
 **1. 代理**（后续下载更快）
 
@@ -151,6 +179,12 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥 bash
+```
+
+**6. Codex CLI**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | CODEX_API_URL=https://你的API地址 CODEX_API_KEY=你的密钥 bash
 ```
 
 ## 注意事项

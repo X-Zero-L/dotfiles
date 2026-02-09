@@ -115,9 +115,37 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clau
 | `CLAUDE_MODEL` | `opus` | Model name |
 | `CLAUDE_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror |
 
+### `setup-codex.sh` — Codex CLI
+
+Installs [Codex CLI](https://github.com/openai/codex) and configures API settings.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | CODEX_API_URL=https://your-api-url CODEX_API_KEY=your-key bash
+```
+
+Via proxy:
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | CODEX_API_URL=https://your-api-url CODEX_API_KEY=your-key bash
+```
+
+With arguments:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash -s -- --api-url https://your-api-url --api-key your-key
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CODEX_API_URL` | _(required)_ | API base URL |
+| `CODEX_API_KEY` | _(required)_ | API key |
+| `CODEX_MODEL` | `gpt-5.2` | Model name |
+| `CODEX_EFFORT` | `xhigh` | Reasoning effort |
+| `CODEX_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror |
+
 ## Full Setup
 
-> Recommended order: proxy → shell → uv → node → claude code.
+> Recommended order: proxy → shell → uv → node → claude code / codex.
 
 **1. Proxy** (so subsequent downloads are faster)
 
@@ -151,6 +179,12 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key bash
+```
+
+**6. Codex CLI**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | CODEX_API_URL=https://your-api-url CODEX_API_KEY=your-key bash
 ```
 
 ## Notes
