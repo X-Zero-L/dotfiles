@@ -7,11 +7,20 @@ set -euo pipefail
 #   NODE_VERSION=20 ./setup-node.sh
 
 NODE_VERSION="${NODE_VERSION:-${1:-24}}"
+NVM_NODEJS_ORG_MIRROR="${NVM_NODEJS_ORG_MIRROR:-}"
+NPM_REGISTRY="${NPM_REGISTRY:-}"
+GH_PROXY="${GH_PROXY:-}"
+
+# Auto-set mirrors when behind GH_PROXY (likely in China)
+if [[ -n "$GH_PROXY" ]]; then
+    [[ -z "$NVM_NODEJS_ORG_MIRROR" ]] && NVM_NODEJS_ORG_MIRROR="https://npmmirror.com/mirrors/node"
+    [[ -z "$NPM_REGISTRY" ]]          && NPM_REGISTRY="https://registry.npmmirror.com"
+fi
 
 echo "=== Node.js Environment Setup ==="
 
 # Install nvm
-echo "[1/2] Installing nvm..."
+echo "[1/3] Installing nvm..."
 export NVM_DIR="$HOME/.nvm"
 if [ -f "$NVM_DIR/nvm.sh" ]; then
     echo "  nvm already installed, skipping."
@@ -27,9 +36,22 @@ fi
 . "$NVM_DIR/nvm.sh"
 
 # Install Node.js
-echo "[2/2] Installing Node.js ${NODE_VERSION}..."
+echo "[2/3] Installing Node.js ${NODE_VERSION}..."
+if [[ -n "$NVM_NODEJS_ORG_MIRROR" ]]; then
+    export NVM_NODEJS_ORG_MIRROR
+    echo "  Node mirror: $NVM_NODEJS_ORG_MIRROR"
+fi
 nvm install "$NODE_VERSION"
 nvm alias default "$NODE_VERSION"
+
+# Configure npm registry
+echo "[3/3] Configuring npm..."
+if [[ -n "$NPM_REGISTRY" ]]; then
+    npm config set registry "$NPM_REGISTRY"
+    echo "  npm registry: $NPM_REGISTRY"
+else
+    echo "  npm registry: (default)"
+fi
 
 echo ""
 echo "=== Done! ==="
