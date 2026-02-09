@@ -170,9 +170,48 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemi
 | `GEMINI_MODEL` | `gemini-3-pro-preview` | Model name |
 | `GEMINI_NPM_MIRROR` | `https://registry.npmmirror.com` | npm registry mirror |
 
+### `setup-docker.sh` — Docker
+
+Installs [Docker Engine](https://docs.docker.com/engine/install/), Docker Compose plugin, configures registry mirrors and optional proxy.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
+```
+
+Via proxy:
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
+```
+
+With custom mirror:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | DOCKER_MIRROR=https://mirror.example.com bash
+```
+
+With daemon proxy:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | DOCKER_PROXY=http://localhost:7890 bash
+```
+
+With arguments:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash -s -- --mirror https://mirror.example.com --proxy http://localhost:7890
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DOCKER_MIRROR` | `https://docker.1ms.run` | Registry mirror URL(s), comma-separated for multiple |
+| `DOCKER_PROXY` | _(empty)_ | HTTP/HTTPS proxy for daemon and containers |
+| `DOCKER_NO_PROXY` | `localhost,127.0.0.0/8` | No-proxy list for daemon |
+| `DOCKER_COMPOSE` | `1` | Install docker-compose-plugin (`0` to skip) |
+
 ## Full Setup
 
-> Recommended order: proxy → shell → uv → node → coding agents.
+> Recommended order: proxy → shell → docker → uv → node → coding agents.
 
 **1. Proxy** (so subsequent downloads are faster)
 
@@ -190,31 +229,37 @@ source ~/.bashrc && clashon
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
 ```
 
-**3. uv + Python**
+**3. Docker**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
+```
+
+**4. uv + Python**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | UV_PYTHON=3.12 bash
 ```
 
-**4. Node.js**
+**5. Node.js**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
 ```
 
-**5. Claude Code**
+**6. Claude Code**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key bash
 ```
 
-**6. Codex CLI**
+**7. Codex CLI**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | CODEX_API_URL=https://your-api-url CODEX_API_KEY=your-key bash
 ```
 
-**7. Gemini CLI**
+**8. Gemini CLI**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | GEMINI_API_URL=https://your-api-url GEMINI_API_KEY=your-key bash

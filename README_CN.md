@@ -170,9 +170,48 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemi
 | `GEMINI_MODEL` | `gemini-3-pro-preview` | 模型名称 |
 | `GEMINI_NPM_MIRROR` | `https://registry.npmmirror.com` | npm 镜像源 |
 
+### `setup-docker.sh` — Docker
+
+安装 [Docker Engine](https://docs.docker.com/engine/install/)、Docker Compose 插件，配置镜像加速和可选代理。
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
+```
+
+通过代理：
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
+```
+
+自定义镜像：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | DOCKER_MIRROR=https://mirror.example.com bash
+```
+
+配置守护进程代理：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | DOCKER_PROXY=http://localhost:7890 bash
+```
+
+通过参数：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash -s -- --mirror https://mirror.example.com --proxy http://localhost:7890
+```
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `DOCKER_MIRROR` | `https://docker.1ms.run` | 镜像加速地址，多个用逗号分隔 |
+| `DOCKER_PROXY` | _（空）_ | 守护进程和容器的 HTTP/HTTPS 代理 |
+| `DOCKER_NO_PROXY` | `localhost,127.0.0.0/8` | 不走代理的地址列表 |
+| `DOCKER_COMPOSE` | `1` | 安装 docker-compose-plugin（设为 `0` 跳过） |
+
 ## 完整安装
 
-> 建议顺序：代理 → shell → uv → node → 编码代理。
+> 建议顺序：代理 → shell → docker → uv → node → 编码代理。
 
 **1. 代理**（后续下载更快）
 
@@ -190,31 +229,37 @@ source ~/.bashrc && clashon
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
 ```
 
-**3. uv + Python**
+**3. Docker**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
+```
+
+**4. uv + Python**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | UV_PYTHON=3.12 bash
 ```
 
-**4. Node.js**
+**5. Node.js**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
 ```
 
-**5. Claude Code**
+**6. Claude Code**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | CLAUDE_API_URL=https://你的API地址 CLAUDE_API_KEY=你的密钥 bash
 ```
 
-**6. Codex CLI**
+**7. Codex CLI**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | CODEX_API_URL=https://你的API地址 CODEX_API_KEY=你的密钥 bash
 ```
 
-**7. Gemini CLI**
+**8. Gemini CLI**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | GEMINI_API_URL=https://你的API地址 GEMINI_API_KEY=你的密钥 bash
