@@ -14,8 +14,9 @@ Installs nvm (Node Version Manager) and Node.js.
 
 | Step | Action |
 |------|--------|
-| 1/2 | Download and run nvm install script from GitHub |
-| 2/2 | `nvm install <version>` + `nvm alias default <version>` |
+| 1/3 | Download and run nvm install script from GitHub |
+| 2/3 | `nvm install <version>` + `nvm alias default <version>` |
+| 3/3 | Configure npm registry (if mirror is set) |
 
 ## Files Created/Modified
 
@@ -31,6 +32,8 @@ Installs nvm (Node Version Manager) and Node.js.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `NODE_VERSION` | `24` | Node.js major version to install (also accepted as first argument) |
+| `NVM_NODEJS_ORG_MIRROR` | _(empty)_ | Mirror for Node.js binary downloads. Auto-set to `https://npmmirror.com/mirrors/node` when `GH_PROXY` is set. |
+| `NPM_REGISTRY` | _(empty)_ | npm registry URL. Auto-set to `https://registry.npmmirror.com` when `GH_PROXY` is set. |
 
 ## Re-run Behavior
 

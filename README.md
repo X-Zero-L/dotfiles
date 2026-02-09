@@ -415,6 +415,8 @@ All environment variables across all scripts in one table.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `NODE_VERSION` | `24` | Node.js major version (also accepted as first argument) |
+| `NVM_NODEJS_ORG_MIRROR` | _(empty)_ | Node.js binary mirror. Auto-set when `GH_PROXY` is set. |
+| `NPM_REGISTRY` | _(empty)_ | npm registry URL. Auto-set when `GH_PROXY` is set. |
 
 ### uv + Python
 

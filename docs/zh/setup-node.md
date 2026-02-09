@@ -14,8 +14,9 @@
 
 | 步骤 | 操作 |
 |------|------|
-| 1/2 | 从 GitHub 下载并运行 nvm 安装脚本 |
-| 2/2 | `nvm install <version>` + `nvm alias default <version>` |
+| 1/3 | 从 GitHub 下载并运行 nvm 安装脚本 |
+| 2/3 | `nvm install <version>` + `nvm alias default <version>` |
+| 3/3 | 配置 npm registry（如设置了镜像） |
 
 ## 创建/修改的文件
 
@@ -31,6 +32,8 @@
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
 | `NODE_VERSION` | `24` | 要安装的 Node.js 主版本号（也可作为第一个参数传入） |
+| `NVM_NODEJS_ORG_MIRROR` | _（空）_ | Node.js 二进制下载镜像。设置 `GH_PROXY` 时自动使用 `https://npmmirror.com/mirrors/node`。 |
+| `NPM_REGISTRY` | _（空）_ | npm registry 地址。设置 `GH_PROXY` 时自动使用 `https://registry.npmmirror.com`。 |
 
 ## 重复运行行为
 
