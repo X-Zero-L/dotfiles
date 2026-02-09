@@ -10,7 +10,16 @@ CLASH_SUB_URL="${CLASH_SUB_URL:-${1:-}}"
 CLASH_KERNEL="${CLASH_KERNEL:-mihomo}"
 CLASH_GH_PROXY="${CLASH_GH_PROXY:-https://gh-proxy.org}"
 
-CLONE_URL="${CLASH_GH_PROXY:+${CLASH_GH_PROXY%/}/}https://github.com/nelvko/clash-for-linux-install.git"
+GITHUB_URL="https://github.com/nelvko/clash-for-linux-install.git"
+
+# Skip gh-proxy for git clone if system proxy is already configured,
+# to avoid double-proxying (gh-proxy + local proxy).
+if [ -n "${http_proxy:-}" ] || [ -n "${https_proxy:-}" ] || [ -n "${all_proxy:-}" ]; then
+    CLONE_URL="$GITHUB_URL"
+else
+    CLONE_URL="${CLASH_GH_PROXY:+${CLASH_GH_PROXY%/}/}$GITHUB_URL"
+fi
+
 WORK_DIR=$(mktemp -d)
 
 cleanup() { rm -rf "$WORK_DIR"; }
