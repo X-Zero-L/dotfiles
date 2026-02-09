@@ -665,6 +665,11 @@ run_component() {
         export CLASH_GH_PROXY="$GH_PROXY"
     fi
 
+    # Auto-set Docker mirror when behind GH_PROXY (likely in China)
+    if [[ "${COMP_IDS[$idx]}" == "docker" && -n "$GH_PROXY" && -z "${DOCKER_MIRROR:-}" ]]; then
+        export DOCKER_MIRROR="https://docker.1ms.run"
+    fi
+
     # Check script exists
     if [[ ! -f "$script_path" ]]; then
         printf "  ${SYM_CROSS} ${BOLD}${CYAN}[%d/%d]${NC} ${RED}%s${NC} ${DIM}(script not found)${NC}\n" "$step" "$total" "${COMP_NAMES[$idx]}"
