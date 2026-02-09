@@ -49,14 +49,18 @@ fi
 # [1] Install Claude Code
 echo "[1/4] Installing Claude Code..."
 if command -v claude &>/dev/null; then
-    echo "  Claude Code already installed, upgrading..."
+    echo "  Already installed, skipping."
+else
+    npm install -g @anthropic-ai/claude-code --registry="$CLAUDE_NPM_MIRROR"
 fi
-npm install -g @anthropic-ai/claude-code --registry="$CLAUDE_NPM_MIRROR"
 
 # [2] Skip onboarding
 echo "[2/4] Configuring onboarding..."
 CLAUDE_JSON="$HOME/.claude.json"
-node -e "
+if [ -f "$CLAUDE_JSON" ] && grep -q '"hasCompletedOnboarding".*true' "$CLAUDE_JSON" 2>/dev/null; then
+    echo "  Already configured, skipping."
+else
+    node -e "
 const fs = require('fs');
 const path = process.argv[1];
 const data = fs.existsSync(path)
@@ -65,6 +69,7 @@ const data = fs.existsSync(path)
 data.hasCompletedOnboarding = true;
 fs.writeFileSync(path, JSON.stringify(data, null, 2));
 " "$CLAUDE_JSON"
+fi
 
 # [3] Write settings (only if API keys provided)
 echo "[3/4] Writing settings..."
@@ -73,7 +78,10 @@ if [ "$HAS_KEYS" -eq 1 ]; then
     mkdir -p "$CLAUDE_SETTINGS_DIR"
     CLAUDE_SETTINGS="$CLAUDE_SETTINGS_DIR/settings.json"
 
-    node -e "
+    if [ -f "$CLAUDE_SETTINGS" ] && grep -qF "$CLAUDE_API_URL" "$CLAUDE_SETTINGS" 2>/dev/null; then
+        echo "  Already configured, skipping."
+    else
+        node -e "
 const fs = require('fs');
 const path = process.argv[1];
 const settings = fs.existsSync(path)
@@ -90,6 +98,7 @@ settings.alwaysThinkingEnabled = true;
 settings.model = process.argv[4];
 fs.writeFileSync(path, JSON.stringify(settings, null, 2));
 " "$CLAUDE_SETTINGS" "$CLAUDE_API_URL" "$CLAUDE_API_KEY" "$CLAUDE_MODEL"
+    fi
 else
     echo "  Skipped (no API keys provided). Configure later with:"
     echo "    claude config set env.ANTHROPIC_BASE_URL <url>"

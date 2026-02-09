@@ -49,9 +49,10 @@ fi
 # Install Gemini CLI
 echo "[1/3] Installing Gemini CLI..."
 if command -v gemini &>/dev/null; then
-    echo "  Gemini CLI already installed, upgrading..."
+    echo "  Already installed, skipping."
+else
+    npm install -g @google/gemini-cli --registry="$GEMINI_NPM_MIRROR"
 fi
-npm install -g @google/gemini-cli --registry="$GEMINI_NPM_MIRROR"
 
 # Write .env (only if API keys provided)
 echo "[2/3] Writing config..."
@@ -59,12 +60,16 @@ if [ "$HAS_KEYS" -eq 1 ]; then
     GEMINI_DIR="$HOME/.gemini"
     mkdir -p "$GEMINI_DIR"
 
-    cat > "$GEMINI_DIR/.env" << EOF
+    if [ -f "$GEMINI_DIR/.env" ] && grep -qF "$GEMINI_API_URL" "$GEMINI_DIR/.env" 2>/dev/null; then
+        echo "  Already configured, skipping."
+    else
+        cat > "$GEMINI_DIR/.env" << EOF
 GOOGLE_GEMINI_BASE_URL=$GEMINI_API_URL
 GEMINI_API_KEY=$GEMINI_API_KEY
 GEMINI_MODEL=$GEMINI_MODEL
 EOF
-    chmod 600 "$GEMINI_DIR/.env"
+        chmod 600 "$GEMINI_DIR/.env"
+    fi
 else
     echo "  Skipped (no API keys provided). Configure later:"
     echo "    mkdir -p ~/.gemini && edit ~/.gemini/.env"

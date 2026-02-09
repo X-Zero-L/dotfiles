@@ -53,9 +53,10 @@ fi
 # Install Codex
 echo "[1/4] Installing Codex CLI..."
 if command -v codex &>/dev/null; then
-    echo "  Codex already installed, upgrading..."
+    echo "  Already installed, skipping."
+else
+    npm install -g @openai/codex --registry="$CODEX_NPM_MIRROR"
 fi
-npm install -g @openai/codex --registry="$CODEX_NPM_MIRROR"
 
 # Write config (only if API keys provided)
 echo "[2/4] Writing config..."
@@ -63,7 +64,10 @@ if [ "$HAS_KEYS" -eq 1 ]; then
     CODEX_DIR="$HOME/.codex"
     mkdir -p "$CODEX_DIR"
 
-    cat > "$CODEX_DIR/config.toml" << EOF
+    if [ -f "$CODEX_DIR/config.toml" ] && grep -qF "$CODEX_API_URL" "$CODEX_DIR/config.toml" 2>/dev/null; then
+        echo "  Already configured, skipping."
+    else
+        cat > "$CODEX_DIR/config.toml" << EOF
 disable_response_storage = true
 model = "$CODEX_MODEL"
 model_provider = "$CODEX_PROVIDER"
@@ -76,15 +80,20 @@ name = "$CODEX_PROVIDER"
 requires_openai_auth = true
 wire_api = "responses"
 EOF
+    fi
 
     # Write auth.json
     echo "[3/4] Writing auth..."
-    cat > "$CODEX_DIR/auth.json" << EOF
+    if [ -f "$CODEX_DIR/auth.json" ] && grep -qF "$CODEX_API_KEY" "$CODEX_DIR/auth.json" 2>/dev/null; then
+        echo "  Already configured, skipping."
+    else
+        cat > "$CODEX_DIR/auth.json" << EOF
 {
   "OPENAI_API_KEY": "$CODEX_API_KEY"
 }
 EOF
-    chmod 600 "$CODEX_DIR/auth.json"
+        chmod 600 "$CODEX_DIR/auth.json"
+    fi
 else
     echo "  Skipped (no API keys provided). Configure later:"
     echo "    mkdir -p ~/.codex && edit ~/.codex/config.toml"
