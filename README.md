@@ -10,40 +10,56 @@ Automated setup scripts for Debian/Ubuntu systems.
 
 Use `install.sh` for a one-stop interactive or non-interactive installation.
 
+Interactive TUI — select what to install:
+
 ```bash
-# Interactive TUI — select what to install
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash
+```
 
-# Via proxy (recommended for China)
+Via proxy (recommended for China):
+
+```bash
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --gh-proxy https://gh-proxy.org
+```
 
-# Install everything non-interactively
+Install everything non-interactively:
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all
+```
 
-# Specific components only
+Specific components only:
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --components shell,node,docker
+```
 
-# With pre-configured API keys
+With pre-configured API keys:
+
+```bash
 export CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key
 export CODEX_API_URL=https://your-api-url  CODEX_API_KEY=your-key
 export GEMINI_API_URL=https://your-api-url GEMINI_API_KEY=your-key
-curl -fsSL .../install.sh | bash -s -- --all
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all
+```
 
-# Verbose mode (show raw script output instead of spinner)
-curl -fsSL .../install.sh | bash -s -- --all --verbose
+Verbose mode (show raw script output instead of spinner):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all --verbose
 ```
 
 Available components: `shell`, `clash`, `node`, `uv`, `docker`, `claude-code`, `codex`, `gemini`, `skills`
 
 ## Components
 
-Each script can also be run standalone. Two install styles:
+Each script can also be run standalone. All scripts support two install styles — direct and via gh-proxy:
 
 ```bash
-# Direct
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/<script> | bash
+```
 
-# Via gh-proxy (China)
+```bash
 curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/<script> | bash
 ```
 
@@ -56,20 +72,36 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 Installs zsh, Oh My Zsh, plugins (autosuggestions, syntax-highlighting, z), Starship prompt with Catppuccin Powerline preset. Requires `sudo`.
 
 ```bash
-curl -fsSL .../setup-shell.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
+```
+
+Via proxy:
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
 ```
 
 #### Clash Proxy (`setup-clash.sh`)
 
 Installs [clash-for-linux](https://github.com/nelvko/clash-for-linux-install) with subscription support.
 
-```bash
-# With subscription URL
-curl -fsSL .../setup-clash.sh | bash -s -- 'https://your-subscription-url'
+With subscription URL as argument:
 
-# Or via env var
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
+```
+
+With pre-exported env var:
+
+```bash
 export CLASH_SUB_URL='https://your-subscription-url'
-curl -fsSL .../setup-clash.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash
+```
+
+Via proxy:
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
 ```
 
 Config: `CLASH_SUB_URL`, `CLASH_KERNEL`, `CLASH_GH_PROXY` — see [Configuration Reference](#configuration-reference).
@@ -78,15 +110,25 @@ Config: `CLASH_SUB_URL`, `CLASH_KERNEL`, `CLASH_GH_PROXY` — see [Configuration
 
 Installs [Docker Engine](https://docs.docker.com/engine/install/), Compose plugin, configures registry mirrors, log rotation, address pools, and optional proxy. Requires `sudo`.
 
-```bash
-# Defaults (includes China mirror)
-curl -fsSL .../setup-docker.sh | bash
+Default (includes China mirror):
 
-# Custom configuration
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
+```
+
+Custom configuration:
+
+```bash
 export DOCKER_MIRROR=https://mirror.example.com
 export DOCKER_DATA_ROOT=/data/docker
 export DOCKER_PROXY=http://localhost:7890
-curl -fsSL .../setup-docker.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
+```
+
+Via proxy:
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
 ```
 
 Config: `DOCKER_MIRROR`, `DOCKER_PROXY`, `DOCKER_DATA_ROOT`, `DOCKER_LOG_SIZE`, etc. — see [Configuration Reference](#configuration-reference).
@@ -99,26 +141,46 @@ Config: `DOCKER_MIRROR`, `DOCKER_PROXY`, `DOCKER_DATA_ROOT`, `DOCKER_LOG_SIZE`, 
 
 Installs [nvm](https://github.com/nvm-sh/nvm) and Node.js.
 
-```bash
-# Default (Node.js 24)
-curl -fsSL .../setup-node.sh | bash
+Default (Node.js 24):
 
-# Specific version
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
+```
+
+Specific version:
+
+```bash
 export NODE_VERSION=22
-curl -fsSL .../setup-node.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
+```
+
+Via proxy:
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
 ```
 
 #### uv + Python (`setup-uv.sh`)
 
 Installs [uv](https://docs.astral.sh/uv/) package manager, optionally installs a Python version.
 
-```bash
-# uv only
-curl -fsSL .../setup-uv.sh | bash
+uv only:
 
-# uv + Python
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
+```
+
+uv + Python:
+
+```bash
 export UV_PYTHON=3.12
-curl -fsSL .../setup-uv.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
+```
+
+Via proxy:
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
 ```
 
 ---
@@ -135,17 +197,30 @@ All three agent scripts share the same behavior:
 
 Installs [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI. Alias: `cc`.
 
+Install + configure:
+
 ```bash
-# Install + configure
 export CLAUDE_API_URL=https://your-api-url
 export CLAUDE_API_KEY=your-key
-curl -fsSL .../setup-claude-code.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
+```
 
-# Install only (configure later)
-curl -fsSL .../setup-claude-code.sh | bash
+Install only (configure later):
 
-# Or via CLI arguments
-curl -fsSL .../setup-claude-code.sh | bash -s -- --api-url https://... --api-key ...
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
+```
+
+Via CLI arguments:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash -s -- --api-url https://your-api-url --api-key your-key
+```
+
+Via proxy:
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
 ```
 
 Config: `CLAUDE_API_URL`, `CLAUDE_API_KEY`, `CLAUDE_MODEL`, `CLAUDE_NPM_MIRROR` — see [Configuration Reference](#configuration-reference).
@@ -154,25 +229,65 @@ Config: `CLAUDE_API_URL`, `CLAUDE_API_KEY`, `CLAUDE_MODEL`, `CLAUDE_NPM_MIRROR` 
 
 Installs [Codex CLI](https://github.com/openai/codex). Alias: `cx`.
 
+Install + configure:
+
 ```bash
 export CODEX_API_URL=https://your-api-url
 export CODEX_API_KEY=your-key
-curl -fsSL .../setup-codex.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
 ```
 
-Config: `CODEX_API_URL`, `CODEX_API_KEY`, `CODEX_MODEL`, `CODEX_EFFORT`, `CODEX_NPM_MIRROR`.
+Install only (configure later):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
+```
+
+Via CLI arguments:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash -s -- --api-url https://your-api-url --api-key your-key
+```
+
+Via proxy:
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
+```
+
+Config: `CODEX_API_URL`, `CODEX_API_KEY`, `CODEX_MODEL`, `CODEX_EFFORT`, `CODEX_NPM_MIRROR` — see [Configuration Reference](#configuration-reference).
 
 #### Gemini CLI (`setup-gemini.sh`)
 
 Installs [Gemini CLI](https://github.com/google-gemini/gemini-cli). Alias: `gm`.
 
+Install + configure:
+
 ```bash
 export GEMINI_API_URL=https://your-api-url
 export GEMINI_API_KEY=your-key
-curl -fsSL .../setup-gemini.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
 ```
 
-Config: `GEMINI_API_URL`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_NPM_MIRROR`.
+Install only (configure later):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
+```
+
+Via CLI arguments:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash -s -- --api-url https://your-api-url --api-key your-key
+```
+
+Via proxy:
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
+```
+
+Config: `GEMINI_API_URL`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_NPM_MIRROR` — see [Configuration Reference](#configuration-reference).
 
 #### Agent Skills (`setup-skills.sh`)
 
@@ -189,10 +304,16 @@ Installs common [agent skills](https://skills.sh/) globally for all coding agent
 | `codex` | [softaworks/agent-toolkit](https://github.com/softaworks/agent-toolkit) | Codex agent skill |
 
 ```bash
-curl -fsSL .../setup-skills.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-skills.sh | bash
 ```
 
-Config: `SKILLS_NPM_MIRROR`.
+Via proxy:
+
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-skills.sh | bash
+```
+
+Config: `SKILLS_NPM_MIRROR` — see [Configuration Reference](#configuration-reference).
 
 ## Configuration Reference
 
@@ -276,17 +397,27 @@ All environment variables across all scripts in one table.
 
 Step-by-step flow for setting up a fresh machine. The recommended order ensures dependencies are met.
 
-```bash
-# ── 1. Proxy (so subsequent downloads are faster) ──
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
-source ~/.bashrc && clashon
+**1. Proxy** (so subsequent downloads are faster)
 
-# ── 2. Prepare API keys (optional — omit to install tools without config) ──
+```bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
+```
+
+```bash
+source ~/.bashrc && clashon
+```
+
+**2. Prepare API keys** (optional — omit to install tools without config)
+
+```bash
 export CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key
 export CODEX_API_URL=https://your-api-url  CODEX_API_KEY=your-key
 export GEMINI_API_URL=https://your-api-url GEMINI_API_KEY=your-key
+```
 
-# ── 3. Install everything ──
+**3. Install everything**
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all
 ```
 
