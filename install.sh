@@ -340,7 +340,7 @@ render_menu() {
     done
 
     # Move cursor to top of menu area
-    local menu_height=$((total + 5))
+    local menu_height=$((total + 4))
     printf "\033[%dA" "$menu_height"
 
     # Header
@@ -405,7 +405,7 @@ show_checkbox_menu() {
     CURSOR_HIDDEN=1
 
     # Reserve space
-    local menu_height=$((total + 5))
+    local menu_height=$((total + 4))
     for ((i = 0; i < menu_height; i++)); do
         printf "\n"
     done
