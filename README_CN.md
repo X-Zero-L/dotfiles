@@ -53,7 +53,7 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all --verbose
 ```
 
-可用组件：`shell`、`tmux`、`clash`、`node`、`uv`、`go`、`docker`、`claude-code`、`codex`、`gemini`、`skills`
+可用组件：`shell`、`tmux`、`clash`、`node`、`uv`、`go`、`docker`、`tailscale`、`claude-code`、`codex`、`gemini`、`skills`
 
 ## 组件详解
 
@@ -161,6 +161,23 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 ```
 
 配置项：`DOCKER_MIRROR`、`DOCKER_PROXY`、`DOCKER_DATA_ROOT`、`DOCKER_LOG_SIZE` 等 — 详见[配置速查表](#配置速查表)。
+
+#### Tailscale (`setup-tailscale.sh`)
+
+安装 [Tailscale](https://tailscale.com/) VPN 组网。
+
+仅安装：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tailscale.sh | bash
+```
+
+安装并自动连接：
+
+```bash
+export TAILSCALE_AUTH_KEY=tskey-auth-xxxxx
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tailscale.sh | bash
+```
 
 ---
 
@@ -425,6 +442,12 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 | `DOCKER_ADDR_POOLS` | `172.17.0.0/12:24,192.168.0.0/16:24` | 默认地址池（`base/cidr:size`，逗号分隔） |
 | `DOCKER_COMPOSE` | `1` | 安装 docker-compose-plugin（设为 `0` 跳过） |
 
+### Tailscale
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `TAILSCALE_AUTH_KEY` | _（空）_ | 自动连接的 Auth Key。留空则仅安装。 |
+
 ### Claude Code
 
 | 变量 | 默认值 | 说明 |
@@ -492,13 +515,14 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh
 1. `setup-shell.sh` — Shell 环境（zsh、插件、Starship）
 2. `setup-tmux.sh` — Tmux + Catppuccin + 插件
 3. `setup-docker.sh` — Docker Engine + Compose
-4. `setup-uv.sh` — uv + Python
-5. `setup-go.sh` — goenv + Go
-6. `setup-node.sh` — nvm + Node.js
-7. `setup-claude-code.sh` — Claude Code
-8. `setup-codex.sh` — Codex CLI
-9. `setup-gemini.sh` — Gemini CLI
-10. `setup-skills.sh` — 代理技能
+4. `setup-tailscale.sh` — Tailscale VPN
+5. `setup-uv.sh` — uv + Python
+6. `setup-go.sh` — goenv + Go
+7. `setup-node.sh` — nvm + Node.js
+8. `setup-claude-code.sh` — Claude Code
+9. `setup-codex.sh` — Codex CLI
+10. `setup-gemini.sh` — Gemini CLI
+11. `setup-skills.sh` — 代理技能
 
 ## 详细文档
 

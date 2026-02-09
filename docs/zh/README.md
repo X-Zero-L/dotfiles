@@ -23,6 +23,7 @@
 | [setup-node.sh](setup-node.md) | nvm + Node.js |
 | [setup-uv.sh](setup-uv.md) | uv 包管理器 + Python |
 | [setup-go.sh](setup-go.md) | goenv + Go |
+| [setup-tailscale.sh](setup-tailscale.md) | Tailscale VPN 组网 |
 
 ### AI 编码代理
 

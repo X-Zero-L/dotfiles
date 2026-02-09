@@ -53,7 +53,7 @@ Verbose mode (show raw script output instead of spinner):
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all --verbose
 ```
 
-Available components: `shell`, `tmux`, `clash`, `node`, `uv`, `go`, `docker`, `claude-code`, `codex`, `gemini`, `skills`
+Available components: `shell`, `tmux`, `clash`, `node`, `uv`, `go`, `docker`, `tailscale`, `claude-code`, `codex`, `gemini`, `skills`
 
 ## Components
 
@@ -161,6 +161,23 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 ```
 
 Config: `DOCKER_MIRROR`, `DOCKER_PROXY`, `DOCKER_DATA_ROOT`, `DOCKER_LOG_SIZE`, etc. — see [Configuration Reference](#configuration-reference).
+
+#### Tailscale (`setup-tailscale.sh`)
+
+Installs [Tailscale](https://tailscale.com/) VPN mesh network.
+
+Install only:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tailscale.sh | bash
+```
+
+Install + auto connect:
+
+```bash
+export TAILSCALE_AUTH_KEY=tskey-auth-xxxxx
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tailscale.sh | bash
+```
 
 ---
 
@@ -425,6 +442,12 @@ All environment variables across all scripts in one table.
 | `DOCKER_ADDR_POOLS` | `172.17.0.0/12:24,192.168.0.0/16:24` | Default address pools (`base/cidr:size`) |
 | `DOCKER_COMPOSE` | `1` | Install docker-compose-plugin (`0` to skip) |
 
+### Tailscale
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `TAILSCALE_AUTH_KEY` | _(empty)_ | Auth key for auto-connect. Leave empty to install only. |
+
 ### Claude Code
 
 | Variable | Default | Description |
@@ -492,13 +515,14 @@ Or install components individually in this order:
 1. `setup-shell.sh` — Shell environment (zsh, plugins, Starship)
 2. `setup-tmux.sh` — Tmux + Catppuccin + plugins
 3. `setup-docker.sh` — Docker Engine + Compose
-4. `setup-uv.sh` — uv + Python
-5. `setup-go.sh` — goenv + Go
-6. `setup-node.sh` — nvm + Node.js
-7. `setup-claude-code.sh` — Claude Code
-8. `setup-codex.sh` — Codex CLI
-9. `setup-gemini.sh` — Gemini CLI
-10. `setup-skills.sh` — Agent skills
+4. `setup-tailscale.sh` — Tailscale VPN
+5. `setup-uv.sh` — uv + Python
+6. `setup-go.sh` — goenv + Go
+7. `setup-node.sh` — nvm + Node.js
+8. `setup-claude-code.sh` — Claude Code
+9. `setup-codex.sh` — Codex CLI
+10. `setup-gemini.sh` — Gemini CLI
+11. `setup-skills.sh` — Agent skills
 
 ## Detailed Documentation
 
