@@ -2,8 +2,8 @@
 set -uo pipefail
 
 # =============================================================================
-# Dotfiles All-in-One Installer
-# https://github.com/X-Zero-L/dotfiles
+# Rig All-in-One Installer
+# https://github.com/X-Zero-L/rig
 #
 # Usage:
 #   bash install.sh                              # Interactive TUI
@@ -27,7 +27,7 @@ set -uo pipefail
 # Prevent gh-proxy.org from rewriting these URLs in proxied content
 _GH="github.com"
 _RAW="raw.githubusercontent.com"
-REPO="X-Zero-L/dotfiles"
+REPO="X-Zero-L/rig"
 BRANCH="master"
 BASE_URL="https://${_RAW}/${REPO}/${BRANCH}"
 
@@ -215,8 +215,8 @@ cache_sudo() {
 print_banner() {
     printf "\n"
     printf "  ${CYAN}${BOLD}┌──────────────────────────────────────────┐${NC}\n"
-    printf "  ${CYAN}${BOLD}│${NC}  ${BOLD}${WHITE}Dotfiles Installer${NC}                      ${CYAN}${BOLD}│${NC}\n"
-    printf "  ${CYAN}${BOLD}│${NC}  ${DIM}${_GH}/${REPO}${NC}            ${CYAN}${BOLD}│${NC}\n"
+    printf "  ${CYAN}${BOLD}│${NC}  ${BOLD}${WHITE}Rig Installer${NC}                           ${CYAN}${BOLD}│${NC}\n"
+    printf "  ${CYAN}${BOLD}│${NC}  ${DIM}${_GH}/${REPO}${NC}                 ${CYAN}${BOLD}│${NC}\n"
     printf "  ${CYAN}${BOLD}└──────────────────────────────────────────┘${NC}\n"
     printf "\n"
 }
@@ -229,7 +229,7 @@ show_help() {
     cat << 'HELP'
 Usage: install.sh [OPTIONS]
 
-Interactive dotfiles installer with checkbox selection.
+Interactive rig installer with checkbox selection.
 
 Options:
   --all                  Install all components
@@ -967,7 +967,7 @@ main() {
 
     # Create temp directory for downloads
     TMPDIR_INSTALL=$(mktemp -d)
-    LOG_FILE="/tmp/dotfiles-install-$(date +%Y%m%d-%H%M%S)"
+    LOG_FILE="/tmp/rig-install-$(date +%Y%m%d-%H%M%S)"
 
     # Banner
     print_banner

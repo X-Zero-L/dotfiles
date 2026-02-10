@@ -1,4 +1,4 @@
-# Dotfiles Installer Demo
+# Rig Installer Demo
 # Usage: vhs demo.tape
 
 Output demo.gif

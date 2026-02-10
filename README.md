@@ -1,4 +1,4 @@
-# dotfiles
+# rig
 
 [中文](README_CN.md)
 
@@ -17,25 +17,25 @@ Use `install.sh` for a one-stop interactive or non-interactive installation.
 Interactive TUI — select what to install:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash
 ```
 
 Via proxy (recommended for China):
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --gh-proxy https://gh-proxy.org
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --gh-proxy https://gh-proxy.org
 ```
 
 Install everything non-interactively:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --all
 ```
 
 Specific components only:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --components shell,node,docker
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --components shell,node,docker
 ```
 
 With pre-configured API keys:
@@ -44,13 +44,13 @@ With pre-configured API keys:
 export CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key
 export CODEX_API_URL=https://your-api-url  CODEX_API_KEY=your-key
 export GEMINI_API_URL=https://your-api-url GEMINI_API_KEY=your-key
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --all
 ```
 
 Verbose mode (show raw script output instead of spinner):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all --verbose
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --all --verbose
 ```
 
 Available components: `shell`, `tmux`, `clash`, `node`, `uv`, `go`, `docker`, `tailscale`, `ssh`, `claude-code`, `codex`, `gemini`, `skills`
@@ -60,11 +60,11 @@ Available components: `shell`, `tmux`, `clash`, `node`, `uv`, `go`, `docker`, `t
 Each script can also be run standalone. All scripts support two install styles — direct and via gh-proxy:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/<script> | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/<script> | bash
 ```
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/<script> | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/<script> | bash
 ```
 
 ---
@@ -76,13 +76,13 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 Installs zsh, Oh My Zsh, plugins (autosuggestions, syntax-highlighting, z), Starship prompt with Catppuccin Powerline preset. Requires `sudo`.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-shell.sh | bash
 ```
 
 Via proxy:
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-shell.sh | bash
 ```
 
 #### Tmux (`setup-tmux.sh`)
@@ -92,20 +92,20 @@ Installs [tmux](https://github.com/tmux/tmux), [TPM](https://github.com/tmux-plu
 Default (no custom keybindings):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tmux.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-tmux.sh | bash
 ```
 
 With custom keybindings (Ctrl+a prefix, `|` and `-` splits, vim-style resize):
 
 ```bash
 export TMUX_KEYBINDS=1
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tmux.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-tmux.sh | bash
 ```
 
 Via proxy:
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tmux.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-tmux.sh | bash
 ```
 
 Config: `TMUX_KEYBINDS`, `TMUX_MOUSE`, `TMUX_STATUS_POS`, `GH_PROXY` — see [Configuration Reference](#configuration-reference).
@@ -117,20 +117,20 @@ Installs [clash-for-linux](https://github.com/nelvko/clash-for-linux-install) wi
 With subscription URL as argument:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
 ```
 
 With pre-exported env var:
 
 ```bash
 export CLASH_SUB_URL='https://your-subscription-url'
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-clash.sh | bash
 ```
 
 Via proxy:
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
 ```
 
 Config: `CLASH_SUB_URL`, `CLASH_KERNEL`, `CLASH_GH_PROXY` — see [Configuration Reference](#configuration-reference).
@@ -142,7 +142,7 @@ Installs [Docker Engine](https://docs.docker.com/engine/install/), Compose plugi
 Default (no mirror, suitable for overseas):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-docker.sh | bash
 ```
 
 Custom configuration:
@@ -151,13 +151,13 @@ Custom configuration:
 export DOCKER_MIRROR=https://mirror.example.com
 export DOCKER_DATA_ROOT=/data/docker
 export DOCKER_PROXY=http://localhost:7890
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-docker.sh | bash
 ```
 
 Via proxy:
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-docker.sh | bash
 ```
 
 Config: `DOCKER_MIRROR`, `DOCKER_PROXY`, `DOCKER_DATA_ROOT`, `DOCKER_LOG_SIZE`, etc. — see [Configuration Reference](#configuration-reference).
@@ -169,14 +169,14 @@ Installs [Tailscale](https://tailscale.com/) VPN mesh network.
 Install only:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tailscale.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-tailscale.sh | bash
 ```
 
 Install + auto connect:
 
 ```bash
 export TAILSCALE_AUTH_KEY=tskey-auth-xxxxx
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tailscale.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-tailscale.sh | bash
 ```
 
 #### SSH (`setup-ssh.sh`)
@@ -186,7 +186,7 @@ Configures OpenSSH server: custom port and key-only authentication.
 Install only (ensure sshd running):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-ssh.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-ssh.sh | bash
 ```
 
 Change port + enable key-only auth:
@@ -194,7 +194,7 @@ Change port + enable key-only auth:
 ```bash
 export SSH_PORT=2222
 export SSH_PUBKEY="ssh-ed25519 AAAA..."
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-ssh.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-ssh.sh | bash
 ```
 
 Config: `SSH_PORT`, `SSH_PUBKEY` — see [Configuration Reference](#configuration-reference).
@@ -210,20 +210,20 @@ Installs [nvm](https://github.com/nvm-sh/nvm) and Node.js.
 Default (Node.js 24):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-node.sh | bash
 ```
 
 Specific version:
 
 ```bash
 export NODE_VERSION=22
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-node.sh | bash
 ```
 
 Via proxy:
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-node.sh | bash
 ```
 
 #### uv + Python (`setup-uv.sh`)
@@ -233,20 +233,20 @@ Installs [uv](https://docs.astral.sh/uv/) package manager, optionally installs a
 uv only:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-uv.sh | bash
 ```
 
 uv + Python:
 
 ```bash
 export UV_PYTHON=3.12
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-uv.sh | bash
 ```
 
 Via proxy:
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-uv.sh | bash
 ```
 
 #### Go (`setup-go.sh`)
@@ -256,20 +256,20 @@ Installs [goenv](https://github.com/go-nv/goenv) and Go.
 Default (latest Go):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-go.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-go.sh | bash
 ```
 
 Specific version:
 
 ```bash
 export GO_VERSION=1.23.0
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-go.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-go.sh | bash
 ```
 
 Via proxy:
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-go.sh | GH_PROXY=https://gh-proxy.org bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-go.sh | GH_PROXY=https://gh-proxy.org bash
 ```
 
 ---
@@ -291,25 +291,25 @@ Install + configure:
 ```bash
 export CLAUDE_API_URL=https://your-api-url
 export CLAUDE_API_KEY=your-key
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-claude-code.sh | bash
 ```
 
 Install only (configure later):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-claude-code.sh | bash
 ```
 
 Via CLI arguments:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash -s -- --api-url https://your-api-url --api-key your-key
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-claude-code.sh | bash -s -- --api-url https://your-api-url --api-key your-key
 ```
 
 Via proxy:
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-claude-code.sh | bash
 ```
 
 Config: `CLAUDE_API_URL`, `CLAUDE_API_KEY`, `CLAUDE_MODEL`, `CLAUDE_NPM_MIRROR` — see [Configuration Reference](#configuration-reference).
@@ -323,25 +323,25 @@ Install + configure:
 ```bash
 export CODEX_API_URL=https://your-api-url
 export CODEX_API_KEY=your-key
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-codex.sh | bash
 ```
 
 Install only (configure later):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-codex.sh | bash
 ```
 
 Via CLI arguments:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash -s -- --api-url https://your-api-url --api-key your-key
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-codex.sh | bash -s -- --api-url https://your-api-url --api-key your-key
 ```
 
 Via proxy:
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-codex.sh | bash
 ```
 
 Config: `CODEX_API_URL`, `CODEX_API_KEY`, `CODEX_MODEL`, `CODEX_EFFORT`, `CODEX_NPM_MIRROR` — see [Configuration Reference](#configuration-reference).
@@ -355,25 +355,25 @@ Install + configure:
 ```bash
 export GEMINI_API_URL=https://your-api-url
 export GEMINI_API_KEY=your-key
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-gemini.sh | bash
 ```
 
 Install only (configure later):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-gemini.sh | bash
 ```
 
 Via CLI arguments:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash -s -- --api-url https://your-api-url --api-key your-key
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-gemini.sh | bash -s -- --api-url https://your-api-url --api-key your-key
 ```
 
 Via proxy:
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-gemini.sh | bash
 ```
 
 Config: `GEMINI_API_URL`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_NPM_MIRROR` — see [Configuration Reference](#configuration-reference).
@@ -393,13 +393,13 @@ Installs common [agent skills](https://skills.sh/) globally for all coding agent
 | `codex` | [softaworks/agent-toolkit](https://github.com/softaworks/agent-toolkit) | Codex agent skill |
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-skills.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-skills.sh | bash
 ```
 
 Via proxy:
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-skills.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-skills.sh | bash
 ```
 
 Config: `SKILLS_NPM_MIRROR` — see [Configuration Reference](#configuration-reference).
@@ -518,7 +518,7 @@ Step-by-step flow for setting up a fresh machine. The recommended order ensures 
 **1. Proxy** (so subsequent downloads are faster)
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
 ```
 
 ```bash
@@ -536,7 +536,7 @@ export GEMINI_API_URL=https://your-api-url GEMINI_API_KEY=your-key
 **3. Install everything**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --all
 ```
 
 Or install components individually in this order:

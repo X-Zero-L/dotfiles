@@ -83,5 +83,5 @@
 
 | 文件 | 说明 |
 |------|------|
-| `/tmp/dotfiles-install-*` | 下载脚本的临时目录（退出时清理） |
-| `/tmp/dotfiles-install-*.component` | 各组件的日志文件（失败时保留） |
+| `/tmp/rig-install-*` | 下载脚本的临时目录（退出时清理） |
+| `/tmp/rig-install-*.component` | 各组件的日志文件（失败时保留） |

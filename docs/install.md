@@ -83,5 +83,5 @@ All env vars from individual scripts are also respected (e.g., `NODE_VERSION`, `
 
 | File | Description |
 |------|-------------|
-| `/tmp/dotfiles-install-*` | Temp directory for downloaded scripts (cleaned up on exit) |
-| `/tmp/dotfiles-install-*.component` | Per-component log files (kept on failure) |
+| `/tmp/rig-install-*` | Temp directory for downloaded scripts (cleaned up on exit) |
+| `/tmp/rig-install-*.component` | Per-component log files (kept on failure) |

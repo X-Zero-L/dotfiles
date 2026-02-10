@@ -1,4 +1,4 @@
-# dotfiles
+# rig
 
 [English](README.md)
 
@@ -17,25 +17,25 @@ Debian/Ubuntu 系统自动化配置脚本。
 交互式 TUI — 选择要安装的组件：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash
 ```
 
 通过代理（推荐国内用户）：
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --gh-proxy https://gh-proxy.org
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --gh-proxy https://gh-proxy.org
 ```
 
 非交互式安装全部：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --all
 ```
 
 指定组件：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --components shell,node,docker
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --components shell,node,docker
 ```
 
 预配置 API 密钥：
@@ -44,13 +44,13 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh
 export CLAUDE_API_URL=https://your-api-url CLAUDE_API_KEY=your-key
 export CODEX_API_URL=https://your-api-url  CODEX_API_KEY=your-key
 export GEMINI_API_URL=https://your-api-url GEMINI_API_KEY=your-key
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --all
 ```
 
 详细模式（显示原始脚本输出而非 spinner）：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all --verbose
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --all --verbose
 ```
 
 可用组件：`shell`、`tmux`、`clash`、`node`、`uv`、`go`、`docker`、`tailscale`、`ssh`、`claude-code`、`codex`、`gemini`、`skills`
@@ -60,11 +60,11 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh
 每个脚本也可以单独运行，支持直连和代理两种方式：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/<script> | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/<script> | bash
 ```
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/<script> | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/<script> | bash
 ```
 
 ---
@@ -76,13 +76,13 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 安装 zsh、Oh My Zsh、插件（autosuggestions、syntax-highlighting、z）、Starship 提示符及 Catppuccin Powerline 主题。需要 `sudo`。
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-shell.sh | bash
 ```
 
 通过代理：
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-shell.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-shell.sh | bash
 ```
 
 #### Tmux (`setup-tmux.sh`)
@@ -92,20 +92,20 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 默认配置（不修改键位）：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tmux.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-tmux.sh | bash
 ```
 
 启用自定义键位（Ctrl+a 前缀、`|` 和 `-` 分屏、vim 风格调整大小）：
 
 ```bash
 export TMUX_KEYBINDS=1
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tmux.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-tmux.sh | bash
 ```
 
 通过代理：
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tmux.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-tmux.sh | bash
 ```
 
 配置项：`TMUX_KEYBINDS`、`TMUX_MOUSE`、`TMUX_STATUS_POS`、`GH_PROXY` — 详见[配置速查表](#配置速查表)。
@@ -117,20 +117,20 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 传入订阅链接：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
 ```
 
 通过环境变量：
 
 ```bash
 export CLASH_SUB_URL='https://your-subscription-url'
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-clash.sh | bash
 ```
 
 通过代理：
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
 ```
 
 配置项：`CLASH_SUB_URL`、`CLASH_KERNEL`、`CLASH_GH_PROXY` — 详见[配置速查表](#配置速查表)。
@@ -142,7 +142,7 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 默认配置（不含镜像加速，海外机器直接用）：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-docker.sh | bash
 ```
 
 自定义配置：
@@ -151,13 +151,13 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-dock
 export DOCKER_MIRROR=https://mirror.example.com
 export DOCKER_DATA_ROOT=/data/docker
 export DOCKER_PROXY=http://localhost:7890
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-docker.sh | bash
 ```
 
 通过代理：
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-docker.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-docker.sh | bash
 ```
 
 配置项：`DOCKER_MIRROR`、`DOCKER_PROXY`、`DOCKER_DATA_ROOT`、`DOCKER_LOG_SIZE` 等 — 详见[配置速查表](#配置速查表)。
@@ -169,14 +169,14 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 仅安装：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tailscale.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-tailscale.sh | bash
 ```
 
 安装并自动连接：
 
 ```bash
 export TAILSCALE_AUTH_KEY=tskey-auth-xxxxx
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tailscale.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-tailscale.sh | bash
 ```
 
 #### SSH (`setup-ssh.sh`)
@@ -186,7 +186,7 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tail
 仅确保 sshd 运行：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-ssh.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-ssh.sh | bash
 ```
 
 修改端口 + 启用密钥登录：
@@ -194,7 +194,7 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-ssh.
 ```bash
 export SSH_PORT=2222
 export SSH_PUBKEY="ssh-ed25519 AAAA..."
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-ssh.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-ssh.sh | bash
 ```
 
 配置项：`SSH_PORT`、`SSH_PUBKEY` — 详见[配置速查表](#配置速查表)。
@@ -210,20 +210,20 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-ssh.
 默认安装 Node.js 24：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-node.sh | bash
 ```
 
 指定版本：
 
 ```bash
 export NODE_VERSION=22
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-node.sh | bash
 ```
 
 通过代理：
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-node.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-node.sh | bash
 ```
 
 #### uv + Python (`setup-uv.sh`)
@@ -233,20 +233,20 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 仅安装 uv：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-uv.sh | bash
 ```
 
 uv + Python：
 
 ```bash
 export UV_PYTHON=3.12
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-uv.sh | bash
 ```
 
 通过代理：
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-uv.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-uv.sh | bash
 ```
 
 #### Go (`setup-go.sh`)
@@ -256,20 +256,20 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 默认安装最新版 Go：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-go.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-go.sh | bash
 ```
 
 指定版本：
 
 ```bash
 export GO_VERSION=1.23.0
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-go.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-go.sh | bash
 ```
 
 通过代理：
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-go.sh | GH_PROXY=https://gh-proxy.org bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-go.sh | GH_PROXY=https://gh-proxy.org bash
 ```
 
 ---
@@ -291,25 +291,25 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 ```bash
 export CLAUDE_API_URL=https://your-api-url
 export CLAUDE_API_KEY=your-key
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-claude-code.sh | bash
 ```
 
 只安装不配置（稍后配置）：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-claude-code.sh | bash
 ```
 
 通过命令行参数：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash -s -- --api-url https://your-api-url --api-key your-key
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-claude-code.sh | bash -s -- --api-url https://your-api-url --api-key your-key
 ```
 
 通过代理：
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-claude-code.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-claude-code.sh | bash
 ```
 
 配置项：`CLAUDE_API_URL`、`CLAUDE_API_KEY`、`CLAUDE_MODEL`、`CLAUDE_NPM_MIRROR` — 详见[配置速查表](#配置速查表)。
@@ -323,25 +323,25 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 ```bash
 export CODEX_API_URL=https://your-api-url
 export CODEX_API_KEY=your-key
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-codex.sh | bash
 ```
 
 只安装不配置（稍后配置）：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-codex.sh | bash
 ```
 
 通过命令行参数：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash -s -- --api-url https://your-api-url --api-key your-key
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-codex.sh | bash -s -- --api-url https://your-api-url --api-key your-key
 ```
 
 通过代理：
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-codex.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-codex.sh | bash
 ```
 
 配置项：`CODEX_API_URL`、`CODEX_API_KEY`、`CODEX_MODEL`、`CODEX_EFFORT`、`CODEX_NPM_MIRROR` — 详见[配置速查表](#配置速查表)。
@@ -355,25 +355,25 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 ```bash
 export GEMINI_API_URL=https://your-api-url
 export GEMINI_API_KEY=your-key
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-gemini.sh | bash
 ```
 
 只安装不配置（稍后配置）：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-gemini.sh | bash
 ```
 
 通过命令行参数：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash -s -- --api-url https://your-api-url --api-key your-key
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-gemini.sh | bash -s -- --api-url https://your-api-url --api-key your-key
 ```
 
 通过代理：
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-gemini.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-gemini.sh | bash
 ```
 
 配置项：`GEMINI_API_URL`、`GEMINI_API_KEY`、`GEMINI_MODEL`、`GEMINI_NPM_MIRROR` — 详见[配置速查表](#配置速查表)。
@@ -393,13 +393,13 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 | `codex` | [softaworks/agent-toolkit](https://github.com/softaworks/agent-toolkit) | Codex 代理技能 |
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-skills.sh | bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-skills.sh | bash
 ```
 
 通过代理：
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-skills.sh | bash
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-skills.sh | bash
 ```
 
 配置项：`SKILLS_NPM_MIRROR` — 详见[配置速查表](#配置速查表)。
@@ -518,7 +518,7 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 **1. 代理**（后续下载更快）
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
+curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-clash.sh | bash -s -- 'https://your-subscription-url'
 ```
 
 ```bash
@@ -536,7 +536,7 @@ export GEMINI_API_URL=https://your-api-url GEMINI_API_KEY=your-key
 **3. 一键安装**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --all
 ```
 
 或按以下顺序逐个安装：
