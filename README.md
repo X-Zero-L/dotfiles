@@ -24,7 +24,7 @@ curl -fsSL https://is.gd/4RtS8U | bash
 Via proxy (recommended for China):
 
 ```bash
-curl -fsSL https://is.gd/XmY2ST | bash -s -- --gh-proxy https://gh-proxy.org
+curl -fsSL https://bit.ly/3LYAJre | bash -s -- --gh-proxy https://gh-proxy.org
 # or: curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --gh-proxy https://gh-proxy.org
 ```
 
