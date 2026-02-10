@@ -13,7 +13,7 @@ Set Theme { "name": "Catppuccin Mocha", "black": "#45475a", "red": "#f38ba8", "g
 
 Sleep 500ms
 
-Type "curl -fsSL https://is.gd/XmY2ST | bash -s -- --gh-proxy https://gh-proxy.org"
+Type "curl -fsSL https://ba.sh/rig | bash"
 Sleep 300ms
 Enter
 Sleep 2s
@@ -26,7 +26,9 @@ Sleep 1.2s
 Type "a"
 Sleep 800ms
 
-# Navigate to uv (index 4): Down x4
+# Navigate to uv (index 5): Down x5
+Down
+Sleep 120ms
 Down
 Sleep 120ms
 Down
@@ -38,7 +40,7 @@ Sleep 120ms
 Space
 Sleep 350ms
 
-# Select Go (index 5)
+# Select go (index 6): Down x1
 Down
 Sleep 120ms
 Space
@@ -55,7 +57,7 @@ Sleep 2s
 Type "y"
 Enter
 
-# Wait for downloads + installation (already installed, should be fast)
+# Wait for downloads + installation
 Sleep 8s
 
 # Show final result
