@@ -195,7 +195,7 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-tailscale
 
 #### SSH (`setup-ssh.sh`)
 
-Configures OpenSSH server: custom port and key-only authentication.
+Configures OpenSSH server: custom port, key-only authentication, and GitHub SSH proxy.
 
 Install only (ensure sshd running):
 
@@ -211,7 +211,14 @@ export SSH_PUBKEY="ssh-ed25519 AAAA..."
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-ssh.sh | bash
 ```
 
-Config: `SSH_PORT`, `SSH_PUBKEY` — see [Configuration Reference](#configuration-reference).
+With GitHub SSH proxy (when port 22 is blocked or proxy required):
+
+```bash
+export SSH_PROXY_PORT=7890
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-ssh.sh | bash
+```
+
+Config: `SSH_PORT`, `SSH_PUBKEY`, `SSH_PROXY_PORT` — see [Configuration Reference](#configuration-reference).
 
 ---
 
@@ -499,6 +506,8 @@ All environment variables across all scripts in one table.
 | `SSH_PORT` | _(empty)_ | Custom SSH port. Leave empty to keep current port. |
 | `SSH_PUBKEY` | _(empty)_ | Public key string. When set, adds key and disables password auth. |
 | `SSH_PRIVATE_KEY` | _(empty)_ | Private key content. When set, imports to `~/.ssh/` for outbound SSH. |
+| `SSH_PROXY_HOST` | `127.0.0.1` | Proxy host for GitHub SSH. Only used when `SSH_PROXY_PORT` is set. |
+| `SSH_PROXY_PORT` | _(empty)_ | Proxy port (e.g. `7890`). Configures GitHub SSH via `ssh.github.com:443` + corkscrew. |
 
 ### Claude Code
 

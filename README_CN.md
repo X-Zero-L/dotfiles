@@ -195,7 +195,7 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-tailscale
 
 #### SSH (`setup-ssh.sh`)
 
-配置 OpenSSH 服务器：自定义端口和密钥登录。
+配置 OpenSSH 服务器：自定义端口、密钥登录和 GitHub SSH 代理。
 
 仅确保 sshd 运行：
 
@@ -211,7 +211,14 @@ export SSH_PUBKEY="ssh-ed25519 AAAA..."
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-ssh.sh | bash
 ```
 
-配置项：`SSH_PORT`、`SSH_PUBKEY` — 详见[配置速查表](#配置速查表)。
+配置 GitHub SSH 代理（22 端口被封或需要走代理时）：
+
+```bash
+export SSH_PROXY_PORT=7890
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-ssh.sh | bash
+```
+
+配置项：`SSH_PORT`、`SSH_PUBKEY`、`SSH_PROXY_PORT` — 详见[配置速查表](#配置速查表)。
 
 ---
 
@@ -499,6 +506,8 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/m
 | `SSH_PORT` | _（空）_ | 自定义 SSH 端口。留空则不修改。 |
 | `SSH_PUBKEY` | _（空）_ | 公钥字符串。设置后添加密钥并禁用密码登录。 |
 | `SSH_PRIVATE_KEY` | _（空）_ | 私钥内容。设置后导入到 `~/.ssh/`，用于对外 SSH 连接。 |
+| `SSH_PROXY_HOST` | `127.0.0.1` | 代理主机地址。仅在设置了 `SSH_PROXY_PORT` 时生效。 |
+| `SSH_PROXY_PORT` | _（空）_ | 代理端口（如 `7890`）。配置 GitHub SSH 通过 `ssh.github.com:443` + corkscrew 代理连接。 |
 
 ### Claude Code
 
