@@ -11,10 +11,15 @@ set -euo pipefail
 #   SSH_PORT        - custom SSH port (empty = don't change)
 #   SSH_PUBKEY      - public key string. When set, adds key and disables password auth.
 #   SSH_PRIVATE_KEY - private key content. When set, writes to ~/.ssh/ and derives public key.
+#   SSH_PROXY_HOST  - proxy host for GitHub SSH (default: 127.0.0.1)
+#   SSH_PROXY_PORT  - proxy port for GitHub SSH (e.g. 7890). When set, configures
+#                     ~/.ssh/config to connect via ssh.github.com:443 with corkscrew proxy.
 
 SSH_PORT="${SSH_PORT:-}"
 SSH_PUBKEY="${SSH_PUBKEY:-}"
 SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY:-}"
+SSH_PROXY_HOST="${SSH_PROXY_HOST:-127.0.0.1}"
+SSH_PROXY_PORT="${SSH_PROXY_PORT:-}"
 
 # Ensure dependencies
 if ! dpkg -s openssh-server &>/dev/null 2>&1; then
@@ -41,8 +46,8 @@ sshd_ctl() {
 
 echo "=== SSH Setup ==="
 
-# [1/5] Ensure sshd is running
-echo "[1/5] Ensuring sshd is running..."
+# [1/6] Ensure sshd is running
+echo "[1/6] Ensuring sshd is running..."
 if pgrep -x sshd &>/dev/null; then
     echo "  sshd already running."
 else
@@ -50,8 +55,8 @@ else
     echo "  sshd started."
 fi
 
-# [2/5] Import private key
-echo "[2/5] Importing private key..."
+# [2/6] Import private key
+echo "[2/6] Importing private key..."
 if [ -n "$SSH_PRIVATE_KEY" ]; then
     mkdir -p "$HOME/.ssh"
     chmod 700 "$HOME/.ssh"
@@ -83,8 +88,8 @@ else
     echo "  Skipped (SSH_PRIVATE_KEY not set)."
 fi
 
-# [3/5] Configure port
-echo "[3/5] Configuring port..."
+# [3/6] Configure port
+echo "[3/6] Configuring port..."
 if [ -n "$SSH_PORT" ]; then
     if grep -qE "^\s*Port\s+${SSH_PORT}\b" "$SSHD_CONFIG"; then
         echo "  Port already set to $SSH_PORT."
@@ -99,8 +104,8 @@ else
     echo "  Skipped (SSH_PORT not set)."
 fi
 
-# [4/5] Add public key to authorized_keys
-echo "[4/5] Configuring authorized keys..."
+# [4/6] Add public key to authorized_keys
+echo "[4/6] Configuring authorized keys..."
 if [ -n "$SSH_PUBKEY" ]; then
     AUTH_KEYS="$HOME/.ssh/authorized_keys"
     mkdir -p "$HOME/.ssh"
@@ -118,8 +123,8 @@ else
     echo "  Skipped (SSH_PUBKEY not set)."
 fi
 
-# [5/5] Disable password auth (only if public key was provided)
-echo "[5/5] Configuring authentication..."
+# [5/6] Disable password auth (only if public key was provided)
+echo "[5/6] Configuring authentication..."
 if [ -n "$SSH_PUBKEY" ]; then
     [ "$CHANGED" -eq 0 ] && sudo cp "$SSHD_CONFIG" "${SSHD_CONFIG}.bak.$(date +%s)"
 
@@ -138,6 +143,38 @@ else
     echo "  Skipped (no public key provided, password auth unchanged)."
 fi
 
+# [6/6] Configure GitHub SSH proxy
+echo "[6/6] Configuring GitHub SSH proxy..."
+if [ -n "$SSH_PROXY_PORT" ]; then
+    # Ensure corkscrew is installed
+    if ! command -v corkscrew &>/dev/null; then
+        sudo apt-get update -qq && sudo apt-get install -y -qq corkscrew
+    fi
+
+    mkdir -p "$HOME/.ssh"
+    chmod 700 "$HOME/.ssh"
+    SSH_CONFIG="$HOME/.ssh/config"
+    touch "$SSH_CONFIG"
+    chmod 600 "$SSH_CONFIG"
+
+    # Check if github.com Host block already exists
+    if grep -q "^Host github.com" "$SSH_CONFIG" 2>/dev/null; then
+        echo "  GitHub SSH config already exists in $SSH_CONFIG, skipping."
+    else
+        cat >> "$SSH_CONFIG" <<EOF
+
+Host github.com
+    Hostname ssh.github.com
+    Port 443
+    User git
+    ProxyCommand corkscrew $SSH_PROXY_HOST $SSH_PROXY_PORT %h %p
+EOF
+        echo "  GitHub SSH proxy configured (port 443 via $SSH_PROXY_HOST:$SSH_PROXY_PORT)."
+    fi
+else
+    echo "  Skipped (SSH_PROXY_PORT not set)."
+fi
+
 # Restart sshd if config changed
 if [ "$CHANGED" -eq 1 ]; then
     echo ""
@@ -152,3 +189,4 @@ echo "SSH: $(ssh -V 2>&1)"
 [ -n "$SSH_PORT" ] && echo "Port: $SSH_PORT" || echo "Port: (default)"
 [ -n "$SSH_PUBKEY" ] && echo "Auth: key-only" || echo "Auth: (unchanged)"
 [ -n "$SSH_PRIVATE_KEY" ] && echo "Identity: imported" || echo "Identity: (unchanged)"
+[ -n "$SSH_PROXY_PORT" ] && echo "GitHub SSH: via $SSH_PROXY_HOST:$SSH_PROXY_PORT" || echo "GitHub SSH: (unchanged)"
