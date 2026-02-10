@@ -12,6 +12,13 @@ set -euo pipefail
 
 GO_VERSION="${GO_VERSION:-${1:-latest}}"
 GH_PROXY="${GH_PROXY:-}"
+GO_BUILD_MIRROR_URL="${GO_BUILD_MIRROR_URL:-}"
+
+# Auto-set Go download mirror when behind GH_PROXY (likely in China)
+if [[ -n "$GH_PROXY" && -z "$GO_BUILD_MIRROR_URL" ]]; then
+    GO_BUILD_MIRROR_URL="https://mirrors.aliyun.com/golang/"
+fi
+export GO_BUILD_MIRROR_URL
 
 GOENV_ROOT="$HOME/.goenv"
 
@@ -58,6 +65,7 @@ eval "$(goenv init -)"
 
 # [3/4] Install Go
 echo "[3/4] Installing Go ${GO_VERSION}..."
+[ -n "$GO_BUILD_MIRROR_URL" ] && echo "  Download mirror: $GO_BUILD_MIRROR_URL"
 if [ "$GO_VERSION" = "latest" ]; then
     # Resolve latest version number
     GO_VERSION=$(goenv install --list | grep -E '^\s*[0-9]+\.[0-9]+\.[0-9]+$' | tail -1 | tr -d ' ')
