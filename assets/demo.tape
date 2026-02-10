@@ -13,7 +13,7 @@ Set Theme { "name": "Catppuccin Mocha", "black": "#45475a", "red": "#f38ba8", "g
 
 Sleep 500ms
 
-Type "GH_PROXY=https://gh-proxy.org bash install.sh"
+Type "curl -fsSL https://is.gd/XmY2ST | bash -s -- --gh-proxy https://gh-proxy.org"
 Sleep 300ms
 Enter
 Sleep 2s
