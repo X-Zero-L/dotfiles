@@ -22,15 +22,31 @@ fi
 SSHD_CONFIG="/etc/ssh/sshd_config"
 CHANGED=0
 
+# Helper: start/restart sshd (systemd → service → direct)
+sshd_ctl() {
+    local action="$1"
+    if command -v systemctl &>/dev/null && systemctl is-system-running &>/dev/null 2>&1; then
+        sudo systemctl "$action" ssh 2>/dev/null || sudo systemctl "$action" sshd 2>/dev/null
+    elif command -v service &>/dev/null; then
+        sudo service ssh "$action" 2>/dev/null || sudo service sshd "$action" 2>/dev/null
+    else
+        # Direct: stop then start for restart, just start otherwise
+        if [[ "$action" == "restart" ]]; then
+            pkill sshd 2>/dev/null || true
+        fi
+        sudo /usr/sbin/sshd
+    fi
+}
+
 echo "=== SSH Setup ==="
 
 # [1/4] Ensure sshd is running
 echo "[1/4] Ensuring sshd is running..."
-if systemctl is-active --quiet sshd 2>/dev/null || systemctl is-active --quiet ssh 2>/dev/null; then
+if pgrep -x sshd &>/dev/null; then
     echo "  sshd already running."
 else
-    sudo systemctl enable --now ssh 2>/dev/null || sudo systemctl enable --now sshd 2>/dev/null
-    echo "  sshd started and enabled."
+    sshd_ctl start
+    echo "  sshd started."
 fi
 
 # [2/4] Configure port
@@ -96,7 +112,7 @@ fi
 if [ "$CHANGED" -eq 1 ]; then
     echo ""
     echo "Restarting sshd..."
-    sudo systemctl restart ssh 2>/dev/null || sudo systemctl restart sshd 2>/dev/null
+    sshd_ctl restart
     echo "  sshd restarted."
 fi
 
