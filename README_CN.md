@@ -17,13 +17,15 @@ Debian/Ubuntu 系统自动化配置脚本。
 交互式 TUI — 选择要安装的组件：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash
+curl -fsSL https://is.gd/4RtS8U | bash
+# 或: curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash
 ```
 
 通过代理（推荐国内用户）：
 
 ```bash
-curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --gh-proxy https://gh-proxy.org
+curl -fsSL https://is.gd/XmY2ST | bash -s -- --gh-proxy https://gh-proxy.org
+# 或: curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --gh-proxy https://gh-proxy.org
 ```
 
 非交互式安装全部：
