@@ -498,6 +498,7 @@ All environment variables across all scripts in one table.
 |----------|---------|-------------|
 | `SSH_PORT` | _(empty)_ | Custom SSH port. Leave empty to keep current port. |
 | `SSH_PUBKEY` | _(empty)_ | Public key string. When set, adds key and disables password auth. |
+| `SSH_PRIVATE_KEY` | _(empty)_ | Private key content. When set, imports to `~/.ssh/` for outbound SSH. |
 
 ### Claude Code
 

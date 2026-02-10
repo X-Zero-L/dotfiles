@@ -498,6 +498,7 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/m
 |------|--------|------|
 | `SSH_PORT` | _（空）_ | 自定义 SSH 端口。留空则不修改。 |
 | `SSH_PUBKEY` | _（空）_ | 公钥字符串。设置后添加密钥并禁用密码登录。 |
+| `SSH_PRIVATE_KEY` | _（空）_ | 私钥内容。设置后导入到 `~/.ssh/`，用于对外 SSH 连接。 |
 
 ### Claude Code
 
