@@ -27,9 +27,9 @@ cleanup() { rm -rf "$WORK_DIR"; }
 trap cleanup EXIT
 
 # Ensure dependencies
-for cmd in git unzip curl; do
+for cmd in git unzip curl xz; do
     if ! command -v "$cmd" &>/dev/null; then
-        sudo apt-get update -qq && sudo apt-get install -y -qq git unzip curl
+        sudo apt-get update -qq && sudo apt-get install -y -qq git unzip curl xz-utils
         break
     fi
 done
