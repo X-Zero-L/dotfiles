@@ -13,6 +13,7 @@
 | [install.sh](install.md) | 一站式交互/非交互安装器 |
 | [setup-shell.sh](setup-shell.md) | zsh + Oh My Zsh + 插件 + Starship |
 | [setup-tmux.sh](setup-tmux.md) | tmux + TPM + Catppuccin + 鼠标增强 |
+| [setup-git.sh](setup-git.md) | Git 用户身份 + 合理默认值 |
 | [setup-clash.sh](setup-clash.md) | Clash 代理 + 订阅管理 |
 | [setup-docker.sh](setup-docker.md) | Docker Engine + Compose + 守护进程配置 |
 | [setup-tailscale.sh](setup-tailscale.md) | Tailscale VPN 组网 |

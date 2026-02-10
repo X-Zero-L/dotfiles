@@ -13,6 +13,7 @@ Detailed documentation for each setup script. For quick start, see the [main REA
 | [install.sh](install.md) | All-in-one interactive/non-interactive installer |
 | [setup-shell.sh](setup-shell.md) | zsh + Oh My Zsh + plugins + Starship |
 | [setup-tmux.sh](setup-tmux.md) | tmux + TPM + Catppuccin + mouse enhancements |
+| [setup-git.sh](setup-git.md) | Git user identity + sensible defaults |
 | [setup-clash.sh](setup-clash.md) | Clash proxy with subscription management |
 | [setup-docker.sh](setup-docker.md) | Docker Engine + Compose + daemon configuration |
 | [setup-tailscale.sh](setup-tailscale.md) | Tailscale VPN mesh network |

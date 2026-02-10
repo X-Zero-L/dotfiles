@@ -55,7 +55,7 @@ Verbose mode (show raw script output instead of spinner):
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --all --verbose
 ```
 
-Available components: `shell`, `tmux`, `clash`, `node`, `uv`, `go`, `docker`, `tailscale`, `ssh`, `claude-code`, `codex`, `gemini`, `skills`
+Available components: `shell`, `tmux`, `git`, `clash`, `node`, `uv`, `go`, `docker`, `tailscale`, `ssh`, `claude-code`, `codex`, `gemini`, `skills`
 
 ## Components
 
@@ -111,6 +111,18 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/m
 ```
 
 Config: `TMUX_KEYBINDS`, `TMUX_MOUSE`, `TMUX_STATUS_POS`, `GH_PROXY` — see [Configuration Reference](#configuration-reference).
+
+#### Git (`setup-git.sh`)
+
+Configures Git global `user.name`, `user.email`, and sensible defaults (`init.defaultBranch=main`, `pull.rebase=true`, etc.).
+
+```bash
+export GIT_USER_NAME="Your Name"
+export GIT_USER_EMAIL="you@example.com"
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-git.sh | bash
+```
+
+Config: `GIT_USER_NAME`, `GIT_USER_EMAIL` — see [Configuration Reference](#configuration-reference).
 
 #### Clash Proxy (`setup-clash.sh`)
 
@@ -424,6 +436,13 @@ All environment variables across all scripts in one table.
 | `TMUX_MOUSE` | `1` | Enable mouse support (`0` to disable) |
 | `TMUX_STATUS_POS` | `top` | Status bar position (`top` or `bottom`) |
 
+### Git
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GIT_USER_NAME` | _(empty)_ | `git config --global user.name` value |
+| `GIT_USER_EMAIL` | _(empty)_ | `git config --global user.email` value |
+
 ### Clash
 
 | Variable | Default | Description |
@@ -546,16 +565,17 @@ Or install components individually in this order:
 
 1. `setup-shell.sh` — Shell environment (zsh, plugins, Starship)
 2. `setup-tmux.sh` — Tmux + Catppuccin + plugins
-3. `setup-ssh.sh` — SSH port + key-only auth
-4. `setup-docker.sh` — Docker Engine + Compose
-5. `setup-tailscale.sh` — Tailscale VPN
-6. `setup-uv.sh` — uv + Python
-7. `setup-go.sh` — goenv + Go
-8. `setup-node.sh` — nvm + Node.js
-9. `setup-claude-code.sh` — Claude Code
-10. `setup-codex.sh` — Codex CLI
-11. `setup-gemini.sh` — Gemini CLI
-12. `setup-skills.sh` — Agent skills
+3. `setup-git.sh` — Git user identity + defaults
+4. `setup-ssh.sh` — SSH port + key-only auth
+5. `setup-docker.sh` — Docker Engine + Compose
+6. `setup-tailscale.sh` — Tailscale VPN
+7. `setup-uv.sh` — uv + Python
+8. `setup-go.sh` — goenv + Go
+9. `setup-node.sh` — nvm + Node.js
+10. `setup-claude-code.sh` — Claude Code
+11. `setup-codex.sh` — Codex CLI
+12. `setup-gemini.sh` — Gemini CLI
+13. `setup-skills.sh` — Agent skills
 
 ## Detailed Documentation
 

@@ -55,7 +55,7 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | ba
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --all --verbose
 ```
 
-可用组件：`shell`、`tmux`、`clash`、`node`、`uv`、`go`、`docker`、`tailscale`、`ssh`、`claude-code`、`codex`、`gemini`、`skills`
+可用组件：`shell`、`tmux`、`git`、`clash`、`node`、`uv`、`go`、`docker`、`tailscale`、`ssh`、`claude-code`、`codex`、`gemini`、`skills`
 
 ## 组件详解
 
@@ -111,6 +111,18 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/m
 ```
 
 配置项：`TMUX_KEYBINDS`、`TMUX_MOUSE`、`TMUX_STATUS_POS`、`GH_PROXY` — 详见[配置速查表](#配置速查表)。
+
+#### Git (`setup-git.sh`)
+
+配置 Git 全局 `user.name`、`user.email` 及合理默认值（`init.defaultBranch=main`、`pull.rebase=true` 等）。
+
+```bash
+export GIT_USER_NAME="Your Name"
+export GIT_USER_EMAIL="you@example.com"
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/setup-git.sh | bash
+```
+
+配置项：`GIT_USER_NAME`、`GIT_USER_EMAIL` — 详见[配置速查表](#配置速查表)。
 
 #### Clash 代理 (`setup-clash.sh`)
 
@@ -424,6 +436,13 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/m
 | `TMUX_MOUSE` | `1` | 启用鼠标支持（设为 `0` 禁用） |
 | `TMUX_STATUS_POS` | `top` | 状态栏位置（`top` 或 `bottom`） |
 
+### Git
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `GIT_USER_NAME` | _（空）_ | `git config --global user.name` 的值 |
+| `GIT_USER_EMAIL` | _（空）_ | `git config --global user.email` 的值 |
+
 ### Clash
 
 | 变量 | 默认值 | 说明 |
@@ -546,16 +565,17 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | ba
 
 1. `setup-shell.sh` — Shell 环境（zsh、插件、Starship）
 2. `setup-tmux.sh` — Tmux + Catppuccin + 插件
-3. `setup-ssh.sh` — SSH 端口 + 密钥登录
-4. `setup-docker.sh` — Docker Engine + Compose
-5. `setup-tailscale.sh` — Tailscale VPN
-6. `setup-uv.sh` — uv + Python
-7. `setup-go.sh` — goenv + Go
-8. `setup-node.sh` — nvm + Node.js
-9. `setup-claude-code.sh` — Claude Code
-10. `setup-codex.sh` — Codex CLI
-11. `setup-gemini.sh` — Gemini CLI
-12. `setup-skills.sh` — 代理技能
+3. `setup-git.sh` — Git 用户身份 + 默认值
+4. `setup-ssh.sh` — SSH 端口 + 密钥登录
+5. `setup-docker.sh` — Docker Engine + Compose
+6. `setup-tailscale.sh` — Tailscale VPN
+7. `setup-uv.sh` — uv + Python
+8. `setup-go.sh` — goenv + Go
+9. `setup-node.sh` — nvm + Node.js
+10. `setup-claude-code.sh` — Claude Code
+11. `setup-codex.sh` — Codex CLI
+12. `setup-gemini.sh` — Gemini CLI
+13. `setup-skills.sh` — 代理技能
 
 ## 详细文档
 
