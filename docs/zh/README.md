@@ -15,6 +15,8 @@
 | [setup-tmux.sh](setup-tmux.md) | tmux + TPM + Catppuccin + 鼠标增强 |
 | [setup-clash.sh](setup-clash.md) | Clash 代理 + 订阅管理 |
 | [setup-docker.sh](setup-docker.md) | Docker Engine + Compose + 守护进程配置 |
+| [setup-tailscale.sh](setup-tailscale.md) | Tailscale VPN 组网 |
+| [setup-ssh.sh](setup-ssh.md) | SSH 端口 + 密钥登录 |
 
 ### 语言环境
 
@@ -23,7 +25,6 @@
 | [setup-node.sh](setup-node.md) | nvm + Node.js |
 | [setup-uv.sh](setup-uv.md) | uv 包管理器 + Python |
 | [setup-go.sh](setup-go.md) | goenv + Go |
-| [setup-tailscale.sh](setup-tailscale.md) | Tailscale VPN 组网 |
 
 ### AI 编码代理
 

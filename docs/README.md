@@ -15,6 +15,8 @@ Detailed documentation for each setup script. For quick start, see the [main REA
 | [setup-tmux.sh](setup-tmux.md) | tmux + TPM + Catppuccin + mouse enhancements |
 | [setup-clash.sh](setup-clash.md) | Clash proxy with subscription management |
 | [setup-docker.sh](setup-docker.md) | Docker Engine + Compose + daemon configuration |
+| [setup-tailscale.sh](setup-tailscale.md) | Tailscale VPN mesh network |
+| [setup-ssh.sh](setup-ssh.md) | SSH port + key-only authentication |
 
 ### Language Runtimes
 
@@ -23,7 +25,6 @@ Detailed documentation for each setup script. For quick start, see the [main REA
 | [setup-node.sh](setup-node.md) | nvm + Node.js |
 | [setup-uv.sh](setup-uv.md) | uv package manager + Python |
 | [setup-go.sh](setup-go.md) | goenv + Go |
-| [setup-tailscale.sh](setup-tailscale.md) | Tailscale VPN mesh network |
 
 ### AI Coding Agents
 

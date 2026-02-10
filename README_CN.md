@@ -53,7 +53,7 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh | bash -s -- --all --verbose
 ```
 
-可用组件：`shell`、`tmux`、`clash`、`node`、`uv`、`go`、`docker`、`tailscale`、`claude-code`、`codex`、`gemini`、`skills`
+可用组件：`shell`、`tmux`、`clash`、`node`、`uv`、`go`、`docker`、`tailscale`、`ssh`、`claude-code`、`codex`、`gemini`、`skills`
 
 ## 组件详解
 
@@ -178,6 +178,26 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tail
 export TAILSCALE_AUTH_KEY=tskey-auth-xxxxx
 curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-tailscale.sh | bash
 ```
+
+#### SSH (`setup-ssh.sh`)
+
+配置 OpenSSH 服务器：自定义端口和密钥登录。
+
+仅确保 sshd 运行：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-ssh.sh | bash
+```
+
+修改端口 + 启用密钥登录：
+
+```bash
+export SSH_PORT=2222
+export SSH_PUBKEY="ssh-ed25519 AAAA..."
+curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/setup-ssh.sh | bash
+```
+
+配置项：`SSH_PORT`、`SSH_PUBKEY` — 详见[配置速查表](#配置速查表)。
 
 ---
 
@@ -450,6 +470,13 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/dotfi
 |------|--------|------|
 | `TAILSCALE_AUTH_KEY` | _（空）_ | 自动连接的 Auth Key。留空则仅安装。 |
 
+### SSH
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `SSH_PORT` | _（空）_ | 自定义 SSH 端口。留空则不修改。 |
+| `SSH_PUBKEY` | _（空）_ | 公钥字符串。设置后添加密钥并禁用密码登录。 |
+
 ### Claude Code
 
 | 变量 | 默认值 | 说明 |
@@ -516,15 +543,16 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/dotfiles/master/install.sh
 
 1. `setup-shell.sh` — Shell 环境（zsh、插件、Starship）
 2. `setup-tmux.sh` — Tmux + Catppuccin + 插件
-3. `setup-docker.sh` — Docker Engine + Compose
-4. `setup-tailscale.sh` — Tailscale VPN
-5. `setup-uv.sh` — uv + Python
-6. `setup-go.sh` — goenv + Go
-7. `setup-node.sh` — nvm + Node.js
-8. `setup-claude-code.sh` — Claude Code
-9. `setup-codex.sh` — Codex CLI
-10. `setup-gemini.sh` — Gemini CLI
-11. `setup-skills.sh` — 代理技能
+3. `setup-ssh.sh` — SSH 端口 + 密钥登录
+4. `setup-docker.sh` — Docker Engine + Compose
+5. `setup-tailscale.sh` — Tailscale VPN
+6. `setup-uv.sh` — uv + Python
+7. `setup-go.sh` — goenv + Go
+8. `setup-node.sh` — nvm + Node.js
+9. `setup-claude-code.sh` — Claude Code
+10. `setup-codex.sh` — Codex CLI
+11. `setup-gemini.sh` — Gemini CLI
+12. `setup-skills.sh` — 代理技能
 
 ## 详细文档
 
