@@ -80,11 +80,12 @@ setup_colors() {
 
 # --- [C] Component Registry --------------------------------------------------
 
-COMP_IDS=(shell tmux clash node uv go docker tailscale ssh claude-code codex gemini skills)
+COMP_IDS=(shell tmux git clash node uv go docker tailscale ssh claude-code codex gemini skills)
 
 COMP_NAMES=(
     "Shell Environment"
     "Tmux"
+    "Git"
     "Clash Proxy"
     "Node.js (nvm)"
     "uv + Python"
@@ -101,6 +102,7 @@ COMP_NAMES=(
 COMP_DESCS=(
     "zsh, Oh My Zsh, plugins, Starship"
     "tmux + Catppuccin + TPM plugins"
+    "user.name + user.email + defaults"
     "clash-for-linux with subscription"
     "nvm + Node.js 24"
     "uv package manager"
@@ -117,6 +119,7 @@ COMP_DESCS=(
 COMP_SCRIPTS=(
     setup-shell.sh
     setup-tmux.sh
+    setup-git.sh
     setup-clash.sh
     setup-node.sh
     setup-uv.sh
@@ -131,19 +134,19 @@ COMP_SCRIPTS=(
 )
 
 # Dependencies: space-separated indices that must run first (empty = none)
-COMP_DEPS=("" "" "" "" "" "" "" "" "" "3" "3" "3" "3")
+COMP_DEPS=("" "" "" "" "" "" "" "" "" "" "4" "4" "4" "4")
 
 # Whether component needs API keys (2 = token-only, 1 = url+key)
-COMP_NEEDS_KEYS=(0 0 0 0 0 0 0 2 0 1 1 1 0)
+COMP_NEEDS_KEYS=(0 0 0 0 0 0 0 0 2 0 1 1 1 0)
 
 # Whether component needs sudo
-COMP_NEEDS_SUDO=(1 1 0 0 0 0 1 1 1 0 0 0 0)
+COMP_NEEDS_SUDO=(1 1 0 0 0 0 0 1 1 1 0 0 0 0)
 
 # Selection state
-COMP_SELECTED=(0 0 0 0 0 0 0 0 0 0 0 0 0)
+COMP_SELECTED=(0 0 0 0 0 0 0 0 0 0 0 0 0 0)
 
 # Install-only mode: tool installed but API not configured (keys missing)
-COMP_INSTALL_ONLY=(0 0 0 0 0 0 0 0 0 0 0 0 0)
+COMP_INSTALL_ONLY=(0 0 0 0 0 0 0 0 0 0 0 0 0 0)
 
 # --- [D] Utility Functions ----------------------------------------------------
 
@@ -234,7 +237,7 @@ Interactive rig installer with checkbox selection.
 Options:
   --all                  Install all components
   --components LIST      Comma-separated component list:
-                         shell,tmux,clash,node,uv,go,docker,tailscale,claude-code,codex,gemini,skills
+                         shell,tmux,git,clash,node,uv,go,docker,tailscale,ssh,claude-code,codex,gemini,skills
   --gh-proxy URL         GitHub proxy URL (e.g., https://gh-proxy.org)
   -v, --verbose          Show raw script output (default: clean spinner)
   -h, --help             Show this help
