@@ -109,7 +109,7 @@ COMP_DESCS=(
     "goenv + Go"
     "Docker Engine + Compose + mirrors"
     "Tailscale VPN mesh network"
-    "SSH port + key-only auth"
+    "SSH port + key-only + GitHub proxy"
     "Claude Code CLI"
     "OpenAI Codex CLI"
     "Gemini CLI"
