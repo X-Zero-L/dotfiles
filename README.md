@@ -451,6 +451,7 @@ All environment variables across all scripts in one table.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `GO_VERSION` | `latest` | Go version to install (also accepted as first argument) |
+| `GO_BUILD_MIRROR_URL` | _(empty)_ | Go binary download mirror. Auto-set when `GH_PROXY` is set. |
 
 ### Docker
 

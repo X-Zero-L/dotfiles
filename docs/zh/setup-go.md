@@ -43,6 +43,7 @@ eval "$(goenv init -)"
 |------|--------|------|
 | `GO_VERSION` | `latest` | 要安装的 Go 版本（也可作为第一个参数传入） |
 | `GH_PROXY` | _（空）_ | 克隆 goenv 时使用的 GitHub 代理 |
+| `GO_BUILD_MIRROR_URL` | _（空）_ | Go 二进制下载镜像。设置 `GH_PROXY` 时自动使用 `https://mirrors.aliyun.com/golang/`。 |
 
 ## 重复运行行为
 

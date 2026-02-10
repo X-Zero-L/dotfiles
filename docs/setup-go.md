@@ -43,6 +43,7 @@ eval "$(goenv init -)"
 |----------|---------|-------------|
 | `GO_VERSION` | `latest` | Go version to install (also accepted as first argument) |
 | `GH_PROXY` | _(empty)_ | GitHub proxy for cloning goenv |
+| `GO_BUILD_MIRROR_URL` | _(empty)_ | Mirror for Go binary downloads. Auto-set to `https://mirrors.aliyun.com/golang/` when `GH_PROXY` is set. |
 
 ## Re-run Behavior
 

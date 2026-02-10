@@ -451,6 +451,7 @@ curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/m
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
 | `GO_VERSION` | `latest` | 要安装的 Go 版本（也可作为第一个参数传入） |
+| `GO_BUILD_MIRROR_URL` | _（空）_ | Go 二进制下载镜像。设置 `GH_PROXY` 时自动启用。 |
 
 ### Docker
 
