@@ -17,14 +17,14 @@ Use `install.sh` for a one-stop interactive or non-interactive installation.
 Interactive TUI — select what to install:
 
 ```bash
-curl -fsSL https://is.gd/4RtS8U | bash
+curl -fsSL https://ba.sh/rig | bash
 # or: curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash
 ```
 
 Via proxy (recommended for China):
 
 ```bash
-curl -fsSL https://bit.ly/3LYAJre | bash -s -- --gh-proxy https://gh-proxy.org
+curl -fsSL https://z.ls/rig | bash -s -- --gh-proxy https://gh-proxy.org
 # or: curl -fsSL https://gh-proxy.org/https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | bash -s -- --gh-proxy https://gh-proxy.org
 ```
 
