@@ -824,6 +824,18 @@ run_all_selected() {
                 fi
                 printf "  ${DIM}•${NC} Run ${CYAN}newgrp docker${NC} or re-login to use Docker without sudo\n"
                 ;;
+            ssh)
+                if [[ $has_hints -eq 0 ]]; then
+                    printf "\n  ${BOLD}${SYM_WARN} Post-install${NC}\n"
+                    has_hints=1
+                fi
+                if [[ -n "${SSH_PORT:-}" ]]; then
+                    printf "  ${DIM}•${NC} SSH port changed to ${CYAN}%s${NC} — reconnect with ${CYAN}ssh -p %s${NC}\n" "$SSH_PORT" "$SSH_PORT"
+                fi
+                if [[ -n "${SSH_PUBKEY:-}" ]]; then
+                    printf "  ${DIM}•${NC} Password auth ${RED}disabled${NC} — verify your key works before closing this session\n"
+                fi
+                ;;
             shell)
                 has_shell=1
                 needs_reload=1
