@@ -80,7 +80,7 @@ setup_colors() {
 
 # --- [C] Component Registry --------------------------------------------------
 
-COMP_IDS=(shell tmux clash node uv go docker tailscale claude-code codex gemini skills)
+COMP_IDS=(shell tmux clash node uv go docker tailscale ssh claude-code codex gemini skills)
 
 COMP_NAMES=(
     "Shell Environment"
@@ -91,6 +91,7 @@ COMP_NAMES=(
     "Go (goenv)"
     "Docker"
     "Tailscale"
+    "SSH"
     "Claude Code"
     "Codex CLI"
     "Gemini CLI"
@@ -106,6 +107,7 @@ COMP_DESCS=(
     "goenv + Go"
     "Docker Engine + Compose + mirrors"
     "Tailscale VPN mesh network"
+    "SSH port + key-only auth"
     "Claude Code CLI"
     "OpenAI Codex CLI"
     "Gemini CLI"
@@ -121,6 +123,7 @@ COMP_SCRIPTS=(
     setup-go.sh
     setup-docker.sh
     setup-tailscale.sh
+    setup-ssh.sh
     setup-claude-code.sh
     setup-codex.sh
     setup-gemini.sh
@@ -128,19 +131,19 @@ COMP_SCRIPTS=(
 )
 
 # Dependencies: space-separated indices that must run first (empty = none)
-COMP_DEPS=("" "" "" "" "" "" "" "" "3" "3" "3" "3")
+COMP_DEPS=("" "" "" "" "" "" "" "" "" "3" "3" "3" "3")
 
 # Whether component needs API keys (2 = token-only, 1 = url+key)
-COMP_NEEDS_KEYS=(0 0 0 0 0 0 0 2 1 1 1 0)
+COMP_NEEDS_KEYS=(0 0 0 0 0 0 0 2 0 1 1 1 0)
 
 # Whether component needs sudo
-COMP_NEEDS_SUDO=(1 1 0 0 0 0 1 1 0 0 0 0)
+COMP_NEEDS_SUDO=(1 1 0 0 0 0 1 1 1 0 0 0 0)
 
 # Selection state
-COMP_SELECTED=(0 0 0 0 0 0 0 0 0 0 0 0)
+COMP_SELECTED=(0 0 0 0 0 0 0 0 0 0 0 0 0)
 
 # Install-only mode: tool installed but API not configured (keys missing)
-COMP_INSTALL_ONLY=(0 0 0 0 0 0 0 0 0 0 0 0)
+COMP_INSTALL_ONLY=(0 0 0 0 0 0 0 0 0 0 0 0 0)
 
 # --- [D] Utility Functions ----------------------------------------------------
 
