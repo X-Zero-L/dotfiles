@@ -247,3 +247,108 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
           bash ${{ matrix.script }}
           echo "✔ Idempotent re-run succeeded"
+
+  # ── Job 3: install.sh E2E ─────────────────────────────────────────────
+  install-e2e:
+    name: install.sh E2E
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start local file server
+        run: |
+          python3 -m http.server 8888 &
+          sleep 1
+          curl -sf http://localhost:8888/setup-tools.sh > /dev/null
+          echo "✔ Local server serving repo files"
+
+      - name: Patch install.sh to use local server
+        run: |
+          sed 's|^BASE_URL=.*|BASE_URL="http://localhost:8888"|' install.sh > /tmp/install-local.sh
+          chmod +x /tmp/install-local.sh
+
+      - name: "Test: --components tools"
+        run: bash /tmp/install-local.sh --components tools --verbose
+
+      - name: Verify tools installed
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          for cmd in rg jq tree shellcheck gcc wget unzip xclip; do
+            command -v "$cmd" > /dev/null || { echo "✘ $cmd"; exit 1; }
+            echo "✔ $cmd"
+          done
+
+      - name: "Test: dependency resolution (claude-code → node)"
+        run: bash /tmp/install-local.sh --components claude-code --verbose
+
+      - name: Verify dependency auto-added node
+        shell: bash
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+          command -v node || { echo "✘ node not auto-installed"; exit 1; }
+          command -v claude || { echo "✘ claude not installed"; exit 1; }
+          echo "✔ Dependency resolution: claude-code pulled in node"
+
+      - name: "Test: --components with multiple items"
+        run: bash /tmp/install-local.sh --components uv,go --verbose
+
+      - name: Verify multi-component install
+        shell: bash
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          [ -d "$HOME/.goenv" ] && {
+            export GOENV_ROOT="$HOME/.goenv"
+            export PATH="$GOENV_ROOT/bin:$PATH"
+            eval "$(goenv init -)" 2>/dev/null || true
+          }
+          command -v uv || { echo "✘ uv"; exit 1; }
+          command -v go || { echo "✘ go"; exit 1; }
+          echo "✔ Multi-component install: uv + go"
+
+  # ── Job 4: update.sh E2E ──────────────────────────────────────────────
+  update-e2e:
+    name: update.sh E2E
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pre-install components (tools + node)
+        run: |
+          bash setup-tools.sh
+          bash setup-node.sh
+
+      - name: "Test: update.sh --components tools,node --verbose"
+        shell: bash
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+          export PATH="$HOME/.local/bin:$PATH"
+          bash update.sh --components tools,node --verbose
+
+      - name: "Test: update.sh --all detects installed components"
+        shell: bash
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+          export PATH="$HOME/.local/bin:$PATH"
+          output=$(bash update.sh --all --verbose 2>&1) || true
+          echo "$output"
+          echo "$output" | grep -q "Essential Tools" || { echo "FAIL: tools not detected"; exit 1; }
+          echo "$output" | grep -q "Node.js" || { echo "FAIL: node not detected"; exit 1; }
+          echo "✔ update --all: detection + update completed"
+
+      - name: "Test: update.sh skips non-installed components"
+        shell: bash
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+          export PATH="$HOME/.local/bin:$PATH"
+          output=$(bash update.sh --components gemini 2>&1) || true
+          echo "$output"
+          echo "$output" | grep -q "not installed, skipping" || { echo "FAIL: should warn about non-installed"; exit 1; }
+          echo "✔ Non-installed component correctly skipped"
