@@ -13,7 +13,7 @@
 | 步骤 | 操作 |
 |------|------|
 | 1/4 | 通过 npm 全局安装 Codex（`codex` 命令存在则跳过） |
-| 2/4 | 如提供 API 密钥：写入 `~/.codex/config.toml`（模型、provider、推理强度） |
+| 2/4 | 如提供 API 密钥：合并写入 `~/.codex/config.toml`（模型、provider、特性开关） |
 | 3/4 | 如提供 API 密钥：写入 `~/.codex/auth.json`（API 密钥） |
 | 4/4 | 在 rc 文件中添加 `alias cx='codex --dangerously-bypass-approvals-and-sandbox'` |
 
@@ -21,9 +21,12 @@
 
 单个 Node.js 脚本同时处理 `config.toml` 和 `auth.json`：
 
-1. 构建两个文件的期望内容。
-2. 与现有内容进行全文比较。
-3. 仅在内容不同时写入。
+1. 将现有 `config.toml` 按 TOML section 解析。
+2. 独立合并托管的 section（顶层、`[model_providers.*]`、`[features]`）。
+3. 保留非托管 section（`[projects.*]`、`[notice.*]` 等）不变。
+4. 仅在内容不同时写入（幂等）。
+
+各 section 独立幂等——更新某个 section 不会影响其他 section。
 
 API 密钥通过环境变量（`_CODEX_URL`、`_CODEX_KEY` 等）传递，而非命令行参数。
 
@@ -31,7 +34,7 @@ API 密钥通过环境变量（`_CODEX_URL`、`_CODEX_KEY` 等）传递，而非
 
 | 文件 | 说明 |
 |------|------|
-| `~/.codex/config.toml` | 模型和 provider 配置 |
+| `~/.codex/config.toml` | 模型、provider 及特性开关配置 |
 | `~/.codex/auth.json` | API 密钥（权限 `0600`） |
 | `~/.bashrc` | 添加别名 `cx` |
 | `~/.zshrc` | 添加别名 `cx` |
@@ -50,6 +53,11 @@ base_url = "https://your-api-url"
 name = "ellyecode"
 requires_openai_auth = true
 wire_api = "responses"
+
+# 仅在设置 CODEX_FEATURES 时写入；否则保留现有 [features] 不变
+[features]
+steer = false
+collab = true
 ```
 
 ### auth.json 结构
@@ -69,11 +77,28 @@ wire_api = "responses"
 | `CODEX_MODEL` | `gpt-5.2` | 模型名称 |
 | `CODEX_EFFORT` | `xhigh` | 推理强度 |
 | `CODEX_NPM_MIRROR` | _（空）_ | npm 镜像源。设置 `GH_PROXY` 时自动启用。 |
+| `CODEX_FEATURES` | _（空）_ | 逗号分隔的特性开关（如 `steer=false,collab=true`） |
+
+### 可用特性
+
+特性为 `[features]` 下的布尔开关。常用项：
+
+| 特性 | 说明 |
+|------|------|
+| `steer` | 设为 false 时，Enter 逐条排队执行而非立即提交 |
+| `collab` | 启用子代理并行工作 |
+| `use_linux_sandbox_bwrap` | Bubblewrap 沙箱，更强的文件系统/网络控制（仅 Linux） |
+| `apps` | 使用已连接的 ChatGPT App |
+| `undo` | 每轮创建 ghost commit 以支持撤销 |
+| `js_repl` | 基于持久 Node 内核的 JavaScript REPL |
+| `memory_tool` | 基于文件的记忆提取与整合 |
+
+完整列表见 [Codex features 源码](https://github.com/openai/codex/blob/main/codex-rs/core/src/features.rs)。
 
 ## 重复运行行为
 
 - 安装：`codex` 命令存在则跳过。
-- 配置：两个文件均进行全文比较。仅在内容不同时写入。
+- 配置：按 section 合并。各托管 section 独立比较和更新。非托管 section 保留不变。
 - 别名：rc 文件中已存在则跳过。
 
 ## 依赖
