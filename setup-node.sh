@@ -46,7 +46,17 @@ if [[ -n "$NVM_NODEJS_ORG_MIRROR" ]]; then
     export NVM_NODEJS_ORG_MIRROR
     echo "  Node mirror: $NVM_NODEJS_ORG_MIRROR"
 fi
+
+# Record current version so we can migrate global packages if it changes
+_before=$(nvm current 2>/dev/null || echo "none")
 nvm install "$NODE_VERSION"
+_after=$(nvm current 2>/dev/null || echo "none")
+
+# If nvm installed a new version (not a no-op), migrate global packages
+if [[ "$_before" != "none" && "$_before" != "system" && "$_before" != "$_after" ]]; then
+    echo "  Migrating global packages from $_before to $_after..."
+    nvm reinstall-packages "$_before"
+fi
 nvm alias default "$NODE_VERSION"
 
 # Configure npm registry
