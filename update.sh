@@ -374,13 +374,38 @@ update_clash() {
 
 update_node() {
     load_env
-    if command -v nvm &>/dev/null; then
-        if [[ -n "${NODE_VERSION:-}" ]]; then
-            nvm install "$NODE_VERSION" --reinstall-packages-from=current
-        else
-            nvm install node --reinstall-packages-from=current
-        fi
+    if ! command -v nvm &>/dev/null; then
+        return 0
     fi
+
+    local current
+    current=$(nvm current 2>/dev/null)
+    [[ -z "$current" || "$current" == "none" || "$current" == "system" ]] && return 0
+
+    local target
+    if [[ -n "${NODE_VERSION:-}" ]]; then
+        target="$NODE_VERSION"
+    else
+        # Stay on current major version track (e.g., default=24 → update to latest 24.x)
+        # This avoids jumping to a new major (e.g., 25) and orphaning global packages
+        target=$(echo "$current" | sed 's/^v//' | cut -d. -f1)
+    fi
+
+    local latest
+    latest=$(nvm version-remote "$target" 2>/dev/null)
+
+    if [[ -z "$latest" || "$latest" == "N/A" ]]; then
+        echo "Could not resolve latest version for Node.js $target"
+        return 1
+    fi
+
+    if [[ "$latest" == "$current" ]]; then
+        echo "Node.js $current is already the latest for $target"
+        return 0
+    fi
+
+    nvm install "$target" --reinstall-packages-from="$current"
+    nvm alias default "$target"
 }
 
 update_uv() {
