@@ -70,12 +70,13 @@ setup_colors() {
 
 # --- [C] Component Registry --------------------------------------------------
 
-COMP_IDS=(shell tmux git clash node uv go docker tailscale ssh claude-code codex gemini skills)
+COMP_IDS=(shell tmux git tools clash node uv go docker tailscale ssh claude-code codex gemini skills)
 
 COMP_NAMES=(
     "Shell Environment"
     "Tmux"
     "Git"
+    "Essential Tools"
     "Clash Proxy"
     "Node.js (nvm)"
     "uv + Python"
@@ -93,6 +94,7 @@ COMP_DESCS=(
     "zsh, Oh My Zsh, plugins, Starship"
     "tmux + Catppuccin + TPM plugins"
     "user.name + user.email + defaults"
+    "rg, jq, fd, bat, gh, build tools"
     "clash-for-linux with subscription"
     "nvm + Node.js 24"
     "uv package manager"
@@ -107,11 +109,11 @@ COMP_DESCS=(
 )
 
 # Whether component update needs sudo
-COMP_NEEDS_SUDO=(0 1 1 1 0 0 0 1 1 1 0 0 0 0)
+COMP_NEEDS_SUDO=(0 1 1 1 1 0 0 0 1 1 1 0 0 0 0)
 
 # Detection / selection / version state
-COMP_INSTALLED=(0 0 0 0 0 0 0 0 0 0 0 0 0 0)
-COMP_SELECTED=(0 0 0 0 0 0 0 0 0 0 0 0 0 0)
+COMP_INSTALLED=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
+COMP_SELECTED=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
 VERSION_BEFORE=()
 VERSION_AFTER=()
 
@@ -202,7 +204,7 @@ Only installed components are shown; all are selected by default.
 Options:
   --all                  Update all installed components
   --components LIST      Comma-separated component list:
-                         shell,tmux,git,clash,node,uv,go,docker,tailscale,ssh,claude-code,codex,gemini,skills
+                         shell,tmux,git,tools,clash,node,uv,go,docker,tailscale,ssh,claude-code,codex,gemini,skills
   --gh-proxy URL         GitHub proxy URL (e.g., https://gh-proxy.org)
   -v, --verbose          Show raw command output (default: clean spinner)
   -h, --help             Show this help
@@ -247,6 +249,7 @@ detect_installed() {
         "test -d $HOME/.oh-my-zsh"
         "command -v tmux"
         "command -v git"
+        "command -v rg && command -v jq"
         "test -d $HOME/clash-for-linux"
         "command -v nvm || [[ -f $HOME/.nvm/nvm.sh ]]"
         "command -v uv"
@@ -279,6 +282,9 @@ get_version() {
             ;;
         git)
             ver=$(git --version 2>/dev/null | awk '{print $3}') || true
+            ;;
+        tools)
+            ver=$(rg --version 2>/dev/null | head -1 | awk '{print $2}') || true
             ;;
         clash)
             ver="installed"
@@ -360,6 +366,13 @@ update_tmux() {
 update_git() {
     sudo apt-get update -qq
     sudo apt-get install --only-upgrade -y git 2>/dev/null || true
+}
+
+update_tools() {
+    sudo apt-get update -qq
+    sudo apt-get install --only-upgrade -y \
+        ripgrep jq fd-find bat tree shellcheck build-essential wget unzip xclip 2>/dev/null || true
+    sudo apt-get install --only-upgrade -y gh 2>/dev/null || true
 }
 
 update_clash() {
@@ -487,6 +500,7 @@ run_update() {
         shell)       update_shell ;;
         tmux)        update_tmux ;;
         git)         update_git ;;
+        tools)       update_tools ;;
         clash)       update_clash ;;
         node)        update_node ;;
         uv)          update_uv ;;

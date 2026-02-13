@@ -66,6 +66,7 @@ bash install.sh update --all
 | Shell Environment | Oh My Zsh、自定义插件/主题（git pull）、Starship | 否 |
 | Tmux | `apt-get --only-upgrade tmux`、TPM 插件 | 是 |
 | Git | `apt-get --only-upgrade git` | 是 |
+| Essential Tools | `apt-get --only-upgrade` rg、jq、fd、bat、tree、shellcheck、build-essential、gh | 是 |
 | Clash Proxy | `git pull` + 重新运行安装器 | 是 |
 | Node.js (nvm) | `nvm install node --reinstall-packages-from=current` | 否 |
 | uv + Python | `uv self update` | 否 |
@@ -87,6 +88,7 @@ bash install.sh update --all
 | Shell | `~/.oh-my-zsh` 目录存在 |
 | Tmux | `tmux` 命令可用 |
 | Git | `git` 命令可用 |
+| Essential Tools | `rg` 和 `jq` 命令可用 |
 | Clash | `~/clash-for-linux` 目录存在 |
 | Node.js | `nvm` 函数或 `~/.nvm/nvm.sh` 存在 |
 | uv | `uv` 命令可用 |
@@ -120,7 +122,7 @@ bash install.sh --gh-proxy https://gh-proxy.org update --all
 | 方面 | install.sh | update.sh |
 |------|-----------|-----------|
 | 横幅 | "Rig Installer" | "Rig Updater" |
-| 菜单 | 全部 14 个组件 | 仅已安装组件 |
+| 菜单 | 全部 15 个组件 | 仅已安装组件 |
 | 默认选择 | 无 | 全部已安装 |
 | API 密钥收集 | 是 | 否 |
 | 依赖解析 | 是 | 否 |

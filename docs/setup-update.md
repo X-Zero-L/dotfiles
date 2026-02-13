@@ -66,6 +66,7 @@ If piped (`curl | bash`) without flags, the script exits with a usage hint.
 | Shell Environment | Oh My Zsh, custom plugins/themes (git pull), Starship | No |
 | Tmux | `apt-get --only-upgrade tmux`, TPM plugins | Yes |
 | Git | `apt-get --only-upgrade git` | Yes |
+| Essential Tools | `apt-get --only-upgrade` rg, jq, fd, bat, tree, shellcheck, build-essential, gh | Yes |
 | Clash Proxy | `git pull` + re-run installer | Yes |
 | Node.js (nvm) | `nvm install node --reinstall-packages-from=current` | No |
 | uv + Python | `uv self update` | No |
@@ -87,6 +88,7 @@ Each component is detected by checking for installed artifacts:
 | Shell | `~/.oh-my-zsh` directory exists |
 | Tmux | `tmux` command available |
 | Git | `git` command available |
+| Essential Tools | `rg` and `jq` commands available |
 | Clash | `~/clash-for-linux` directory exists |
 | Node.js | `nvm` function or `~/.nvm/nvm.sh` exists |
 | uv | `uv` command available |
@@ -120,7 +122,7 @@ bash install.sh --gh-proxy https://gh-proxy.org update --all
 | Aspect | install.sh | update.sh |
 |--------|-----------|-----------|
 | Banner | "Rig Installer" | "Rig Updater" |
-| Menu | All 14 components | Only installed ones |
+| Menu | All 15 components | Only installed ones |
 | Default selection | None | All installed |
 | API key collection | Yes | No |
 | Dependency resolution | Yes | No |
