@@ -1,0 +1,249 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  # ── Job 1: Lint & Consistency ──────────────────────────────────────────
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shellcheck
+        run: shellcheck --severity=error setup-*.sh install.sh update.sh
+
+      - name: Syntax check
+        run: |
+          status=0
+          for f in setup-*.sh install.sh update.sh; do
+            if bash -n "$f"; then
+              echo "✔ $f"
+            else
+              echo "✘ $f"
+              status=1
+            fi
+          done
+          exit $status
+
+      - name: Array consistency — install.sh
+        run: |
+          bash -c '
+            eval "$(sed -n "/^# --- \[C\] Component Registry/,/^# --- \[D\]/p" install.sh | head -n -1)"
+            names=(COMP_IDS COMP_NAMES COMP_DESCS COMP_SCRIPTS COMP_DEPS COMP_NEEDS_KEYS COMP_NEEDS_SUDO COMP_SELECTED COMP_INSTALL_ONLY)
+            lengths=(
+              ${#COMP_IDS[@]} ${#COMP_NAMES[@]} ${#COMP_DESCS[@]}
+              ${#COMP_SCRIPTS[@]} ${#COMP_DEPS[@]} ${#COMP_NEEDS_KEYS[@]}
+              ${#COMP_NEEDS_SUDO[@]} ${#COMP_SELECTED[@]} ${#COMP_INSTALL_ONLY[@]}
+            )
+            expected=${lengths[0]}
+            ok=1
+            for i in "${!lengths[@]}"; do
+              if [[ "${lengths[$i]}" -ne "$expected" ]]; then
+                echo "FAIL: ${names[$i]} has ${lengths[$i]} elements (expected $expected)"
+                ok=0
+              fi
+            done
+            if [[ $ok -eq 1 ]]; then
+              echo "OK: install.sh — all 9 arrays have $expected elements"
+            else
+              exit 1
+            fi
+          '
+
+      - name: Array consistency — update.sh
+        run: |
+          bash -c '
+            eval "$(sed -n "/^# --- \[C\] Component Registry/,/^# --- \[D\]/p" update.sh | head -n -1)"
+            names=(COMP_IDS COMP_NAMES COMP_DESCS COMP_NEEDS_SUDO COMP_INSTALLED COMP_SELECTED)
+            lengths=(
+              ${#COMP_IDS[@]} ${#COMP_NAMES[@]} ${#COMP_DESCS[@]}
+              ${#COMP_NEEDS_SUDO[@]} ${#COMP_INSTALLED[@]} ${#COMP_SELECTED[@]}
+            )
+            expected=${lengths[0]}
+            ok=1
+            for i in "${!lengths[@]}"; do
+              if [[ "${lengths[$i]}" -ne "$expected" ]]; then
+                echo "FAIL: ${names[$i]} has ${lengths[$i]} elements (expected $expected)"
+                ok=0
+              fi
+            done
+            if [[ $ok -eq 1 ]]; then
+              echo "OK: update.sh — all 6 arrays have $expected elements"
+            else
+              exit 1
+            fi
+          '
+
+      - name: COMP_IDS sync between install.sh and update.sh
+        run: |
+          install_ids=$(bash -c 'eval "$(sed -n "/^COMP_IDS=/p" install.sh)"; echo "${COMP_IDS[*]}"')
+          update_ids=$(bash -c 'eval "$(sed -n "/^COMP_IDS=/p" update.sh)"; echo "${COMP_IDS[*]}"')
+          if [[ "$install_ids" != "$update_ids" ]]; then
+            echo "FAIL: COMP_IDS mismatch"
+            echo "  install.sh: $install_ids"
+            echo "  update.sh:  $update_ids"
+            exit 1
+          fi
+          echo "OK: COMP_IDS match — $install_ids"
+
+      - name: COMP_SCRIPTS match setup files
+        run: |
+          bash -c '
+            eval "$(sed -n "/^COMP_SCRIPTS=/,/)/p" install.sh)"
+            status=0
+            for script in "${COMP_SCRIPTS[@]}"; do
+              if [[ ! -f "$script" ]]; then
+                echo "FAIL: $script referenced in COMP_SCRIPTS but file not found"
+                status=1
+              fi
+            done
+            if [[ $status -eq 0 ]]; then
+              echo "OK: all ${#COMP_SCRIPTS[@]} scripts exist"
+            fi
+            exit $status
+          '
+
+  # ── Job 2: Smoke Tests ────────────────────────────────────────────────
+  smoke-test:
+    name: ${{ matrix.component }}
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - component: shell
+            script: setup-shell.sh
+            deps: ""
+            verify: "zsh starship"
+
+          - component: tmux
+            script: setup-tmux.sh
+            deps: ""
+            verify: "tmux"
+
+          - component: git
+            script: setup-git.sh
+            deps: ""
+            verify: "git"
+
+          - component: tools
+            script: setup-tools.sh
+            deps: ""
+            verify: "rg jq tree shellcheck gcc wget unzip xclip"
+
+          - component: clash
+            script: setup-clash.sh
+            deps: ""
+            verify: ""
+
+          - component: node
+            script: setup-node.sh
+            deps: ""
+            verify: "node npm"
+
+          - component: uv
+            script: setup-uv.sh
+            deps: ""
+            verify: "uv"
+
+          - component: go
+            script: setup-go.sh
+            deps: ""
+            verify: "go"
+
+          - component: docker
+            script: setup-docker.sh
+            deps: ""
+            verify: "docker"
+
+          - component: tailscale
+            script: setup-tailscale.sh
+            deps: ""
+            verify: "tailscale"
+
+          - component: ssh
+            script: setup-ssh.sh
+            deps: ""
+            verify: "sshd"
+
+          - component: claude-code
+            script: setup-claude-code.sh
+            deps: setup-node.sh
+            verify: "claude"
+
+          - component: codex
+            script: setup-codex.sh
+            deps: setup-node.sh
+            verify: "codex"
+
+          - component: gemini
+            script: setup-gemini.sh
+            deps: setup-node.sh
+            verify: "gemini"
+
+          - component: skills
+            script: setup-skills.sh
+            deps: setup-node.sh
+            verify: ""
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependency
+        if: matrix.deps != ''
+        shell: bash
+        run: bash ${{ matrix.deps }}
+
+      - name: Run ${{ matrix.script }}
+        shell: bash
+        run: |
+          # Load env from any prior dependency step
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+          export PATH="$HOME/.local/bin:$PATH"
+          [ -d "$HOME/.goenv" ] && {
+            export GOENV_ROOT="$HOME/.goenv"
+            export PATH="$GOENV_ROOT/bin:$PATH"
+            eval "$(goenv init -)" 2>/dev/null || true
+          }
+          bash ${{ matrix.script }}
+
+      - name: Verify commands
+        if: matrix.verify != ''
+        shell: bash
+        run: |
+          # Reload env
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+          export PATH="$HOME/.local/bin:$PATH"
+          [ -d "$HOME/.goenv" ] && {
+            export GOENV_ROOT="$HOME/.goenv"
+            export PATH="$GOENV_ROOT/bin:$PATH"
+            eval "$(goenv init -)" 2>/dev/null || true
+          }
+
+          failed=0
+          for cmd in ${{ matrix.verify }}; do
+            if command -v "$cmd" &>/dev/null; then
+              echo "✔ $cmd → $(command -v "$cmd")"
+            else
+              echo "✘ $cmd not found"
+              failed=1
+            fi
+          done
+          exit $failed
+
+      - name: Idempotency re-run
+        if: matrix.component == 'tools'
+        shell: bash
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          bash ${{ matrix.script }}
+          echo "✔ Idempotent re-run succeeded"
