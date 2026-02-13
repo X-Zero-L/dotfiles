@@ -9,6 +9,8 @@ set -uo pipefail
 #   bash install.sh                              # Interactive TUI
 #   bash install.sh --all                        # Install everything
 #   bash install.sh --components shell,node,docker
+#   bash install.sh update                       # Update installed components
+#   bash install.sh update --all                 # Non-interactive update
 #   curl -fsSL <url>/install.sh | bash           # Interactive via pipe
 #   curl -fsSL <url>/install.sh | bash -s -- --all
 #
@@ -234,6 +236,9 @@ Usage: install.sh [OPTIONS]
 
 Interactive rig installer with checkbox selection.
 
+Subcommands:
+  update                 Update installed components (downloads update.sh)
+
 Options:
   --all                  Install all components
   --components LIST      Comma-separated component list:
@@ -254,6 +259,8 @@ Examples:
   bash install.sh --all                              # Install everything
   bash install.sh --components shell,node,docker     # Specific components
   bash install.sh --all --gh-proxy https://gh-proxy.org
+  bash install.sh update                             # Update installed components
+  bash install.sh update --all                       # Non-interactive update
 
   # Via curl
   curl -fsSL URL/install.sh | bash
@@ -932,6 +939,16 @@ parse_args() {
             --help|-h)
                 show_help
                 exit 0
+                ;;
+            update)
+                shift
+                local url
+                if [[ -n "$GH_PROXY" ]]; then
+                    url="${GH_PROXY%/}/${BASE_URL}/update.sh"
+                else
+                    url="${BASE_URL}/update.sh"
+                fi
+                exec bash <(curl -fsSL "$url") "$@"
                 ;;
             *)
                 printf "${RED}Unknown option: %s${NC}\n" "$1"
