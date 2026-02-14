@@ -32,6 +32,23 @@ BASE_URL="https://${_RAW}/${REPO}/${BRANCH}"
 
 export GH_PROXY="${GH_PROXY:-}"
 
+# --- Security: GH_PROXY validation ------------------------------------------
+# SECURITY WARNING — Supply-chain risk:
+# This script downloads and executes remote shell scripts via `curl | bash`.
+# The scripts are fetched from a GitHub branch (a moving target) and are NOT
+# integrity-verified (no checksum or signature). If GH_PROXY is set, traffic
+# is routed through a third-party proxy, adding MITM risk. Only use trusted
+# HTTPS proxies. HTTP proxies are rejected to reduce interception surface.
+# TODO: A future --verify flag may add SHA256 checksum verification.
+
+validate_gh_proxy() {
+    if [[ -n "$GH_PROXY" ]]; then
+        if [[ "$GH_PROXY" != https://* ]]; then
+            die "GH_PROXY must use https:// (got: $GH_PROXY). HTTP proxies are rejected to prevent MITM attacks."
+        fi
+    fi
+}
+
 # --- Colors ------------------------------------------------------------------
 
 setup_colors() {
@@ -102,6 +119,13 @@ show_help() {
     printf "\n"
     printf "  ${BOLD}Options:${NC}\n"
     printf "    --gh-proxy URL   GitHub proxy (or set ${CYAN}GH_PROXY${NC} env var)\n"
+    printf "                     ${DIM}Must use https://. HTTP proxies are rejected.${NC}\n"
+    printf "\n"
+    printf "  ${BOLD}Security:${NC}\n"
+    printf "    ${DIM}Commands download and execute scripts from GitHub via curl | bash.${NC}\n"
+    printf "    ${DIM}Scripts are fetched from a branch (not pinned) and are not integrity-${NC}\n"
+    printf "    ${DIM}verified. When using --gh-proxy, only trusted HTTPS proxies should be${NC}\n"
+    printf "    ${DIM}used. Review the source at: ${_GH}/${REPO}${NC}\n"
     printf "\n"
     printf "  ${BOLD}Examples:${NC}\n"
     printf "    rig install                          ${DIM}# Interactive TUI${NC}\n"
@@ -123,6 +147,10 @@ main() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --gh-proxy)
+                if [[ $# -lt 2 ]]; then
+                    echo "error: --gh-proxy requires an argument" >&2
+                    exit 1
+                fi
                 GH_PROXY="$2"
                 shift 2
                 ;;
@@ -135,6 +163,9 @@ main() {
                 ;;
         esac
     done
+
+    # Validate GH_PROXY after all option parsing
+    validate_gh_proxy
 
     local cmd="${1:-help}"
     shift || true

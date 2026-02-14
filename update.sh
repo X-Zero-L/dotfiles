@@ -803,6 +803,10 @@ parse_args() {
                 shift
                 ;;
             --components)
+                if [[ $# -lt 2 ]]; then
+                    echo "error: --components requires an argument" >&2
+                    exit 1
+                fi
                 IFS=',' read -ra REQUESTED <<< "$2"
                 for req in "${REQUESTED[@]}"; do
                     req=$(echo "$req" | tr -d ' ')
@@ -816,6 +820,10 @@ parse_args() {
                 shift 2
                 ;;
             --gh-proxy)
+                if [[ $# -lt 2 ]]; then
+                    echo "error: --gh-proxy requires an argument" >&2
+                    exit 1
+                fi
                 GH_PROXY="$2"
                 shift 2
                 ;;

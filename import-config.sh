@@ -24,12 +24,35 @@ SECRETS_FILE=""
 NON_INTERACTIVE=0
 GH_PROXY="${GH_PROXY:-}"
 
+# SECURITY WARNING — Supply-chain risk:
+# When no local install.sh is found, this script downloads and executes remote
+# shell scripts via `curl | bash`. The scripts are fetched from a GitHub branch
+# (a moving target) and are NOT integrity-verified. If GH_PROXY is set, traffic
+# is routed through a third-party proxy, adding MITM risk. Only use trusted
+# HTTPS proxies. HTTP proxies are rejected.
+# TODO: A future --verify flag may add SHA256 checksum verification.
+
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --config)       CONFIG_FILE="$2"; shift 2 ;;
-        --secrets)      SECRETS_FILE="$2"; shift 2 ;;
+        --config)
+            if [[ $# -lt 2 ]]; then
+                echo "error: --config requires an argument" >&2
+                exit 1
+            fi
+            CONFIG_FILE="$2"; shift 2 ;;
+        --secrets)
+            if [[ $# -lt 2 ]]; then
+                echo "error: --secrets requires an argument" >&2
+                exit 1
+            fi
+            SECRETS_FILE="$2"; shift 2 ;;
         --yes|-y)       NON_INTERACTIVE=1; shift ;;
-        --gh-proxy)     GH_PROXY="$2"; shift 2 ;;
+        --gh-proxy)
+            if [[ $# -lt 2 ]]; then
+                echo "error: --gh-proxy requires an argument" >&2
+                exit 1
+            fi
+            GH_PROXY="$2"; shift 2 ;;
         --help|-h)
             cat <<'HELP'
 Usage: import-config.sh [OPTIONS] [CONFIG_FILE]
@@ -43,8 +66,13 @@ Options:
   --config FILE            Path to rig-config.json
   --secrets FILE           Path to secrets.env (default: same dir as config)
   --yes, -y                Non-interactive mode (skip confirmation)
-  --gh-proxy URL           GitHub proxy URL
+  --gh-proxy URL           GitHub proxy URL (must use https://)
   -h, --help               Show this help
+
+Security:
+  If no local install.sh is found, scripts are downloaded from GitHub via
+  curl | bash. Scripts are fetched from a branch (not pinned) and are not
+  integrity-verified. Only use trusted HTTPS proxies with --gh-proxy.
 
 Examples:
   import-config.sh ~/.rig/rig-config.json
@@ -109,9 +137,46 @@ fi
 
 # Validate JSON structure
 if ! jq -e '.components' "$CONFIG_FILE" &>/dev/null; then
-    printf "${RED}error:${NC} Invalid config: missing 'components' array in %s\n" "$CONFIG_FILE" >&2
+    printf "${RED}error:${NC} Invalid config: missing 'components' field in %s\n" "$CONFIG_FILE" >&2
     exit 1
 fi
+
+# Validate components is an array
+if ! jq -e '.components | type == "array"' "$CONFIG_FILE" &>/dev/null; then
+    printf "${RED}error:${NC} Invalid config: 'components' must be an array in %s\n" "$CONFIG_FILE" >&2
+    exit 1
+fi
+
+# Validate components array is not empty
+comp_count=$(jq -r '.components | length' "$CONFIG_FILE" 2>/dev/null || echo "0")
+if [[ "$comp_count" -eq 0 ]]; then
+    printf "${RED}error:${NC} Invalid config: 'components' array is empty in %s\n" "$CONFIG_FILE" >&2
+    exit 1
+fi
+
+# Define supported component IDs (must match install.sh)
+SUPPORTED_COMPONENTS=(
+    "shell" "tmux" "git" "tools" "essential-tools"
+    "node" "uv" "go" "docker" "tailscale" "ssh"
+    "claude-code" "codex" "gemini" "skills"
+)
+
+# Validate each component ID
+while IFS= read -r comp; do
+    [[ -z "$comp" ]] && continue
+    comp_valid=0
+    for supported in "${SUPPORTED_COMPONENTS[@]}"; do
+        if [[ "$comp" == "$supported" ]]; then
+            comp_valid=1
+            break
+        fi
+    done
+    if [[ $comp_valid -eq 0 ]]; then
+        printf "${RED}error:${NC} Unknown component ID: '%s' in %s\n" "$comp" "$CONFIG_FILE" >&2
+        printf "  Supported components: %s\n" "${SUPPORTED_COMPONENTS[*]}" >&2
+        exit 1
+    fi
+done < <(jq -r '.components[]' "$CONFIG_FILE" 2>/dev/null)
 
 # --- Auto-detect secrets.env ------------------------------------------------
 
@@ -227,6 +292,12 @@ fi
 # --- Run Install -------------------------------------------------------------
 
 printf "  ${DIM}Running install.sh --components %s ...${NC}\n\n" "$COMP_LIST"
+
+# Validate GH_PROXY before building URL
+if [[ -n "$GH_PROXY" ]] && [[ "$GH_PROXY" != https://* ]]; then
+    printf "${RED}error:${NC} GH_PROXY must use https:// (got: %s). HTTP proxies are rejected to prevent MITM attacks.\n" "$GH_PROXY" >&2
+    exit 1
+fi
 
 # Build install.sh URL
 _RAW="raw.githubusercontent.com"
