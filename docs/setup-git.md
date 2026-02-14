@@ -2,6 +2,18 @@
 
 Configures Git global settings: user identity and sensible defaults.
 
+## OS Support
+
+Works on all supported platforms. Git is installed via the system package manager if not present:
+
+| OS | Package Manager |
+|----|----------------|
+| Debian/Ubuntu | `apt` |
+| CentOS/RHEL | `yum`/`dnf` |
+| Fedora | `dnf` |
+| Arch Linux | `pacman` |
+| macOS | `brew` (or Xcode Command Line Tools) |
+
 ## What Gets Configured
 
 | Item | Description |

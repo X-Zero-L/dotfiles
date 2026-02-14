@@ -2,6 +2,18 @@
 
 Installs [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI and optionally configures API credentials. Alias: `cc`.
 
+## OS Support
+
+Works on all platforms via npm (requires Node.js):
+
+| OS | Status |
+|----|--------|
+| Debian/Ubuntu | ✓ |
+| CentOS/RHEL | ✓ |
+| Fedora | ✓ |
+| Arch Linux | ✓ |
+| macOS | ✓ |
+
 ## What Gets Installed
 
 | Tool | Source | Description |

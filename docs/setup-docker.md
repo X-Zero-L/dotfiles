@@ -1,13 +1,37 @@
 # setup-docker.sh
 
-Installs Docker Engine, Compose plugin, and configures the daemon with mirrors, logging, address pools, and optional proxy. Requires `sudo`.
+Installs Docker, Compose plugin, and configures the daemon with mirrors, logging, address pools, and optional proxy.
+
+## OS-Specific Behavior
+
+| OS | Docker Variant | Installation Method | systemd |
+|----|---------------|---------------------|---------|
+| Debian/Ubuntu | Docker Engine | [get.docker.com](https://get.docker.com) + apt | ✓ |
+| CentOS/RHEL | Docker Engine | [get.docker.com](https://get.docker.com) + yum/dnf | ✓ |
+| Fedora | Docker Engine | [get.docker.com](https://get.docker.com) + dnf | ✓ |
+| Arch Linux | Docker Engine | [get.docker.com](https://get.docker.com) + pacman | ✓ |
+| macOS | Docker Desktop | Homebrew (`brew install --cask docker`) | ✗ |
+
+**macOS Notes:**
+- Docker Desktop is installed via Homebrew Cask instead of Docker Engine
+- No systemd service configuration (macOS doesn't use systemd)
+- Docker Desktop manages daemon.json differently - manual configuration may be required
+- Requires `sudo` for initial installation but not for Homebrew operations
 
 ## What Gets Installed
+
+### Linux (Docker Engine)
 
 | Tool | Source | Description |
 |------|--------|-------------|
 | Docker Engine | [get.docker.com](https://get.docker.com) | Container runtime |
-| docker-compose-plugin | apt | `docker compose` command |
+| docker-compose-plugin | Package manager | `docker compose` command |
+
+### macOS (Docker Desktop)
+
+| Tool | Source | Description |
+|------|--------|-------------|
+| Docker Desktop | Homebrew Cask | Container runtime with GUI |
 
 ## How It Works
 

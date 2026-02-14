@@ -2,6 +2,18 @@
 
 Installs the [uv](https://docs.astral.sh/uv/) package manager and optionally a Python version.
 
+## OS Support
+
+uv works on all supported platforms (Linux and macOS). No OS-specific package manager needed:
+
+| OS | Status |
+|----|--------|
+| Debian/Ubuntu | ✓ |
+| CentOS/RHEL | ✓ |
+| Fedora | ✓ |
+| Arch Linux | ✓ |
+| macOS | ✓ |
+
 ## What Gets Installed
 
 | Tool | Source | Description |

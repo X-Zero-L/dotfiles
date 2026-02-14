@@ -2,6 +2,18 @@
 
 Installs [Tailscale](https://tailscale.com/) VPN mesh network, optionally connects to a tailnet.
 
+## OS Support
+
+Tailscale's official installer supports all major platforms:
+
+| OS | Installation Method |
+|----|-------------------|
+| Debian/Ubuntu | Official script (adds apt repository) |
+| CentOS/RHEL | Official script (adds yum/dnf repository) |
+| Fedora | Official script (adds dnf repository) |
+| Arch Linux | Official script (uses pacman) |
+| macOS | Official script (uses Homebrew or App Store) |
+
 ## What Gets Installed
 
 | Tool | Source | Description |

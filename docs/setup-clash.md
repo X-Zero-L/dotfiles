@@ -2,6 +2,18 @@
 
 Installs [clash-for-linux](https://github.com/nelvko/clash-for-linux-install) proxy with optional subscription.
 
+## OS Support
+
+**Linux Only** — This component only works on Linux systems. Not supported on macOS.
+
+| OS | Status |
+|----|--------|
+| Debian/Ubuntu | ✓ Supported |
+| CentOS/RHEL | ✓ Supported |
+| Fedora | ✓ Supported |
+| Arch Linux | ✓ Supported |
+| macOS | ✗ Not supported |
+
 ## Overview
 
 Sets up a local proxy (default: mihomo kernel) that can be toggled with `clashon`/`clashoff` shell functions. The proxy listens on `localhost:7890` and supports HTTP/HTTPS/SOCKS5.

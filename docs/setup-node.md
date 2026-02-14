@@ -2,6 +2,18 @@
 
 Installs nvm (Node Version Manager) and Node.js.
 
+## OS Support
+
+nvm works on all supported platforms (Linux and macOS). No OS-specific package manager needed:
+
+| OS | Status |
+|----|--------|
+| Debian/Ubuntu | ✓ |
+| CentOS/RHEL | ✓ |
+| Fedora | ✓ |
+| Arch Linux | ✓ |
+| macOS | ✓ |
+
 ## What Gets Installed
 
 | Tool | Source | Description |

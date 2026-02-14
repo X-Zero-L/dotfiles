@@ -1,12 +1,24 @@
 # setup-tmux.sh
 
-Installs tmux, TPM plugin manager, Catppuccin theme, and essential plugins with full mouse interaction. Requires `sudo`.
+Installs tmux, TPM plugin manager, Catppuccin theme, and essential plugins with full mouse interaction.
+
+## OS Support
+
+Works on all supported platforms:
+
+| OS | Package Manager | sudo Required |
+|----|----------------|---------------|
+| Debian/Ubuntu | `apt` | ✓ |
+| CentOS/RHEL | `yum`/`dnf` | ✓ |
+| Fedora | `dnf` | ✓ |
+| Arch Linux | `pacman` | ✓ |
+| macOS | `brew` | Homebrew operations only |
 
 ## What Gets Installed
 
 | Tool | Source | Description |
 |------|--------|-------------|
-| tmux | apt | Terminal multiplexer |
+| tmux | Package manager | Terminal multiplexer |
 | TPM | [tmux-plugins/tpm](https://github.com/tmux-plugins/tpm) | Tmux Plugin Manager |
 | tmux-sensible | [tmux-plugins/tmux-sensible](https://github.com/tmux-plugins/tmux-sensible) | Sensible defaults (ESC delay fix, history, etc.) |
 | Catppuccin | [catppuccin/tmux](https://github.com/catppuccin/tmux) | Catppuccin Mocha theme |
@@ -66,7 +78,7 @@ Disabled by default. Enable with `TMUX_KEYBINDS=1`:
 
 | Step | Action |
 |------|--------|
-| 1/4 | `sudo apt install -y tmux` (skipped if already installed) |
+| 1/4 | Install tmux via package manager (apt/yum/dnf/pacman/brew) |
 | 2/4 | `git clone` TPM to `~/.tmux/plugins/tpm` (supports `GH_PROXY`) |
 | 3/4 | Generate `~/.tmux.conf` — compare with existing, write only if different |
 | 4/4 | Clone each plugin to `~/.tmux/plugins/` (skipped if directory exists) |

@@ -4,6 +4,10 @@
 
 Tools for managing your rig installation after initial setup — presets, status checking, config export/import, and safe uninstallation.
 
+## OS Support
+
+All management tools work on all supported platforms (Debian/Ubuntu, CentOS/RHEL, Fedora, Arch Linux, and macOS). The tools automatically detect your OS and use the appropriate package manager.
+
 ## Overview
 
 Beyond `install.sh` and `update.sh`, rig provides a CLI wrapper (`rig`) and several management scripts:

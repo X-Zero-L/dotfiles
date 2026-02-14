@@ -1,12 +1,28 @@
 # setup-ssh.sh
 
-Configures OpenSSH server: custom port, key-only authentication, and GitHub SSH proxy.
+Configures SSH server: custom port, key-only authentication, and GitHub SSH proxy.
+
+## OS-Specific Behavior
+
+| OS | SSH Server | Service Management | Configuration |
+|----|-----------|-------------------|---------------|
+| Debian/Ubuntu | openssh-server | systemctl | /etc/ssh/sshd_config |
+| CentOS/RHEL | openssh-server | systemctl | /etc/ssh/sshd_config |
+| Fedora | openssh-server | systemctl | /etc/ssh/sshd_config |
+| Arch Linux | openssh | systemctl | /etc/ssh/sshd_config |
+| macOS | Built-in | Remote Login (System Preferences) | /etc/ssh/sshd_config |
+
+**macOS Notes:**
+- SSH server is built-in (no package installation needed)
+- Enabled via Remote Login in System Preferences instead of systemctl
+- Configuration file is at `/etc/ssh/sshd_config` (same as Linux)
+- Restart via `sudo launchctl stop/start com.openssh.sshd`
 
 ## What Gets Configured
 
 | Item | Description |
 |------|-------------|
-| openssh-server | Installed if missing |
+| SSH server | Installed/enabled if missing |
 | Port | Custom SSH port (optional) |
 | Private key | Imported to `~/.ssh/` for outbound SSH (e.g. GitHub) |
 | Public key | Added to `~/.ssh/authorized_keys` for inbound SSH |

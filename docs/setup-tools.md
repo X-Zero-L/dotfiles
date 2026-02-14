@@ -2,21 +2,43 @@
 
 Installs essential CLI tools that coding agents depend on daily — fast code search, JSON processing, GitHub CLI, build tools, and more.
 
+## OS-Specific Package Names
+
+The script automatically detects your OS and installs the appropriate packages:
+
+| Tool | Debian/Ubuntu | CentOS/RHEL/Fedora | Arch Linux | macOS (Homebrew) |
+|------|---------------|-------------------|------------|------------------|
+| ripgrep | `ripgrep` | `ripgrep` | `ripgrep` | `ripgrep` |
+| jq | `jq` | `jq` | `jq` | `jq` |
+| fd | `fd-find` → symlink to `fd` | `fd-find` | `fd` | `fd` |
+| bat | `bat` → symlink to `batcat` | `bat` | `bat` | `bat` |
+| tree | `tree` | `tree` | `tree` | `tree` |
+| gh | `gh` (via GitHub apt repo) | `gh` | `github-cli` | `gh` |
+| shellcheck | `shellcheck` | `ShellCheck` | `shellcheck` | `shellcheck` |
+| build tools | `build-essential` (gcc, g++, make) | `gcc`, `gcc-c++`, `make` | `base-devel` | Xcode Command Line Tools |
+| wget | `wget` | `wget` | `wget` | `wget` |
+| unzip | `unzip` | `unzip` | `unzip` | `unzip` |
+| clipboard | `xclip` | `xclip` | `xclip` | `pbcopy` (built-in) |
+
+**Notes:**
+- On Debian/Ubuntu, `fd-find` and `bat` are symlinked to `fd` and `bat` in `~/.local/bin/`
+- On macOS, Xcode Command Line Tools are installed automatically if not present
+- macOS uses `pbcopy`/`pbpaste` built-in commands instead of `xclip`
+
 ## What Gets Installed
 
-| Package | Binary | Purpose |
-|---------|--------|---------|
-| `ripgrep` | `rg` | Fast code search (used internally by Claude Code) |
-| `jq` | `jq` | JSON processing |
-| `fd-find` | `fdfind` → `fd` | Fast file finder |
-| `bat` | `batcat` → `bat` | Syntax-highlighted cat |
-| `tree` | `tree` | Directory structure visualization |
-| `gh` | `gh` | GitHub CLI (PRs, issues, API) |
-| `shellcheck` | `shellcheck` | Shell script linting |
-| `build-essential` | `gcc`, `g++`, `make` | Native npm module compilation |
-| `wget` | `wget` | HTTP downloads |
-| `unzip` | `unzip` | Archive extraction |
-| `xclip` | `xclip` | Clipboard (tmux integration) |
+| Binary | Purpose |
+|--------|---------|
+| `rg` | Fast code search (used internally by Claude Code) |
+| `jq` | JSON processing |
+| `fd` | Fast file finder |
+| `bat` | Syntax-highlighted cat |
+| `tree` | Directory structure visualization |
+| `gh` | GitHub CLI (PRs, issues, API) |
+| `shellcheck` | Shell script linting |
+| `gcc`, `g++`, `make` | Native npm module compilation |
+| `wget` | HTTP downloads |
+| `unzip` | Archive extraction |
 
 ## How It Works
 

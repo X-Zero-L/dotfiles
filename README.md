@@ -2,9 +2,19 @@
 
 [中文](README_CN.md)
 
-Automated setup scripts for Debian/Ubuntu systems.
+Automated setup scripts for Linux and macOS systems.
 
-> All scripts are **idempotent** — safe to run multiple times. Already installed components are skipped automatically. Requires `curl`, `git`, and `sudo`.
+## Supported Operating Systems
+
+| OS | Package Manager | Status |
+|----|----------------|--------|
+| Debian/Ubuntu | `apt` | ✓ Full support |
+| CentOS/RHEL | `yum`/`dnf` | ✓ Full support |
+| Fedora | `dnf` | ✓ Full support |
+| Arch Linux | `pacman` | ✓ Full support |
+| macOS | `brew` | ✓ Full support (see [macOS notes](#macos-notes)) |
+
+> All scripts are **idempotent** — safe to run multiple times. Already installed components are skipped automatically. Requires `curl`, `git`, and `sudo` (except some macOS operations).
 
 ## Quick Start
 
@@ -600,10 +610,21 @@ Or install components individually in this order:
 
 ## Detailed Documentation
 
-See the [docs/](docs/) directory for in-depth documentation on each script — what gets installed, which files are created/modified, re-run behavior, and more.
+See the [docs/](docs/) directory for in-depth documentation on each script — what gets installed, which files are created/modified, re-run behavior, and OS-specific notes.
+
+## macOS Notes
+
+macOS support has the following differences:
+
+- **Docker**: Uses Docker Desktop instead of Docker Engine. The `setup-docker.sh` script installs via Homebrew and does not configure systemd services (macOS doesn't use systemd).
+- **SSH**: Uses macOS Remote Login instead of OpenSSH server configuration via `systemctl`.
+- **Clash Proxy**: Not supported on macOS (Linux-only component).
+- **Homebrew**: Automatically installed if not present. The scripts detect and use `brew` instead of `apt`/`yum`/`dnf`/`pacman`.
+- **sudo**: Some Homebrew operations don't require sudo. The scripts handle this automatically.
 
 ## Notes
 
 - Starship icons require a [Nerd Font](https://www.nerdfonts.com/) in your terminal.
 - If `gh-proxy.org` is unavailable, check [ghproxy.link](https://ghproxy.link/) for alternatives.
 - Re-running a script with different API keys/config will update the configuration without reinstalling.
+- **Linux-only components**: Clash proxy is only available on Linux systems.

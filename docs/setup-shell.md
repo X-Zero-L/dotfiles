@@ -1,13 +1,25 @@
 # setup-shell.sh
 
-Installs zsh, Oh My Zsh, plugins, and Starship prompt with Catppuccin theme. Requires `sudo`.
+Installs zsh, Oh My Zsh, plugins, and Starship prompt with Catppuccin theme.
+
+## OS Support
+
+Works on all supported platforms. The script automatically uses the appropriate package manager:
+
+| OS | Package Manager | sudo Required |
+|----|----------------|---------------|
+| Debian/Ubuntu | `apt` | ✓ |
+| CentOS/RHEL | `yum`/`dnf` | ✓ |
+| Fedora | `dnf` | ✓ |
+| Arch Linux | `pacman` | ✓ |
+| macOS | `brew` | Homebrew operations only |
 
 ## What Gets Installed
 
 | Tool | Source | Description |
 |------|--------|-------------|
-| zsh | apt | Z shell |
-| git, curl, wget, vim | apt | Common utilities |
+| zsh | Package manager | Z shell |
+| git, curl, wget, vim | Package manager | Common utilities |
 | Oh My Zsh | [ohmyzsh/ohmyzsh](https://github.com/ohmyzsh/ohmyzsh) | Zsh framework |
 | zsh-autosuggestions | [zsh-users/zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions) | Fish-like autosuggestions |
 | zsh-syntax-highlighting | [zsh-users/zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting) | Syntax highlighting for commands |
@@ -18,13 +30,13 @@ Installs zsh, Oh My Zsh, plugins, and Starship prompt with Catppuccin theme. Req
 
 | Step | Action |
 |------|--------|
-| 1/6 | `sudo apt install -y zsh git curl wget vim` |
+| 1/6 | Install zsh, git, curl, wget, vim via package manager (apt/yum/dnf/pacman/brew) |
 | 2/6 | Install Oh My Zsh (unattended: `RUNZSH=no CHSH=no`) |
 | 3/6 | Clone autosuggestions and syntax-highlighting plugins to `$ZSH_CUSTOM/plugins/` |
 | 4/6 | Edit `~/.zshrc` — add plugins to the `plugins=(...)` line |
 | 5/6 | Install Starship binary, add `eval "$(starship init zsh)"` to `~/.zshrc` |
 | 6/6 | Apply Catppuccin Powerline preset to `~/.config/starship.toml` |
-| Final | `sudo chsh -s $(which zsh) $USER` — set zsh as default shell |
+| Final | Set zsh as default shell (Linux: `sudo chsh`, macOS: `chsh`) |
 
 ## Files Created/Modified
 

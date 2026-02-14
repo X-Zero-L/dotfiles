@@ -4,6 +4,33 @@
 
 Detailed documentation for each setup script. For quick start, see the [main README](../README.md).
 
+## OS Compatibility
+
+All scripts automatically detect the operating system and use the appropriate package manager:
+
+| Component | Debian/Ubuntu | CentOS/RHEL | Fedora | Arch Linux | macOS |
+|-----------|---------------|-------------|--------|------------|-------|
+| Shell (zsh, Oh My Zsh, Starship) | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Tmux | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Git | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Essential Tools | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Clash Proxy | ✓ | ✓ | ✓ | ✓ | ✗ (Linux only) |
+| Docker | ✓ (Engine) | ✓ (Engine) | ✓ (Engine) | ✓ (Engine) | ✓ (Desktop) |
+| Tailscale | ✓ | ✓ | ✓ | ✓ | ✓ |
+| SSH | ✓ | ✓ | ✓ | ✓ | ✓ (Remote Login) |
+| Node.js (nvm) | ✓ | ✓ | ✓ | ✓ | ✓ |
+| uv + Python | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Go (goenv) | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Claude Code | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Codex CLI | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Gemini CLI | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Agent Skills | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+**Notes:**
+- Docker on macOS uses Docker Desktop (installed via Homebrew) instead of Docker Engine
+- SSH on macOS configures Remote Login instead of the OpenSSH server via systemd
+- Clash proxy is only supported on Linux systems
+
 ## Scripts
 
 ### Base Environment

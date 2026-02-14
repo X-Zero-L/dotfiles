@@ -2,6 +2,18 @@
 
 Installs common [agent skills](https://skills.sh/) globally for all coding agents (Claude Code, Codex, Gemini).
 
+## OS Support
+
+Works on all platforms via npm (requires Node.js):
+
+| OS | Status |
+|----|--------|
+| Debian/Ubuntu | ✓ |
+| CentOS/RHEL | ✓ |
+| Fedora | ✓ |
+| Arch Linux | ✓ |
+| macOS | ✓ |
+
 ## What Gets Installed
 
 | Skill | Source | Description |

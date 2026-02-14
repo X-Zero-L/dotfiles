@@ -6,6 +6,8 @@ All-in-one interactive or non-interactive installer. Downloads and executes indi
 
 `install.sh` is a dispatcher that provides a TUI checkbox menu for selecting components, resolves dependencies, collects API keys, downloads the needed `setup-*.sh` scripts from GitHub, and executes them in order. It does not contain installation logic itself — each component's logic lives in its own script.
 
+**OS Support:** Works on Debian/Ubuntu (apt), CentOS/RHEL (yum/dnf), Fedora (dnf), Arch Linux (pacman), and macOS (brew). The installer automatically detects the OS and uses the appropriate package manager.
+
 ## Modes
 
 ### Interactive TUI
