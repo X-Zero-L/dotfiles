@@ -47,16 +47,28 @@ if [[ -n "$NVM_NODEJS_ORG_MIRROR" ]]; then
     echo "  Node mirror: $NVM_NODEJS_ORG_MIRROR"
 fi
 
-# Record current version so we can migrate global packages if it changes
-_before=$(nvm current 2>/dev/null || echo "none")
-nvm install "$NODE_VERSION"
-_after=$(nvm current 2>/dev/null || echo "none")
+# Check if target version is already installed and active
+_current=$(nvm current 2>/dev/null || echo "none")
+_target_version=$(nvm version "$NODE_VERSION" 2>/dev/null || echo "N/A")
 
-# If nvm installed a new version (not a no-op), migrate global packages
-if [[ "$_before" != "none" && "$_before" != "system" && "$_before" != "$_after" ]]; then
-    echo "  Migrating global packages from $_before to $_after..."
-    nvm reinstall-packages "$_before"
+if [[ "$_target_version" != "N/A" ]]; then
+    # Target version already installed
+    echo "  Node.js $NODE_VERSION already installed ($_target_version)"
+    if [[ "$_current" != "$_target_version" ]]; then
+        echo "  Switching to $_target_version..."
+        nvm use "$NODE_VERSION"
+    fi
+else
+    # Need to install target version
+    if [[ "$_current" != "none" && "$_current" != "system" ]]; then
+        echo "  Installing Node.js $NODE_VERSION (migrating packages from $_current)..."
+        nvm install "$NODE_VERSION" --reinstall-packages-from="$_current"
+    else
+        echo "  Installing Node.js $NODE_VERSION..."
+        nvm install "$NODE_VERSION"
+    fi
 fi
+
 nvm alias default "$NODE_VERSION"
 
 # Configure npm registry
