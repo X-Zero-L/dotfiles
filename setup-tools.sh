@@ -14,6 +14,17 @@ echo "=== Essential Tools Setup ==="
 
 # [1/3] Install packages
 echo "[1/3] Installing packages..."
+
+# macOS: Install Xcode Command Line Tools first
+if is_macos; then
+    if ! xcode-select -p &>/dev/null; then
+        echo "  Installing Xcode Command Line Tools..."
+        xcode-select --install 2>/dev/null || true
+        # Wait for installation (user must click through GUI)
+        echo "  Note: Please complete Xcode CLI Tools installation if prompted."
+    fi
+fi
+
 # Core tools (pkg_install auto-maps names per OS and skips unavailable ones)
 pkg_install ripgrep jq fd bat tree shellcheck build-tools wget unzip
 # xclip: skip on macOS (pbcopy is built-in); pkg_map returns "" on macOS anyway

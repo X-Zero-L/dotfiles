@@ -87,7 +87,7 @@ _pkg_map_debian() {
     case "$name" in
         build-tools)    echo "build-essential" ;;
         fd)             echo "fd-find" ;;
-        bat)            echo "batcat" ;;
+        bat)            echo "bat" ;;
         ripgrep)        echo "ripgrep" ;;
         tree)           echo "tree" ;;
         jq)             echo "jq" ;;
@@ -185,7 +185,7 @@ _pkg_map_arch() {
 _pkg_map_macos() {
     local name="$1"
     case "$name" in
-        build-tools)    echo "xcode-cli" ;;
+        build-tools)    echo "" ;;  # Xcode CLI tools handled in setup scripts
         fd)             echo "fd" ;;
         bat)            echo "bat" ;;
         ripgrep)        echo "ripgrep" ;;

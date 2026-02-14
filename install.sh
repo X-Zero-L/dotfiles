@@ -188,17 +188,17 @@ COMP_INSTALL_ONLY=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
 # --- Preset Definitions ------------------------------------------------------
 
 declare -A PRESETS=(
-    [minimal]="shell tools git"
-    [agent]="shell tools essential-tools git node claude-code codex gemini skills"
-    [devops]="shell tools essential-tools git node go docker tailscale ssh"
-    [fullstack]="shell tmux git tools essential-tools node uv go docker ssh claude-code codex gemini skills"
+    ["minimal"]="shell tools git"
+    ["agent"]="shell tools essential-tools git node claude-code codex gemini skills"
+    ["devops"]="shell tools essential-tools git node go docker tailscale ssh"
+    ["fullstack"]="shell tmux git tools essential-tools node uv go docker ssh claude-code codex gemini skills"
 )
 
 declare -A PRESET_DESCS=(
-    [minimal]="Shell, tools, git — lightweight baseline"
-    [agent]="AI coding agents with Node.js runtime"
-    [devops]="Containers, networking, and Go toolchain"
-    [fullstack]="Complete development environment"
+    ["minimal"]="Shell, tools, git — lightweight baseline"
+    ["agent"]="AI coding agents with Node.js runtime"
+    ["devops"]="Containers, networking, and Go toolchain"
+    ["fullstack"]="Complete development environment"
 )
 
 PRESET_ORDER=(minimal agent devops fullstack)
