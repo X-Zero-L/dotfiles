@@ -760,8 +760,8 @@ print_table() {
 
         # Pad plain text first, then wrap with colors (ANSI escapes break printf width)
         local ver_padded config_padded
-        ver_padded=$(printf "%-18s" "$comp_version")
-        config_padded=$(printf "%-16s" "$comp_config")
+        printf -v ver_padded "%-18s" "$comp_version"
+        printf -v config_padded "%-16s" "$comp_config"
 
         # Apply color to the padded strings
         if [[ "$comp_version" == "N/A" ]]; then
