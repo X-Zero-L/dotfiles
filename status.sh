@@ -736,7 +736,7 @@ print_table() {
 
     printf "\n"
     printf "  ${CYAN}${BOLD}┌──────────────────────────────────────────────────────────────────┐${NC}\n"
-    printf "  ${CYAN}${BOLD}│${NC}  ${BOLD}${WHITE}Rig Status${NC}                                                    ${CYAN}${BOLD}│${NC}\n"
+    printf "  ${CYAN}${BOLD}│${NC}  ${BOLD}${WHITE}Rig Status${NC}                                                      ${CYAN}${BOLD}│${NC}\n"
     printf "  ${CYAN}${BOLD}└──────────────────────────────────────────────────────────────────┘${NC}\n"
     printf "\n"
 
@@ -776,7 +776,7 @@ print_table() {
             *)              config_padded="${DIM}${config_padded}${NC}" ;;
         esac
 
-        printf "  %b    %-24s %b %b\n" "$sym" "${COMP_NAMES[$i]}" "$ver_padded" "$config_padded"
+        printf "  %b     %-24s %b %b\n" "$sym" "${COMP_NAMES[$i]}" "$ver_padded" "$config_padded"
     done
 
     # Summary
