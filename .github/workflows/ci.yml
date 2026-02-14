@@ -14,13 +14,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Shellcheck
+      - name: Shellcheck — top-level scripts
         run: shellcheck --severity=error setup-*.sh install.sh update.sh status.sh export-config.sh import-config.sh uninstall.sh rig
+
+      - name: Shellcheck — lib/ scripts
+        run: shellcheck --severity=error lib/*.sh
 
       - name: Syntax check
         run: |
           status=0
-          for f in setup-*.sh install.sh update.sh status.sh export-config.sh import-config.sh uninstall.sh rig; do
+          for f in setup-*.sh install.sh update.sh status.sh export-config.sh import-config.sh uninstall.sh rig lib/*.sh; do
             if bash -n "$f"; then
               echo "✔ $f"
             else
@@ -108,7 +111,178 @@ jobs:
             exit $status
           '
 
-  # ── Job 2: Smoke Tests ────────────────────────────────────────────────
+  # ── Job 2: OS Detection Tests ─────────────────────────────────────────
+  # Validates lib/os-detect.sh returns correct values on each target OS.
+  # This runs first (after lint) to catch OS detection regressions early.
+  os-detect-test:
+    name: OS Detect (${{ matrix.os }})
+    needs: lint
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Native Ubuntu runner
+          - os: ubuntu
+            runner: ubuntu-latest
+            expect_family: debian
+            expect_distro: Ubuntu
+            expect_pkg: apt
+
+          # Native macOS runner
+          - os: macos
+            runner: macos-latest
+            expect_family: macos
+            expect_distro: macOS
+            expect_pkg: brew
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Test: os-detect.sh sets correct variables"
+        shell: bash
+        run: |
+          # Source the library and verify exported variables
+          source lib/os-detect.sh
+
+          echo "OS_FAMILY:   $OS_FAMILY"
+          echo "OS_DISTRO:   $OS_DISTRO"
+          echo "OS_VERSION:  $OS_VERSION"
+          echo "PKG_MANAGER: $PKG_MANAGER"
+
+          failed=0
+
+          # Verify OS_FAMILY
+          if [[ "$OS_FAMILY" != "${{ matrix.expect_family }}" ]]; then
+            echo "FAIL: OS_FAMILY='$OS_FAMILY', expected '${{ matrix.expect_family }}'"
+            failed=1
+          else
+            echo "✔ OS_FAMILY=$OS_FAMILY"
+          fi
+
+          # Verify OS_DISTRO
+          if [[ "$OS_DISTRO" != "${{ matrix.expect_distro }}" ]]; then
+            echo "FAIL: OS_DISTRO='$OS_DISTRO', expected '${{ matrix.expect_distro }}'"
+            failed=1
+          else
+            echo "✔ OS_DISTRO=$OS_DISTRO"
+          fi
+
+          # Verify PKG_MANAGER
+          if [[ "$PKG_MANAGER" != "${{ matrix.expect_pkg }}" ]]; then
+            echo "FAIL: PKG_MANAGER='$PKG_MANAGER', expected '${{ matrix.expect_pkg }}'"
+            failed=1
+          else
+            echo "✔ PKG_MANAGER=$PKG_MANAGER"
+          fi
+
+          # Verify OS_VERSION is not empty or unknown
+          if [[ "$OS_VERSION" == "unknown" || -z "$OS_VERSION" ]]; then
+            echo "FAIL: OS_VERSION is '$OS_VERSION'"
+            failed=1
+          else
+            echo "✔ OS_VERSION=$OS_VERSION"
+          fi
+
+          exit $failed
+
+      - name: "Test: convenience functions"
+        shell: bash
+        run: |
+          source lib/os-detect.sh
+          failed=0
+
+          case "${{ matrix.expect_family }}" in
+            debian)
+              is_debian || { echo "FAIL: is_debian should return 0"; failed=1; }
+              ! is_macos || { echo "FAIL: is_macos should return 1"; failed=1; }
+              ! is_arch  || { echo "FAIL: is_arch should return 1"; failed=1; }
+              ;;
+            macos)
+              is_macos  || { echo "FAIL: is_macos should return 0"; failed=1; }
+              ! is_debian || { echo "FAIL: is_debian should return 1"; failed=1; }
+              ! is_arch  || { echo "FAIL: is_arch should return 1"; failed=1; }
+              ;;
+          esac
+
+          echo "✔ Convenience functions correct for ${{ matrix.expect_family }}"
+          exit $failed
+
+      - name: "Test: double-source guard"
+        shell: bash
+        run: |
+          # Sourcing twice should not fail (guard prevents re-execution)
+          source lib/os-detect.sh
+          source lib/os-detect.sh
+          echo "✔ Double-source guard works"
+
+  # ── Job 2b: OS Detection — Container Tests ────────────────────────────
+  # Validates lib/os-detect.sh inside Fedora and Arch Linux containers.
+  os-detect-container-test:
+    name: OS Detect (${{ matrix.os }})
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: fedora
+            image: fedora:latest
+            expect_family: fedora
+            expect_distro: Fedora
+            expect_pkg: dnf
+
+          - os: arch
+            image: archlinux:latest
+            expect_family: arch
+            expect_distro: Arch Linux
+            expect_pkg: pacman
+
+    container:
+      image: ${{ matrix.image }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Test: os-detect.sh sets correct variables"
+        shell: bash
+        run: |
+          source lib/os-detect.sh
+
+          echo "OS_FAMILY:   $OS_FAMILY"
+          echo "OS_DISTRO:   $OS_DISTRO"
+          echo "OS_VERSION:  $OS_VERSION"
+          echo "PKG_MANAGER: $PKG_MANAGER"
+
+          failed=0
+
+          if [[ "$OS_FAMILY" != "${{ matrix.expect_family }}" ]]; then
+            echo "FAIL: OS_FAMILY='$OS_FAMILY', expected '${{ matrix.expect_family }}'"
+            failed=1
+          else
+            echo "✔ OS_FAMILY=$OS_FAMILY"
+          fi
+
+          if [[ "$OS_DISTRO" != "${{ matrix.expect_distro }}" ]]; then
+            echo "FAIL: OS_DISTRO='$OS_DISTRO', expected '${{ matrix.expect_distro }}'"
+            failed=1
+          else
+            echo "✔ OS_DISTRO=$OS_DISTRO"
+          fi
+
+          if [[ "$PKG_MANAGER" != "${{ matrix.expect_pkg }}" ]]; then
+            echo "FAIL: PKG_MANAGER='$PKG_MANAGER', expected '${{ matrix.expect_pkg }}'"
+            failed=1
+          else
+            echo "✔ PKG_MANAGER=$PKG_MANAGER"
+          fi
+
+          exit $failed
+
+  # ── Job 3: Smoke Tests ────────────────────────────────────────────────
+  # Per-component install tests on Ubuntu (the primary target).
   smoke-test:
     name: ${{ matrix.component }}
     needs: lint
@@ -248,12 +422,163 @@ jobs:
           bash ${{ matrix.script }}
           echo "✔ Idempotent re-run succeeded"
 
-  # ── Job 3: install.sh E2E ─────────────────────────────────────────────
-  install-e2e:
-    name: install.sh E2E
+  # ── Job 3b: Smoke Tests — macOS ──────────────────────────────────────
+  # Basic install validation on macOS to verify cross-platform support.
+  smoke-test-macos:
+    name: smoke-macos (${{ matrix.component }})
+    needs: lint
+    runs-on: macos-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Test the tools component on macOS (exercises pkg_install + macOS code paths)
+          - component: tools
+            script: setup-tools.sh
+            deps: ""
+            verify: "rg jq tree shellcheck wget"
+
+          # Test node install on macOS
+          - component: node
+            script: setup-node.sh
+            deps: ""
+            verify: "node npm"
+
+          # Test uv install on macOS
+          - component: uv
+            script: setup-uv.sh
+            deps: ""
+            verify: "uv"
+
+          # Test go install on macOS
+          - component: go
+            script: setup-go.sh
+            deps: ""
+            verify: "go"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependency
+        if: matrix.deps != ''
+        shell: bash
+        run: bash ${{ matrix.deps }}
+
+      - name: Run ${{ matrix.script }}
+        shell: bash
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+          export PATH="$HOME/.local/bin:$PATH"
+          [ -d "$HOME/.goenv" ] && {
+            export GOENV_ROOT="$HOME/.goenv"
+            export PATH="$GOENV_ROOT/bin:$PATH"
+            eval "$(goenv init -)" 2>/dev/null || true
+          }
+          bash ${{ matrix.script }}
+
+      - name: Verify commands
+        if: matrix.verify != ''
+        shell: bash
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+          export PATH="$HOME/.local/bin:$PATH"
+          [ -d "$HOME/.goenv" ] && {
+            export GOENV_ROOT="$HOME/.goenv"
+            export PATH="$GOENV_ROOT/bin:$PATH"
+            eval "$(goenv init -)" 2>/dev/null || true
+          }
+
+          failed=0
+          for cmd in ${{ matrix.verify }}; do
+            if command -v "$cmd" &>/dev/null; then
+              echo "✔ $cmd → $(command -v "$cmd")"
+            else
+              echo "✘ $cmd not found"
+              failed=1
+            fi
+          done
+          exit $failed
+
+  # ── Job 3c: Smoke Tests — Linux Containers ───────────────────────────
+  # Validates basic install on Fedora and Arch Linux via containers.
+  smoke-test-container:
+    name: smoke-container (${{ matrix.os }})
     needs: lint
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: fedora
+            image: fedora:latest
+          - os: arch
+            image: archlinux:latest
+
+    container:
+      image: ${{ matrix.image }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install minimal dependencies that containers lack
+      - name: Install prerequisites
+        shell: bash
+        run: |
+          if command -v dnf &>/dev/null; then
+            dnf install -y curl bash git sudo findutils
+          elif command -v pacman &>/dev/null; then
+            pacman -Sy --noconfirm curl bash git sudo
+          fi
+
+      - name: "Test: os-detect.sh loads correctly"
+        shell: bash
+        run: |
+          source lib/os-detect.sh
+          echo "OS_FAMILY=$OS_FAMILY OS_DISTRO=$OS_DISTRO PKG_MANAGER=$PKG_MANAGER"
+          [[ "$OS_FAMILY" != "unknown" ]] || { echo "FAIL: OS_FAMILY is unknown"; exit 1; }
+          echo "✔ OS detection works on ${{ matrix.os }}"
+
+      - name: "Test: setup-tools.sh basic install"
+        shell: bash
+        run: |
+          # Run tools setup — exercises pkg_install on this OS
+          bash setup-tools.sh
+
+      - name: Verify core tools installed
+        shell: bash
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          failed=0
+          # Check a subset of tools that should work on all Linux distros
+          for cmd in rg jq tree wget; do
+            if command -v "$cmd" &>/dev/null; then
+              echo "✔ $cmd → $(command -v "$cmd")"
+            else
+              echo "✘ $cmd not found"
+              failed=1
+            fi
+          done
+          exit $failed
+
+  # ── Job 4: install.sh E2E ─────────────────────────────────────────────
+  install-e2e:
+    name: install.sh E2E (${{ matrix.os }})
+    needs: lint
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu
+            runner: ubuntu-latest
+          - os: macos
+            runner: macos-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -275,12 +600,26 @@ jobs:
       - name: Verify tools installed
         run: |
           export PATH="$HOME/.local/bin:$PATH"
-          for cmd in rg jq tree shellcheck gcc wget unzip xclip; do
-            command -v "$cmd" > /dev/null || { echo "✘ $cmd"; exit 1; }
-            echo "✔ $cmd"
+          failed=0
+          # Core tools expected on both Ubuntu and macOS
+          for cmd in rg jq tree shellcheck wget; do
+            if command -v "$cmd" > /dev/null; then
+              echo "✔ $cmd"
+            else
+              echo "✘ $cmd"
+              failed=1
+            fi
           done
+          # Ubuntu-only tools (xclip, gcc/unzip already present on macOS)
+          if [[ "$(uname -s)" == "Linux" ]]; then
+            for cmd in gcc unzip xclip; do
+              command -v "$cmd" > /dev/null || { echo "✘ $cmd"; failed=1; }
+              echo "✔ $cmd"
+            done
+          fi
+          exit $failed
 
-      - name: "Test: dependency resolution (claude-code → node)"
+      - name: "Test: dependency resolution (claude-code -> node)"
         run: bash /tmp/install-local.sh --components claude-code --verbose
 
       - name: Verify dependency auto-added node
@@ -308,12 +647,21 @@ jobs:
           command -v go || { echo "✘ go"; exit 1; }
           echo "✔ Multi-component install: uv + go"
 
-  # ── Job 4: update.sh E2E ──────────────────────────────────────────────
+  # ── Job 5: update.sh E2E ──────────────────────────────────────────────
   update-e2e:
-    name: update.sh E2E
+    name: update.sh E2E (${{ matrix.os }})
     needs: lint
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu
+            runner: ubuntu-latest
+          - os: macos
+            runner: macos-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -353,7 +701,8 @@ jobs:
           echo "$output" | grep -q "not installed, skipping" || { echo "FAIL: should warn about non-installed"; exit 1; }
           echo "✔ Non-installed component correctly skipped"
 
-  # ── Job 5: Management Scripts E2E ──────────────────────────────────────
+  # ── Job 6: Management Scripts E2E ──────────────────────────────────────
+  # Management scripts are tested on Ubuntu only for now.
   management-e2e:
     name: Management E2E
     needs: lint
