@@ -63,6 +63,10 @@ else
     rm -f "$_os_detect_tmp"
 fi
 
+# Restore shell options: lib files set -euo pipefail but install.sh must NOT use errexit
+# because arithmetic expressions like ((step++)) return 1 when value is 0
+set +e
+
 # --- [B] ANSI Colors ---------------------------------------------------------
 
 setup_colors() {
@@ -187,23 +191,30 @@ COMP_SELECTED=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
 # Install-only mode: tool installed but API not configured (keys missing)
 COMP_INSTALL_ONLY=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
 
-# --- Preset Definitions ------------------------------------------------------
-
-declare -A PRESETS=(
-    ["minimal"]="shell tools git"
-    ["agent"]="shell tools essential-tools git node claude-code codex gemini skills"
-    ["devops"]="shell tools essential-tools git node go docker tailscale ssh"
-    ["fullstack"]="shell tmux git tools essential-tools node uv go docker ssh claude-code codex gemini skills"
-)
-
-declare -A PRESET_DESCS=(
-    ["minimal"]="Shell, tools, git — lightweight baseline"
-    ["agent"]="AI coding agents with Node.js runtime"
-    ["devops"]="Containers, networking, and Go toolchain"
-    ["fullstack"]="Complete development environment"
-)
+# --- Preset Definitions (parallel arrays, bash 3.2 compatible) ---------------
 
 PRESET_ORDER=(minimal agent devops fullstack)
+PRESET_COMPS=(
+    "shell tools git"
+    "shell tools essential-tools git node claude-code codex gemini skills"
+    "shell tools essential-tools git node go docker tailscale ssh"
+    "shell tmux git tools essential-tools node uv go docker ssh claude-code codex gemini skills"
+)
+PRESET_DESCS=(
+    "Shell, tools, git — lightweight baseline"
+    "AI coding agents with Node.js runtime"
+    "Containers, networking, and Go toolchain"
+    "Complete development environment"
+)
+
+# _preset_index <name> - echo the index of a preset by name; returns 1 if not found
+_preset_index() {
+    local name="$1" i
+    for i in "${!PRESET_ORDER[@]}"; do
+        [[ "${PRESET_ORDER[$i]}" == "$name" ]] && echo "$i" && return 0
+    done
+    return 1
+}
 
 # --- [D] Utility Functions ----------------------------------------------------
 
@@ -591,10 +602,10 @@ show_preset_menu() {
             printf "${CLEAR_LINE}"
             if [[ $i -eq $c ]]; then
                 printf "  ${SYM_ARROW} ${BOLD}${WHITE}%-14s${NC} ${DIM}%s${NC}\n" \
-                    "${PRESET_ORDER[$i]}" "${PRESET_DESCS[${PRESET_ORDER[$i]}]}"
+                    "${PRESET_ORDER[$i]}" "${PRESET_DESCS[$i]}"
             else
                 printf "    ${BOLD}%-14s${NC} ${DIM}%s${NC}\n" \
-                    "${PRESET_ORDER[$i]}" "${PRESET_DESCS[${PRESET_ORDER[$i]}]}"
+                    "${PRESET_ORDER[$i]}" "${PRESET_DESCS[$i]}"
             fi
         done
 
@@ -642,8 +653,7 @@ show_preset_menu() {
 
     # Apply preset or fall through to custom
     if [[ $cursor -lt $total ]]; then
-        local selected_preset="${PRESET_ORDER[$cursor]}"
-        for comp_id in ${PRESETS[$selected_preset]}; do
+        for comp_id in ${PRESET_COMPS[$cursor]}; do
             for i in "${!COMP_IDS[@]}"; do
                 if [[ "${COMP_IDS[$i]}" == "$comp_id" ]]; then
                     COMP_SELECTED[$i]=1
@@ -1114,12 +1124,13 @@ parse_args() {
                     exit 1
                 fi
                 local preset_name="$2"
-                if [[ -z "${PRESETS[$preset_name]+_}" ]]; then
+                local preset_idx
+                if ! preset_idx=$(_preset_index "$preset_name"); then
                     printf "${RED}Unknown preset: %s${NC}\n" "$preset_name"
                     printf "Available presets: %s\n" "${PRESET_ORDER[*]}"
                     exit 1
                 fi
-                for comp_id in ${PRESETS[$preset_name]}; do
+                for comp_id in ${PRESET_COMPS[$preset_idx]}; do
                     for i in "${!COMP_IDS[@]}"; do
                         if [[ "${COMP_IDS[$i]}" == "$comp_id" ]]; then
                             COMP_SELECTED[$i]=1
