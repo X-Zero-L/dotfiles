@@ -207,7 +207,7 @@ PRESET_DESCS=(
     "Complete development environment"
 )
 
-# _preset_index <name> - return the index of a preset by name, or 255 if not found
+# _preset_index <name> - echo the index of a preset by name; returns 1 if not found
 _preset_index() {
     local name="$1" i
     for i in "${!PRESET_ORDER[@]}"; do
