@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Source library dependencies
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/os-detect.sh
+source "$SCRIPT_DIR/lib/os-detect.sh"
+# shellcheck source=lib/pkg-maps.sh
+source "$SCRIPT_DIR/lib/pkg-maps.sh"
+# shellcheck source=lib/pkg-manager.sh
+source "$SCRIPT_DIR/lib/pkg-manager.sh"
+
 # Usage:
 #   ./setup-tmux.sh                    # default (no custom keybindings)
 #   TMUX_KEYBINDS=1 ./setup-tmux.sh    # enable custom keybindings
@@ -31,7 +40,7 @@ _GH="github.com"
 
 # Ensure dependencies
 if ! command -v git &>/dev/null; then
-    sudo apt-get update -qq && sudo apt-get install -y -qq git
+    pkg_install git
 fi
 
 echo "=== Tmux Setup ==="
@@ -41,8 +50,7 @@ echo "[1/4] Installing tmux..."
 if command -v tmux &>/dev/null; then
     echo "  Already installed, skipping."
 else
-    sudo apt-get update -qq
-    sudo apt-get install -y -qq tmux
+    pkg_install tmux
 fi
 
 # [2/4] Install TPM

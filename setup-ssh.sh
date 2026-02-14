@@ -15,32 +15,71 @@ set -euo pipefail
 #   SSH_PROXY_PORT  - proxy port for GitHub SSH (e.g. 7890). When set, configures
 #                     ~/.ssh/config to connect via ssh.github.com:443 with corkscrew proxy.
 
+# --- Source multi-OS libraries ------------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/os-detect.sh
+source "$SCRIPT_DIR/lib/os-detect.sh"
+# shellcheck source=lib/pkg-maps.sh
+source "$SCRIPT_DIR/lib/pkg-maps.sh"
+# shellcheck source=lib/pkg-manager.sh
+source "$SCRIPT_DIR/lib/pkg-manager.sh"
+
 SSH_PORT="${SSH_PORT:-}"
 SSH_PUBKEY="${SSH_PUBKEY:-}"
 SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY:-}"
 SSH_PROXY_HOST="${SSH_PROXY_HOST:-127.0.0.1}"
 SSH_PROXY_PORT="${SSH_PROXY_PORT:-}"
 
-# Ensure dependencies
-if ! dpkg -s openssh-server &>/dev/null 2>&1; then
-    sudo apt-get update -qq && sudo apt-get install -y -qq openssh-server
+# --- Ensure openssh-server is installed ---------------------------------------
+if is_macos; then
+    # macOS: SSH is built-in; Remote Login is managed via systemsetup
+    true
+else
+    if ! pkg_check_installed openssh-server; then
+        pkg_install openssh-server
+    fi
 fi
 
 SSHD_CONFIG="/etc/ssh/sshd_config"
 CHANGED=0
 
-# Helper: start/restart sshd (systemd → service → direct)
+# Helper: determine the correct sshd service name
+_sshd_service_name() {
+    if is_debian; then
+        echo "ssh"
+    else
+        # RHEL, Fedora, Arch, and most others use "sshd"
+        echo "sshd"
+    fi
+}
+
+# Helper: start/restart sshd (macOS → systemsetup/launchctl, Linux → systemd → service → direct)
 sshd_ctl() {
     local action="$1"
-    if command -v systemctl &>/dev/null && systemctl is-system-running &>/dev/null 2>&1; then
-        sudo systemctl "$action" ssh 2>/dev/null || sudo systemctl "$action" sshd 2>/dev/null
-    elif command -v service &>/dev/null; then
-        sudo service ssh "$action" 2>/dev/null || sudo service sshd "$action" 2>/dev/null
+    if is_macos; then
+        case "$action" in
+            start)
+                sudo systemsetup -setremotelogin on 2>/dev/null || \
+                    sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist 2>/dev/null || true
+                ;;
+            restart)
+                sudo launchctl unload /System/Library/LaunchDaemons/ssh.plist 2>/dev/null || true
+                sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist 2>/dev/null || true
+                ;;
+        esac
     else
-        if [[ "$action" == "restart" ]]; then
-            pkill sshd 2>/dev/null || true
+        local svc
+        svc="$(_sshd_service_name)"
+        if command -v systemctl &>/dev/null && systemctl is-system-running &>/dev/null 2>&1; then
+            sudo systemctl "$action" "$svc"
+        elif command -v service &>/dev/null; then
+            sudo service "$svc" "$action"
+        else
+            if [[ "$action" == "restart" ]]; then
+                pkill sshd 2>/dev/null || true
+            fi
+            sudo /usr/sbin/sshd
         fi
-        sudo /usr/sbin/sshd
     fi
 }
 
@@ -48,7 +87,14 @@ echo "=== SSH Setup ==="
 
 # [1/6] Ensure sshd is running
 echo "[1/6] Ensuring sshd is running..."
-if pgrep -x sshd &>/dev/null; then
+if is_macos; then
+    if sudo systemsetup -getremotelogin 2>/dev/null | grep -qi "on"; then
+        echo "  Remote Login (sshd) already enabled."
+    else
+        sshd_ctl start
+        echo "  Remote Login (sshd) enabled."
+    fi
+elif pgrep -x sshd &>/dev/null; then
     echo "  sshd already running."
 else
     sshd_ctl start
@@ -91,14 +137,31 @@ fi
 # [3/6] Configure port
 echo "[3/6] Configuring port..."
 if [ -n "$SSH_PORT" ]; then
-    if grep -qE "^\s*Port\s+${SSH_PORT}\b" "$SSHD_CONFIG"; then
-        echo "  Port already set to $SSH_PORT."
+    if is_macos; then
+        echo "  macOS: sshd_config port changes require modifying /etc/ssh/sshd_config manually"
+        echo "  and reloading via launchctl. Attempting configuration..."
+        # macOS does have /etc/ssh/sshd_config, but changes require launchctl reload
+        if [ -f "$SSHD_CONFIG" ]; then
+            if grep -qE "^\s*Port\s+${SSH_PORT}\b" "$SSHD_CONFIG"; then
+                echo "  Port already set to $SSH_PORT."
+            else
+                sudo cp "$SSHD_CONFIG" "${SSHD_CONFIG}.bak.$(date +%s)"
+                sudo sed -i'' -e '/^\s*#\{0,1\}\s*Port\s/d' "$SSHD_CONFIG"
+                echo "Port $SSH_PORT" | sudo tee -a "$SSHD_CONFIG" >/dev/null
+                echo "  Port set to $SSH_PORT."
+                CHANGED=1
+            fi
+        fi
     else
-        sudo cp "$SSHD_CONFIG" "${SSHD_CONFIG}.bak.$(date +%s)"
-        sudo sed -i '/^\s*#\?\s*Port\s/d' "$SSHD_CONFIG"
-        echo "Port $SSH_PORT" | sudo tee -a "$SSHD_CONFIG" >/dev/null
-        echo "  Port set to $SSH_PORT."
-        CHANGED=1
+        if grep -qE "^\s*Port\s+${SSH_PORT}\b" "$SSHD_CONFIG"; then
+            echo "  Port already set to $SSH_PORT."
+        else
+            sudo cp "$SSHD_CONFIG" "${SSHD_CONFIG}.bak.$(date +%s)"
+            sudo sed -i '/^\s*#\?\s*Port\s/d' "$SSHD_CONFIG"
+            echo "Port $SSH_PORT" | sudo tee -a "$SSHD_CONFIG" >/dev/null
+            echo "  Port set to $SSH_PORT."
+            CHANGED=1
+        fi
     fi
 else
     echo "  Skipped (SSH_PORT not set)."
@@ -126,19 +189,39 @@ fi
 # [5/6] Disable password auth (only if public key was provided)
 echo "[5/6] Configuring authentication..."
 if [ -n "$SSH_PUBKEY" ]; then
-    [ "$CHANGED" -eq 0 ] && sudo cp "$SSHD_CONFIG" "${SSHD_CONFIG}.bak.$(date +%s)"
+    if is_macos; then
+        echo "  macOS: sshd_config authentication changes applied."
+        # macOS does support sshd_config edits, but uses sed -i'' (BSD sed)
+        if [ -f "$SSHD_CONFIG" ]; then
+            [ "$CHANGED" -eq 0 ] && sudo cp "$SSHD_CONFIG" "${SSHD_CONFIG}.bak.$(date +%s)"
 
-    sudo sed -i '/^\s*#\?\s*PubkeyAuthentication\s/d' "$SSHD_CONFIG"
-    echo "PubkeyAuthentication yes" | sudo tee -a "$SSHD_CONFIG" >/dev/null
+            sudo sed -i'' -e '/^\s*#\{0,1\}\s*PubkeyAuthentication\s/d' "$SSHD_CONFIG"
+            echo "PubkeyAuthentication yes" | sudo tee -a "$SSHD_CONFIG" >/dev/null
 
-    sudo sed -i '/^\s*#\?\s*PasswordAuthentication\s/d' "$SSHD_CONFIG"
-    echo "PasswordAuthentication no" | sudo tee -a "$SSHD_CONFIG" >/dev/null
+            sudo sed -i'' -e '/^\s*#\{0,1\}\s*PasswordAuthentication\s/d' "$SSHD_CONFIG"
+            echo "PasswordAuthentication no" | sudo tee -a "$SSHD_CONFIG" >/dev/null
 
-    sudo sed -i '/^\s*#\?\s*KbdInteractiveAuthentication\s/d' "$SSHD_CONFIG"
-    echo "KbdInteractiveAuthentication no" | sudo tee -a "$SSHD_CONFIG" >/dev/null
+            sudo sed -i'' -e '/^\s*#\{0,1\}\s*KbdInteractiveAuthentication\s/d' "$SSHD_CONFIG"
+            echo "KbdInteractiveAuthentication no" | sudo tee -a "$SSHD_CONFIG" >/dev/null
 
-    echo "  Password auth disabled, key-only login enabled."
-    CHANGED=1
+            echo "  Password auth disabled, key-only login enabled."
+            CHANGED=1
+        fi
+    else
+        [ "$CHANGED" -eq 0 ] && sudo cp "$SSHD_CONFIG" "${SSHD_CONFIG}.bak.$(date +%s)"
+
+        sudo sed -i '/^\s*#\?\s*PubkeyAuthentication\s/d' "$SSHD_CONFIG"
+        echo "PubkeyAuthentication yes" | sudo tee -a "$SSHD_CONFIG" >/dev/null
+
+        sudo sed -i '/^\s*#\?\s*PasswordAuthentication\s/d' "$SSHD_CONFIG"
+        echo "PasswordAuthentication no" | sudo tee -a "$SSHD_CONFIG" >/dev/null
+
+        sudo sed -i '/^\s*#\?\s*KbdInteractiveAuthentication\s/d' "$SSHD_CONFIG"
+        echo "KbdInteractiveAuthentication no" | sudo tee -a "$SSHD_CONFIG" >/dev/null
+
+        echo "  Password auth disabled, key-only login enabled."
+        CHANGED=1
+    fi
 else
     echo "  Skipped (no public key provided, password auth unchanged)."
 fi
@@ -148,7 +231,7 @@ echo "[6/6] Configuring GitHub SSH proxy..."
 if [ -n "$SSH_PROXY_PORT" ]; then
     # Ensure corkscrew is installed
     if ! command -v corkscrew &>/dev/null; then
-        sudo apt-get update -qq && sudo apt-get install -y -qq corkscrew
+        pkg_install corkscrew
     fi
 
     mkdir -p "$HOME/.ssh"

@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Source library dependencies
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/os-detect.sh
+source "$SCRIPT_DIR/lib/os-detect.sh"
+# shellcheck source=lib/pkg-maps.sh
+source "$SCRIPT_DIR/lib/pkg-maps.sh"
+# shellcheck source=lib/pkg-manager.sh
+source "$SCRIPT_DIR/lib/pkg-manager.sh"
+
 # Usage:
 #   GIT_USER_NAME="Your Name" GIT_USER_EMAIL="you@example.com" ./setup-git.sh
 #   ./setup-git.sh   # install only, skip config if env vars not set
@@ -14,7 +23,7 @@ GIT_USER_EMAIL="${GIT_USER_EMAIL:-}"
 
 # Ensure dependencies
 if ! command -v git &>/dev/null; then
-    sudo apt-get update -qq && sudo apt-get install -y -qq git
+    pkg_install git
 fi
 
 echo "=== Git Setup ==="

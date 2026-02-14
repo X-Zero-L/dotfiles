@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Source OS detection and package manager libraries
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/os-detect.sh
+source "$SCRIPT_DIR/lib/os-detect.sh"
+# shellcheck source=lib/pkg-maps.sh
+source "$SCRIPT_DIR/lib/pkg-maps.sh"
+# shellcheck source=lib/pkg-manager.sh
+source "$SCRIPT_DIR/lib/pkg-manager.sh"
+
 # Usage:
 #   ./setup-skills.sh
 #   SKILLS_NPM_MIRROR=https://registry.npmmirror.com ./setup-skills.sh

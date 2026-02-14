@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Source library functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/os-detect.sh
+source "$SCRIPT_DIR/lib/os-detect.sh"
+# shellcheck source=lib/pkg-manager.sh
+source "$SCRIPT_DIR/lib/pkg-manager.sh"
+
 # Usage:
 #   ./setup-node.sh          # install nvm + Node.js 24
 #   ./setup-node.sh 22       # install nvm + Node.js 22
@@ -21,7 +28,7 @@ fi
 
 # Ensure dependencies
 if ! command -v curl &>/dev/null; then
-    sudo apt-get update -qq && sudo apt-get install -y -qq curl
+    pkg_install curl
 fi
 
 echo "=== Node.js Environment Setup ==="

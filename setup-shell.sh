@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Source library dependencies
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/os-detect.sh
+source "$SCRIPT_DIR/lib/os-detect.sh"
+# shellcheck source=lib/pkg-maps.sh
+source "$SCRIPT_DIR/lib/pkg-maps.sh"
+# shellcheck source=lib/pkg-manager.sh
+source "$SCRIPT_DIR/lib/pkg-manager.sh"
+
 _GH="github.com"
 _RAW="raw.githubusercontent.com"
 GH_PROXY="${GH_PROXY:-}"
@@ -9,7 +18,7 @@ echo "=== Shell Environment Setup ==="
 
 # 1. Install dependencies
 echo "[1/6] Installing packages..."
-sudo apt update -qq && sudo apt install -y zsh git curl wget vim
+pkg_install zsh git curl wget vim
 
 # 2. Install Oh My Zsh (unattended)
 echo "[2/6] Installing Oh My Zsh..."
@@ -88,10 +97,16 @@ else
     echo "  Warning: Could not apply preset, using default Starship config."
 fi
 
-# 7. Change default shell to zsh (use sudo to avoid password prompt)
+# 7. Change default shell to zsh
 echo "Changing default shell to zsh..."
 if [ "$SHELL" != "$(which zsh)" ]; then
-    sudo chsh -s "$(which zsh)" "$USER"
+    if is_macos; then
+        # macOS chsh does not require sudo
+        chsh -s "$(which zsh)"
+    else
+        # Linux requires sudo for chsh
+        sudo chsh -s "$(which zsh)" "$USER"
+    fi
 fi
 
 echo ""

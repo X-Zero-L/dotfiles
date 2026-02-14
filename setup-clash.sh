@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Source OS detection and package manager libraries
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/os-detect.sh
+source "$SCRIPT_DIR/lib/os-detect.sh"
+# shellcheck source=lib/pkg-maps.sh
+source "$SCRIPT_DIR/lib/pkg-maps.sh"
+# shellcheck source=lib/pkg-manager.sh
+source "$SCRIPT_DIR/lib/pkg-manager.sh"
+
 # Usage:
 #   CLASH_SUB_URL=https://your-subscription-url ./setup-clash.sh
 #   ./setup-clash.sh https://your-subscription-url
@@ -26,10 +35,17 @@ WORK_DIR=$(mktemp -d)
 cleanup() { rm -rf "$WORK_DIR"; }
 trap cleanup EXIT
 
+# Check if running on macOS (Clash is Linux-only)
+if is_macos; then
+    echo "Error: Clash for Linux is not supported on macOS."
+    echo "Please use alternative proxy tools like ClashX or Surge on macOS."
+    exit 1
+fi
+
 # Ensure dependencies
 for cmd in git unzip curl xz; do
     if ! command -v "$cmd" &>/dev/null; then
-        sudo apt-get update -qq && sudo apt-get install -y -qq git unzip curl xz-utils
+        pkg_install git unzip curl xz-utils
         break
     fi
 done

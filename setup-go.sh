@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Source library functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/os-detect.sh
+source "$SCRIPT_DIR/lib/os-detect.sh"
+# shellcheck source=lib/pkg-manager.sh
+source "$SCRIPT_DIR/lib/pkg-manager.sh"
+
 # Usage:
 #   ./setup-go.sh              # install goenv + Go (latest)
 #   ./setup-go.sh 1.23.0       # install goenv + Go 1.23.0
@@ -34,7 +41,7 @@ fi
 # Ensure dependencies
 for cmd in git curl; do
     if ! command -v "$cmd" &>/dev/null; then
-        sudo apt-get update -qq && sudo apt-get install -y -qq git curl
+        pkg_install git curl
         break
     fi
 done
