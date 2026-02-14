@@ -1,0 +1,175 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# =============================================================================
+# Rig CLI
+# https://github.com/X-Zero-L/rig
+#
+# Usage:
+#   rig install                    # Interactive install
+#   rig install --all              # Install everything
+#   rig update                     # Interactive update
+#   rig update --all               # Update all installed
+#   rig status                     # Show installed components
+#   rig export                     # Export configuration
+#   rig import <file>              # Import configuration
+#   rig uninstall                  # Uninstall components
+#   rig version                    # Show version
+#   rig help                       # Show this help
+#
+# Environment variables:
+#   GH_PROXY          - GitHub proxy URL (e.g. https://gh-proxy.org)
+# =============================================================================
+
+VERSION="0.1.0"
+
+# Prevent gh-proxy.org from rewriting these URLs in proxied content
+_GH="github.com"
+_RAW="raw.githubusercontent.com"
+REPO="X-Zero-L/rig"
+BRANCH="master"
+BASE_URL="https://${_RAW}/${REPO}/${BRANCH}"
+
+export GH_PROXY="${GH_PROXY:-}"
+
+# --- Colors ------------------------------------------------------------------
+
+setup_colors() {
+    if [[ -t 1 ]] || [[ "${FORCE_COLOR:-}" == "1" ]]; then
+        RED='\033[0;31m'
+        GREEN='\033[0;32m'
+        YELLOW='\033[0;33m'
+        CYAN='\033[0;36m'
+        WHITE='\033[1;37m'
+        BOLD='\033[1m'
+        DIM='\033[2m'
+        NC='\033[0m'
+    else
+        RED='' GREEN='' YELLOW='' CYAN='' WHITE=''
+        BOLD='' DIM='' NC=''
+    fi
+}
+
+# --- Helpers -----------------------------------------------------------------
+
+die() {
+    printf "${RED}error:${NC} %s\n" "$1" >&2
+    exit 1
+}
+
+build_url() {
+    local script="$1"
+    if [[ -n "$GH_PROXY" ]]; then
+        printf '%s' "${GH_PROXY%/}/${BASE_URL}/${script}"
+    else
+        printf '%s' "${BASE_URL}/${script}"
+    fi
+}
+
+download_and_run() {
+    local script="$1"
+    shift
+    local url
+    url=$(build_url "$script")
+
+    if ! command -v curl &>/dev/null; then
+        die "curl is required but not found"
+    fi
+
+    exec bash <(curl -fsSL "$url") "$@"
+}
+
+# --- Help --------------------------------------------------------------------
+
+show_help() {
+    setup_colors
+    printf "\n"
+    printf "  ${CYAN}${BOLD}Rig${NC} ${DIM}— development environment manager${NC}\n"
+    printf "  ${DIM}${_GH}/${REPO}${NC}\n"
+    printf "\n"
+    printf "  ${BOLD}Usage:${NC}\n"
+    printf "    rig <command> [options]\n"
+    printf "\n"
+    printf "  ${BOLD}Commands:${NC}\n"
+    printf "    ${WHITE}install${NC}     Install components (interactive TUI)\n"
+    printf "    ${WHITE}update${NC}      Update installed components\n"
+    printf "    ${WHITE}status${NC}      Show installed component status\n"
+    printf "    ${WHITE}export${NC}      Export current configuration\n"
+    printf "    ${WHITE}import${NC}      Import configuration from file\n"
+    printf "    ${WHITE}uninstall${NC}   Uninstall components\n"
+    printf "    ${WHITE}version${NC}     Show rig version\n"
+    printf "    ${WHITE}help${NC}        Show this help\n"
+    printf "\n"
+    printf "  ${BOLD}Options:${NC}\n"
+    printf "    --gh-proxy URL   GitHub proxy (or set ${CYAN}GH_PROXY${NC} env var)\n"
+    printf "\n"
+    printf "  ${BOLD}Examples:${NC}\n"
+    printf "    rig install                          ${DIM}# Interactive TUI${NC}\n"
+    printf "    rig install --all                    ${DIM}# Install everything${NC}\n"
+    printf "    rig install --components shell,node   ${DIM}# Specific components${NC}\n"
+    printf "    rig update --all                     ${DIM}# Update all installed${NC}\n"
+    printf "    rig status                           ${DIM}# Check what's installed${NC}\n"
+    printf "    rig export > my-config.json          ${DIM}# Save configuration${NC}\n"
+    printf "    rig import my-config.json            ${DIM}# Restore configuration${NC}\n"
+    printf "\n"
+}
+
+# --- Main --------------------------------------------------------------------
+
+main() {
+    setup_colors
+
+    # Parse global options before command
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --gh-proxy)
+                GH_PROXY="$2"
+                shift 2
+                ;;
+            -*)
+                # Not a global option — break and let command handle it
+                break
+                ;;
+            *)
+                break
+                ;;
+        esac
+    done
+
+    local cmd="${1:-help}"
+    shift || true
+
+    case "$cmd" in
+        install)
+            download_and_run "install.sh" "$@"
+            ;;
+        update)
+            download_and_run "update.sh" "$@"
+            ;;
+        status)
+            download_and_run "status.sh" "$@"
+            ;;
+        export)
+            download_and_run "export-config.sh" "$@"
+            ;;
+        import)
+            download_and_run "import-config.sh" "$@"
+            ;;
+        uninstall)
+            download_and_run "uninstall.sh" "$@"
+            ;;
+        version|-V|--version)
+            printf "rig %s\n" "$VERSION"
+            ;;
+        help|-h|--help)
+            show_help
+            ;;
+        *)
+            printf "${RED}Unknown command:${NC} %s\n" "$cmd" >&2
+            printf "Run ${BOLD}rig help${NC} for usage.\n" >&2
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"
