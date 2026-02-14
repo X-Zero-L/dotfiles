@@ -10,6 +10,8 @@ Automated setup scripts for Debian/Ubuntu systems.
 
 Use `install.sh` for a one-stop interactive or non-interactive installation.
 
+> **Note:** After installation, the `rig` CLI will be automatically installed to `~/.local/bin/rig`. You can then use commands like `rig status`, `rig export`, `rig uninstall`, etc. See [Management Tools](docs/rig-management.md) for details.
+
 <p align="center">
   <img src="assets/demo.gif" alt="install.sh demo" width="700">
 </p>
@@ -56,6 +58,15 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | ba
 ```
 
 Available components: `shell`, `tmux`, `git`, `clash`, `node`, `uv`, `go`, `docker`, `tailscale`, `ssh`, `claude-code`, `codex`, `gemini`, `skills`
+
+**New:** Use presets for common setups:
+```bash
+# AI agent development (shell, tools, git, node, claude-code, codex, gemini, skills)
+curl -fsSL https://ba.sh/rig | bash -s -- --preset agent
+
+# See all presets: minimal, agent, devops, fullstack
+# Docs: https://github.com/X-Zero-L/rig/blob/master/docs/rig-management.md
+```
 
 ## Components
 

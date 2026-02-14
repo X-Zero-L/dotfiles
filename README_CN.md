@@ -10,6 +10,8 @@ Debian/Ubuntu 系统自动化配置脚本。
 
 使用 `install.sh` 进行一站式交互或非交互安装。
 
+> **注意：** 安装完成后，`rig` CLI 会自动安装到 `~/.local/bin/rig`。之后可以使用 `rig status`、`rig export`、`rig uninstall` 等命令。详见 [管理工具文档](docs/zh/rig-management.md)。
+
 <p align="center">
   <img src="assets/demo.gif" alt="install.sh 演示" width="700">
 </p>
@@ -56,6 +58,15 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | ba
 ```
 
 可用组件：`shell`、`tmux`、`git`、`clash`、`node`、`uv`、`go`、`docker`、`tailscale`、`ssh`、`claude-code`、`codex`、`gemini`、`skills`
+
+**新功能：** 使用预设快速安装常用配置：
+```bash
+# AI 智能体开发环境 (shell, tools, git, node, claude-code, codex, gemini, skills)
+curl -fsSL https://ba.sh/rig | bash -s -- --preset agent
+
+# 查看所有预设：minimal（最小化）、agent（智能体）、devops（运维）、fullstack（全栈）
+# 文档：https://github.com/X-Zero-L/rig/blob/master/docs/zh/rig-management.md
+```
 
 ## 组件详解
 
