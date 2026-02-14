@@ -95,7 +95,7 @@ setup_colors() {
 
 # --- [C] Component Registry --------------------------------------------------
 
-COMP_IDS=(shell tmux git tools clash node uv go docker tailscale ssh claude-code codex gemini skills)
+COMP_IDS=(shell tmux git tools essential-tools node uv go docker tailscale ssh claude-code codex gemini skills)
 
 COMP_NAMES=(
     "Shell Environment"
