@@ -63,6 +63,10 @@ else
     rm -f "$_os_detect_tmp"
 fi
 
+# Restore shell options: lib files set -euo pipefail but install.sh must NOT use errexit
+# because arithmetic expressions like ((step++)) return 1 when value is 0
+set +e
+
 # --- [B] ANSI Colors ---------------------------------------------------------
 
 setup_colors() {

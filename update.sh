@@ -33,7 +33,7 @@ export GH_PROXY="${GH_PROXY:-}"
 _load_lib() {
     local name="$1"
     local script_dir
-    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 
     if [[ -f "${script_dir}/lib/${name}" ]]; then
         # Local clone: source directly
@@ -52,6 +52,9 @@ _load_lib() {
 _load_lib "os-detect.sh"
 _load_lib "pkg-maps.sh"
 _load_lib "pkg-manager.sh"
+
+# Restore shell options: lib files set -euo pipefail but update.sh must NOT use errexit
+set +e
 NON_INTERACTIVE=0
 INTERACTIVE=0
 VERBOSE=0
