@@ -95,20 +95,30 @@ download_and_run() {
     # BASH_SOURCE resolves correctly and lib/ sourcing works.
     local tmpdir
     tmpdir=$(mktemp -d)
-    trap 'rm -rf "$tmpdir"' EXIT
 
-    # Download lib files first (scripts source these)
+    # Download lib files first (scripts source these); fail early on error
     mkdir -p "$tmpdir/lib"
     local lib_file
     for lib_file in os-detect.sh pkg-maps.sh pkg-manager.sh; do
-        curl -fsSL "$(build_url "lib/$lib_file")" -o "$tmpdir/lib/$lib_file" 2>/dev/null || true
+        if ! curl -fsSL "$(build_url "lib/$lib_file")" -o "$tmpdir/lib/$lib_file" 2>/dev/null; then
+            rm -rf "$tmpdir"
+            die "Failed to download lib/$lib_file"
+        fi
     done
 
     # Download the target script
-    curl -fsSL "$(build_url "$script")" -o "$tmpdir/$script"
+    if ! curl -fsSL "$(build_url "$script")" -o "$tmpdir/$script"; then
+        rm -rf "$tmpdir"
+        die "Failed to download $script"
+    fi
     chmod +x "$tmpdir/$script"
 
-    exec bash "$tmpdir/$script" "$@"
+    # Run script in a subshell so cleanup happens after it exits.
+    # Cannot use exec here because that would skip cleanup.
+    bash "$tmpdir/$script" "$@"
+    local rc=$?
+    rm -rf "$tmpdir"
+    exit $rc
 }
 
 # --- Help --------------------------------------------------------------------
