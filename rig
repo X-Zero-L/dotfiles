@@ -121,6 +121,43 @@ download_and_run() {
     exit $rc
 }
 
+# --- Self-update -------------------------------------------------------------
+
+self_update() {
+    setup_colors
+    local install_path
+    install_path="$(command -v rig 2>/dev/null || echo "$HOME/.local/bin/rig")"
+
+    if [[ ! -w "$install_path" ]]; then
+        die "Cannot write to $install_path. Check permissions."
+    fi
+
+    printf "  ${DIM}Updating rig CLI from ${_GH}/${REPO}...${NC}\n"
+
+    local tmpfile
+    tmpfile=$(mktemp)
+    if ! curl -fsSL "$(build_url "rig")" -o "$tmpfile"; then
+        rm -f "$tmpfile"
+        die "Failed to download latest rig CLI"
+    fi
+
+    # Check we got a valid script
+    if ! head -1 "$tmpfile" | grep -q "^#!/"; then
+        rm -f "$tmpfile"
+        die "Downloaded file does not look like a valid script"
+    fi
+
+    # Extract remote version
+    local remote_version
+    remote_version=$(grep '^VERSION=' "$tmpfile" | head -1 | cut -d'"' -f2)
+
+    mv -f "$tmpfile" "$install_path"
+    chmod +x "$install_path"
+
+    printf "  ${GREEN}Updated!${NC} %s → %s\n" "$VERSION" "${remote_version:-unknown}"
+    printf "  ${DIM}Location: %s${NC}\n" "$install_path"
+}
+
 # --- Help --------------------------------------------------------------------
 
 show_help() {
@@ -139,6 +176,7 @@ show_help() {
     printf "    ${WHITE}export${NC}      Export current configuration\n"
     printf "    ${WHITE}import${NC}      Import configuration from file\n"
     printf "    ${WHITE}uninstall${NC}   Uninstall components\n"
+    printf "    ${WHITE}self-update${NC}  Update the rig CLI itself\n"
     printf "    ${WHITE}version${NC}     Show rig version\n"
     printf "    ${WHITE}help${NC}        Show this help\n"
     printf "\n"
@@ -213,6 +251,9 @@ main() {
             ;;
         uninstall)
             download_and_run "uninstall.sh" "$@"
+            ;;
+        self-update)
+            self_update
             ;;
         version|-V|--version)
             printf "rig %s\n" "$VERSION"
