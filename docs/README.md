@@ -36,6 +36,17 @@ Detailed documentation for each setup script. For quick start, see the [main REA
 | [setup-gemini.sh](setup-gemini.md) | Google Gemini CLI + API configuration |
 | [setup-skills.sh](setup-skills.md) | Agent skills for all coding agents |
 
+### Management
+
+| Script | Description |
+|--------|-------------|
+| [rig](rig-management.md) | CLI wrapper — presets, status, export/import, uninstall |
+| [update.sh](setup-update.md) | Update installed components |
+| [status.sh](rig-management.md#rig-status) | Show installed components and versions |
+| [export-config.sh](rig-management.md#rig-export) | Export configuration to JSON + secrets |
+| [import-config.sh](rig-management.md#rig-import) | Import configuration from exported files |
+| [uninstall.sh](rig-management.md#rig-uninstall) | Safely remove components |
+
 ## Design Principles
 
 All scripts follow these conventions:

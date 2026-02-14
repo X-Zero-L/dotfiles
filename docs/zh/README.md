@@ -36,6 +36,17 @@
 | [setup-gemini.sh](setup-gemini.md) | Google Gemini CLI + API 配置 |
 | [setup-skills.sh](setup-skills.md) | 所有编码代理的通用技能 |
 
+### 管理工具
+
+| 脚本 | 说明 |
+|------|------|
+| [rig](rig-management.md) | CLI 包装器 — 预设、状态、导出/导入、卸载 |
+| [update.sh](setup-update.md) | 更新已安装组件 |
+| [status.sh](rig-management.md#rig-status) | 显示已安装组件和版本 |
+| [export-config.sh](rig-management.md#rig-export) | 导出配置为 JSON + 密钥文件 |
+| [import-config.sh](rig-management.md#rig-import) | 从导出文件导入配置 |
+| [uninstall.sh](rig-management.md#rig-uninstall) | 安全卸载组件 |
+
 ## 设计原则
 
 所有脚本遵循以下约定：
