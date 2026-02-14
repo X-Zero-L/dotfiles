@@ -83,14 +83,14 @@ setup_colors() {
 
 # --- [C] Component Registry --------------------------------------------------
 
-COMP_IDS=(shell tmux git tools clash node uv go docker tailscale ssh claude-code codex gemini skills)
+COMP_IDS=(shell tmux git tools essential-tools node uv go docker tailscale ssh claude-code codex gemini skills)
 
 COMP_NAMES=(
     "Shell Environment"
     "Tmux"
     "Git"
     "Essential Tools"
-    "Clash Proxy"
+    "Essential Tools"
     "Node.js (nvm)"
     "uv + Python"
     "Go (goenv)"
@@ -108,7 +108,7 @@ COMP_DESCS=(
     "tmux + Catppuccin + TPM plugins"
     "user.name + user.email + defaults"
     "rg, jq, fd, bat, gh, build tools"
-    "clash-for-linux with subscription"
+    "build-essential, wget, unzip, gh CLI"
     "nvm + Node.js 24"
     "uv package manager"
     "goenv + Go"
@@ -126,7 +126,7 @@ COMP_SCRIPTS=(
     setup-tmux.sh
     setup-git.sh
     setup-tools.sh
-    setup-clash.sh
+    setup-tools.sh
     setup-node.sh
     setup-uv.sh
     setup-go.sh
@@ -146,7 +146,7 @@ COMP_DEPS=("" "" "" "" "" "" "" "" "" "" "" "5" "5" "5" "5")
 COMP_NEEDS_KEYS=(0 0 0 0 0 0 0 0 0 2 0 1 1 1 0)
 
 # Whether component needs sudo
-COMP_NEEDS_SUDO=(1 1 0 1 0 0 0 0 1 1 1 0 0 0 0)
+COMP_NEEDS_SUDO=(1 1 0 1 1 0 0 0 1 1 1 0 0 0 0)
 
 # Selection state
 COMP_SELECTED=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
@@ -158,16 +158,16 @@ COMP_INSTALL_ONLY=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
 
 declare -A PRESETS=(
     [minimal]="shell tools git"
-    [agent]="shell tools git node claude-code codex gemini skills"
-    [devops]="shell tools git node go docker tailscale ssh"
-    [fullstack]="shell tmux git tools node uv go docker ssh claude-code codex gemini skills"
+    [agent]="shell tools essential-tools git node claude-code codex gemini skills"
+    [devops]="shell tools essential-tools git node go docker tailscale ssh"
+    [fullstack]="shell tmux git tools essential-tools node uv go docker ssh claude-code codex gemini skills"
 )
 
 declare -A PRESET_DESCS=(
     [minimal]="Shell, tools, git — lightweight baseline"
     [agent]="AI coding agents with Node.js runtime"
     [devops]="Containers, networking, and Go toolchain"
-    [fullstack]="Everything except Clash proxy"
+    [fullstack]="Complete development environment"
 )
 
 PRESET_ORDER=(minimal agent devops fullstack)
@@ -267,9 +267,9 @@ Options:
                          minimal    Shell, tools, git
                          agent      AI coding agents with Node.js
                          devops     Containers, networking, Go
-                         fullstack  Everything except Clash proxy
+                         fullstack  Complete development environment
   --components LIST      Comma-separated component list:
-                         shell,tmux,git,tools,clash,node,uv,go,docker,tailscale,ssh,claude-code,codex,gemini,skills
+                         shell,tmux,git,tools,essential-tools,node,uv,go,docker,tailscale,ssh,claude-code,codex,gemini,skills
   --gh-proxy URL         GitHub proxy URL (e.g., https://gh-proxy.org)
   -v, --verbose          Show raw script output (default: clean spinner)
   -h, --help             Show this help
@@ -837,11 +837,6 @@ run_component() {
     # Reload env between components
     load_env
 
-    # Wire GH_PROXY to CLASH_GH_PROXY for clash script
-    if [[ "${COMP_IDS[$idx]}" == "clash" && -n "$GH_PROXY" ]]; then
-        export CLASH_GH_PROXY="$GH_PROXY"
-    fi
-
     # Auto-set Docker mirror when behind GH_PROXY (likely in China)
     if [[ "${COMP_IDS[$idx]}" == "docker" && -n "$GH_PROXY" && -z "${DOCKER_MIRROR:-}" ]]; then
         export DOCKER_MIRROR="https://docker.1ms.run"
@@ -971,7 +966,7 @@ run_all_selected() {
                 has_shell=1
                 needs_reload=1
                 ;;
-            node|uv|go|clash|tmux|claude-code|codex|gemini|skills)
+            node|uv|go|tmux|claude-code|codex|gemini|skills)
                 needs_reload=1
                 ;;
         esac
@@ -1075,6 +1070,10 @@ parse_args() {
                 shift
                 ;;
             --preset)
+                if [[ $# -lt 2 ]]; then
+                    echo "error: --preset requires an argument" >&2
+                    exit 1
+                fi
                 local preset_name="$2"
                 if [[ -z "${PRESETS[$preset_name]+_}" ]]; then
                     printf "${RED}Unknown preset: %s${NC}\n" "$preset_name"
@@ -1092,6 +1091,10 @@ parse_args() {
                 shift 2
                 ;;
             --components)
+                if [[ $# -lt 2 ]]; then
+                    echo "error: --components requires an argument" >&2
+                    exit 1
+                fi
                 IFS=',' read -ra REQUESTED <<< "$2"
                 for req in "${REQUESTED[@]}"; do
                     req=$(echo "$req" | tr -d ' ')
@@ -1105,6 +1108,10 @@ parse_args() {
                 shift 2
                 ;;
             --gh-proxy)
+                if [[ $# -lt 2 ]]; then
+                    echo "error: --gh-proxy requires an argument" >&2
+                    exit 1
+                fi
                 GH_PROXY="$2"
                 shift 2
                 ;;
