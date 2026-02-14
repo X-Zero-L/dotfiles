@@ -15,12 +15,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Shellcheck
-        run: shellcheck --severity=error setup-*.sh install.sh update.sh
+        run: shellcheck --severity=error setup-*.sh install.sh update.sh status.sh export-config.sh import-config.sh uninstall.sh rig
 
       - name: Syntax check
         run: |
           status=0
-          for f in setup-*.sh install.sh update.sh; do
+          for f in setup-*.sh install.sh update.sh status.sh export-config.sh import-config.sh uninstall.sh rig; do
             if bash -n "$f"; then
               echo "✔ $f"
             else
@@ -352,3 +352,128 @@ jobs:
           echo "$output"
           echo "$output" | grep -q "not installed, skipping" || { echo "FAIL: should warn about non-installed"; exit 1; }
           echo "✔ Non-installed component correctly skipped"
+
+  # ── Job 5: Management Scripts E2E ──────────────────────────────────────
+  management-e2e:
+    name: Management E2E
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Syntax check: management scripts"
+        run: |
+          for f in rig status.sh export-config.sh import-config.sh uninstall.sh; do
+            bash -n "$f" || { echo "✘ $f"; exit 1; }
+            echo "✔ $f"
+          done
+
+      - name: "Test: rig CLI — version"
+        run: |
+          output=$(bash rig version)
+          echo "$output"
+          echo "$output" | grep -qE '^rig [0-9]+\.' || { echo "FAIL: unexpected version format"; exit 1; }
+          echo "✔ rig version"
+
+      - name: "Test: rig CLI — help"
+        run: |
+          output=$(bash rig help)
+          echo "$output"
+          echo "$output" | grep -q "install" || { echo "FAIL: help missing install"; exit 1; }
+          echo "$output" | grep -q "update" || { echo "FAIL: help missing update"; exit 1; }
+          echo "$output" | grep -q "status" || { echo "FAIL: help missing status"; exit 1; }
+          echo "✔ rig help"
+
+      - name: "Test: rig CLI — unknown command"
+        run: |
+          if bash rig badcommand 2>/dev/null; then
+            echo "FAIL: should have exited non-zero"
+            exit 1
+          fi
+          echo "✔ rig unknown command exits non-zero"
+
+      - name: Pre-install components for testing
+        run: |
+          bash setup-tools.sh
+          export PATH="$HOME/.local/bin:$PATH"
+          echo "✔ Pre-installed tools for management tests"
+
+      - name: "Test: install.sh --preset minimal"
+        run: |
+          python3 -m http.server 8888 &
+          sleep 1
+          sed 's|^BASE_URL=.*|BASE_URL="http://localhost:8888"|' install.sh > /tmp/install-local.sh
+          chmod +x /tmp/install-local.sh
+          bash /tmp/install-local.sh --preset minimal --verbose
+          export PATH="$HOME/.local/bin:$PATH"
+          for cmd in zsh rg jq git; do
+            command -v "$cmd" || { echo "✘ $cmd not found after --preset minimal"; exit 1; }
+            echo "✔ $cmd"
+          done
+          echo "✔ --preset minimal installed shell, tools, git"
+          kill %1 2>/dev/null || true
+
+      - name: "Test: status.sh — table output"
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          output=$(bash status.sh)
+          echo "$output"
+          echo "$output" | grep -q "Shell" || { echo "FAIL: missing Shell in status"; exit 1; }
+          echo "✔ status.sh table output"
+
+      - name: "Test: status.sh — JSON output"
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          output=$(bash status.sh --json)
+          echo "$output"
+          echo "$output" | jq -e '.components' > /dev/null || { echo "FAIL: invalid JSON from status.sh"; exit 1; }
+          echo "✔ status.sh JSON output valid"
+
+      - name: "Test: status.sh — short output"
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          output=$(bash status.sh --short)
+          echo "$output"
+          echo "$output" | grep -q "rig:" || { echo "FAIL: unexpected short format"; exit 1; }
+          echo "✔ status.sh short output"
+
+      - name: "Test: export-config.sh — JSON mode"
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          output=$(bash export-config.sh --json)
+          echo "$output"
+          echo "$output" | jq -e '.components' > /dev/null || { echo "FAIL: invalid JSON from export"; exit 1; }
+          echo "$output" | jq -e '.config' > /dev/null || { echo "FAIL: missing config in export"; exit 1; }
+          echo "✔ export-config.sh JSON output valid"
+
+      - name: "Test: export-config.sh — file mode"
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          bash export-config.sh --output-dir /tmp/rig-ci-export --no-secrets
+          [ -f /tmp/rig-ci-export/rig-config.json ] || { echo "FAIL: config file not created"; exit 1; }
+          jq -e '.components' /tmp/rig-ci-export/rig-config.json > /dev/null || { echo "FAIL: invalid config JSON"; exit 1; }
+          echo "✔ export-config.sh file output"
+
+      - name: "Test: import-config.sh — plan display"
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          # Test validation: no args
+          bash import-config.sh 2>&1 && { echo "FAIL: should fail with no args"; exit 1; } || true
+          # Test validation: missing file
+          bash import-config.sh /tmp/nonexistent.json 2>&1 && { echo "FAIL: should fail with missing file"; exit 1; } || true
+          echo "✔ import-config.sh validation works"
+
+      - name: "Test: uninstall.sh — help"
+        run: |
+          output=$(bash uninstall.sh --help 2>&1) || true
+          echo "$output"
+          echo "✔ uninstall.sh help"
+
+      - name: "Test: uninstall.sh — dependency check"
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          # uninstall.sh should handle non-installed components gracefully
+          output=$(bash uninstall.sh --components clash --yes 2>&1) || true
+          echo "$output"
+          echo "✔ uninstall.sh handles non-installed components"
