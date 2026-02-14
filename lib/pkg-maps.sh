@@ -58,12 +58,9 @@ pkg_map() {
         *)      mapped="" ;;
     esac
 
-    # Fall back to the original name if no mapping found
-    if [[ -n "$mapped" ]]; then
-        echo "$mapped"
-    else
-        echo "$name"
-    fi
+    # Return the mapped value (may be empty for platform-unavailable packages)
+    # Empty return means "skip this package on this platform"
+    echo "$mapped"
 }
 
 # pkg_map_all <name1> [name2] ... - Resolve multiple abstract names.
@@ -101,7 +98,7 @@ _pkg_map_debian() {
         xclip)         echo "xclip" ;;
         python3)        echo "python3" ;;
         python3-pip)    echo "python3-pip" ;;
-        *)              echo "" ;;
+        *)              echo "$name" ;;
     esac
 }
 
@@ -126,7 +123,7 @@ _pkg_map_rhel() {
         xclip)         echo "xclip" ;;
         python3)        echo "python3" ;;
         python3-pip)    echo "python3-pip" ;;
-        *)              echo "" ;;
+        *)              echo "$name" ;;
     esac
 }
 
@@ -151,7 +148,7 @@ _pkg_map_fedora() {
         xclip)         echo "xclip" ;;
         python3)        echo "python3" ;;
         python3-pip)    echo "python3-pip" ;;
-        *)              echo "" ;;
+        *)              echo "$name" ;;
     esac
 }
 
@@ -176,7 +173,7 @@ _pkg_map_arch() {
         xclip)         echo "xclip" ;;
         python3)        echo "python" ;;
         python3-pip)    echo "python-pip" ;;
-        *)              echo "" ;;
+        *)              echo "$name" ;;
     esac
 }
 
@@ -201,6 +198,6 @@ _pkg_map_macos() {
         xclip)         echo "" ;;  # not applicable on macOS (use pbcopy)
         python3)        echo "python@3" ;;
         python3-pip)    echo "" ;;  # included with python@3 on brew
-        *)              echo "" ;;
+        *)              echo "$name" ;;
     esac
 }
