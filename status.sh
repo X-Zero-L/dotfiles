@@ -758,24 +758,25 @@ print_table() {
             *)             sym="$sym_missing";   missing=$((missing + 1)) ;;
         esac
 
-        # Config display
-        local config_display
+        # Pad plain text first, then wrap with colors (ANSI escapes break printf width)
+        local ver_padded config_padded
+        ver_padded=$(printf "%-18s" "$comp_version")
+        config_padded=$(printf "%-16s" "$comp_config")
+
+        # Apply color to the padded strings
+        if [[ "$comp_version" == "N/A" ]]; then
+            ver_padded="${DIM}${ver_padded}${NC}"
+        else
+            ver_padded="${WHITE}${ver_padded}${NC}"
+        fi
         case "$comp_config" in
-            configured)     config_display="${GREEN}configured${NC}" ;;
-            install-only)   config_display="${YELLOW}install-only${NC}" ;;
-            not-configured) config_display="${DIM}not-configured${NC}" ;;
-            *)              config_display="${DIM}${comp_config}${NC}" ;;
+            configured)     config_padded="${GREEN}${config_padded}${NC}" ;;
+            install-only)   config_padded="${YELLOW}${config_padded}${NC}" ;;
+            not-configured) config_padded="${DIM}${config_padded}${NC}" ;;
+            *)              config_padded="${DIM}${config_padded}${NC}" ;;
         esac
 
-        # Version display
-        local version_display
-        if [[ "$comp_version" == "N/A" ]]; then
-            version_display="${DIM}N/A${NC}"
-        else
-            version_display="${WHITE}${comp_version}${NC}"
-        fi
-
-        printf "  %b  %-24s %-27b %-25b\n" "$sym" "${COMP_NAMES[$i]}" "$version_display" "$config_display"
+        printf "  %b  %-24s %b %b\n" "$sym" "${COMP_NAMES[$i]}" "$ver_padded" "$config_padded"
     done
 
     # Summary
