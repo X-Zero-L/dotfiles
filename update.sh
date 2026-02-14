@@ -482,7 +482,7 @@ update_skills() {
     local skills=(
         "vercel-labs/skills                --skill find-skills"
         "anthropics/skills                 --skill pdf"
-        "X-Zero-L/gemini-cli-skill"
+        "X-Zero-L/agent-skills             --skill gemini-cli"
         "intellectronica/agent-skills      --skill context7"
         "obra/superpowers                  --skill writing-plans executing-plans"
         "softaworks/agent-toolkit          --skill codex"

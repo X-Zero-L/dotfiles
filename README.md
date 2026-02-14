@@ -407,7 +407,7 @@ Installs common [agent skills](https://skills.sh/) globally for all coding agent
 |-------|--------|-------------|
 | `find-skills` | [vercel-labs/skills](https://github.com/vercel-labs/skills) | Discover and install agent skills |
 | `pdf` | [anthropics/skills](https://github.com/anthropics/skills) | PDF reading and manipulation |
-| `gemini-cli-skill` | [X-Zero-L/gemini-cli-skill](https://github.com/X-Zero-L/gemini-cli-skill) | Gemini CLI integration |
+| `gemini-cli` | [X-Zero-L/agent-skills](https://github.com/X-Zero-L/agent-skills) | Gemini CLI integration |
 | `context7` | [intellectronica/agent-skills](https://github.com/intellectronica/agent-skills) | Library documentation lookup |
 | `writing-plans` | [obra/superpowers](https://github.com/obra/superpowers) | Implementation plan writing |
 | `executing-plans` | [obra/superpowers](https://github.com/obra/superpowers) | Plan execution with checkpoints |

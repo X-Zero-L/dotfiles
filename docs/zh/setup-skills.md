@@ -8,7 +8,7 @@
 |------|------|------|
 | `find-skills` | [vercel-labs/skills](https://github.com/vercel-labs/skills) | 发现和安装代理技能 |
 | `pdf` | [anthropics/skills](https://github.com/anthropics/skills) | PDF 读取和处理 |
-| `gemini-cli-skill` | [X-Zero-L/gemini-cli-skill](https://github.com/X-Zero-L/gemini-cli-skill) | Gemini CLI 集成 |
+| `gemini-cli` | [X-Zero-L/agent-skills](https://github.com/X-Zero-L/agent-skills) | Gemini CLI 集成 |
 | `context7` | [intellectronica/agent-skills](https://github.com/intellectronica/agent-skills) | 库文档查询 |
 | `writing-plans` | [obra/superpowers](https://github.com/obra/superpowers) | 编写实现计划 |
 | `executing-plans` | [obra/superpowers](https://github.com/obra/superpowers) | 带检查点的计划执行 |
