@@ -308,7 +308,9 @@ pkg_add_repo() {
             _sudo_if_needed apt-get update -qq
             ;;
         dnf)
-            _sudo_if_needed dnf config-manager --add-repo "$repo_info" || \
+            # dnf5 (Fedora 41+) uses different syntax than dnf4
+            _sudo_if_needed dnf config-manager addrepo --from-repofile="$repo_info" 2>/dev/null || \
+                _sudo_if_needed dnf config-manager --add-repo "$repo_info" 2>/dev/null || \
                 _sudo_if_needed dnf install -y "$repo_info"
             ;;
         yum)

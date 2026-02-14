@@ -45,9 +45,11 @@ CURSOR_HIDDEN=0
 # --- [A1] OS Detection -------------------------------------------------------
 
 # Source OS detection library if available locally, otherwise download
-if [[ -f "${BASH_SOURCE[0]%/*}/lib/os-detect.sh" ]]; then
+_SCRIPT_DIR="${BASH_SOURCE[0]:-}"
+_SCRIPT_DIR="${_SCRIPT_DIR%/*}"
+if [[ -n "$_SCRIPT_DIR" && -f "${_SCRIPT_DIR}/lib/os-detect.sh" ]]; then
     # shellcheck disable=SC1091
-    source "${BASH_SOURCE[0]%/*}/lib/os-detect.sh"
+    source "${_SCRIPT_DIR}/lib/os-detect.sh"
 else
     # Download to temp location
     _os_detect_tmp=$(mktemp)
@@ -353,6 +355,12 @@ download_all_needed() {
     local failed=0
     local total=${#indices[@]}
     local current=0
+
+    # Ensure lib/ directory exists for setup scripts to source
+    mkdir -p "${TMPDIR_INSTALL}/lib"
+    for lib_file in os-detect.sh pkg-maps.sh pkg-manager.sh; do
+        download_script "lib/${lib_file}" 2>/dev/null || true
+    done
 
     printf "\n"
     printf "  ${BOLD}${SYM_DOWN} Downloading scripts${NC}\n"
@@ -1053,7 +1061,7 @@ run_all_selected() {
 # --- [H2] Rig CLI Install ----------------------------------------------------
 
 install_rig_cli() {
-    local src="${BASH_SOURCE[0]%/*}/rig"
+    local src="${_SCRIPT_DIR:-}/rig"
     local dest="$HOME/.local/bin/rig"
 
     # If running from a temp dir (curl pipe), download the rig script

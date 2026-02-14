@@ -49,7 +49,9 @@ elif is_debian; then
     sudo apt-get install -y -qq gh
 elif is_fedora || is_rhel; then
     sudo dnf install -y 'dnf-command(config-manager)' 2>/dev/null || true
-    sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+    # dnf5 (Fedora 41+) uses different syntax than dnf4
+    sudo dnf config-manager addrepo --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo 2>/dev/null || \
+        sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo 2>/dev/null || true
     sudo dnf install -y gh
 elif is_arch; then
     sudo pacman -Sy --noconfirm github-cli
