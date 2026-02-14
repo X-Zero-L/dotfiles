@@ -6,7 +6,9 @@ set -euo pipefail
 #   ./setup-node.sh 22       # install nvm + Node.js 22
 #   NODE_VERSION=20 ./setup-node.sh
 
-NODE_VERSION="${NODE_VERSION:-${1:-24}}"
+# Empty means user didn't specify — will use default 24 only for fresh installs
+_USER_NODE_VERSION="${NODE_VERSION:-${1:-}}"
+NODE_VERSION="${_USER_NODE_VERSION:-24}"
 NVM_NODEJS_ORG_MIRROR="${NVM_NODEJS_ORG_MIRROR:-}"
 NPM_REGISTRY="${NPM_REGISTRY:-}"
 GH_PROXY="${GH_PROXY:-}"
@@ -47,19 +49,23 @@ if [[ -n "$NVM_NODEJS_ORG_MIRROR" ]]; then
     echo "  Node mirror: $NVM_NODEJS_ORG_MIRROR"
 fi
 
-# Check if target version is already installed
-_target_version=$(nvm version "$NODE_VERSION" 2>/dev/null || echo "N/A")
+# Check if Node.js is already available
+_current=$(nvm current 2>/dev/null || echo "none")
 
-if [[ "$_target_version" != "N/A" ]]; then
-    # Target version already installed, skip
-    echo "  Node.js $NODE_VERSION already installed ($_target_version), skipping."
+if [[ "$_current" != "none" && "$_current" != "system" && -z "$_USER_NODE_VERSION" ]]; then
+    # User already has Node.js and didn't specify a version, skip entirely
+    echo "  Node.js $_current already installed, skipping."
 else
-    # Install target version
-    echo "  Installing Node.js $NODE_VERSION..."
-    nvm install "$NODE_VERSION"
+    # User specified a version, or no Node.js at all — install target
+    _target_version=$(nvm version "$NODE_VERSION" 2>/dev/null || echo "N/A")
+    if [[ "$_target_version" != "N/A" ]]; then
+        echo "  Node.js $NODE_VERSION already installed ($_target_version), skipping."
+    else
+        echo "  Installing Node.js $NODE_VERSION..."
+        nvm install "$NODE_VERSION"
+    fi
+    nvm alias default "$NODE_VERSION"
 fi
-
-nvm alias default "$NODE_VERSION"
 
 # Configure npm registry
 echo "[3/3] Configuring npm..."
