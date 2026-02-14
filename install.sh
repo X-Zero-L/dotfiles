@@ -1178,6 +1178,9 @@ parse_args() {
 main() {
     setup_colors
 
+    # Initialize OS-specific dynamic arrays
+    set_dynamic_arrays
+
     # Check prerequisites
     if ! command -v curl &>/dev/null; then
         printf "  ${SYM_CROSS} ${RED}curl is required but not found.${NC}\n"
