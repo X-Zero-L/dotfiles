@@ -8,6 +8,7 @@ set -uo pipefail
 # Usage:
 #   bash install.sh                              # Interactive TUI
 #   bash install.sh --all                        # Install everything
+#   bash install.sh --preset agent               # Install a preset bundle
 #   bash install.sh --components shell,node,docker
 #   bash install.sh update                       # Update installed components
 #   bash install.sh update --all                 # Non-interactive update
@@ -153,6 +154,24 @@ COMP_SELECTED=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
 # Install-only mode: tool installed but API not configured (keys missing)
 COMP_INSTALL_ONLY=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
 
+# --- Preset Definitions ------------------------------------------------------
+
+declare -A PRESETS=(
+    [minimal]="shell tools git"
+    [agent]="shell tools git node claude-code codex gemini skills"
+    [devops]="shell tools git node go docker tailscale ssh"
+    [fullstack]="shell tmux git tools node uv go docker ssh claude-code codex gemini skills"
+)
+
+declare -A PRESET_DESCS=(
+    [minimal]="Shell, tools, git — lightweight baseline"
+    [agent]="AI coding agents with Node.js runtime"
+    [devops]="Containers, networking, and Go toolchain"
+    [fullstack]="Everything except Clash proxy"
+)
+
+PRESET_ORDER=(minimal agent devops fullstack)
+
 # --- [D] Utility Functions ----------------------------------------------------
 
 SUDO_KEEPALIVE_PID=""
@@ -244,6 +263,11 @@ Subcommands:
 
 Options:
   --all                  Install all components
+  --preset NAME          Install a preset bundle:
+                         minimal    Shell, tools, git
+                         agent      AI coding agents with Node.js
+                         devops     Containers, networking, Go
+                         fullstack  Everything except Clash proxy
   --components LIST      Comma-separated component list:
                          shell,tmux,git,tools,clash,node,uv,go,docker,tailscale,ssh,claude-code,codex,gemini,skills
   --gh-proxy URL         GitHub proxy URL (e.g., https://gh-proxy.org)
@@ -260,6 +284,7 @@ Environment variables:
 Examples:
   bash install.sh                                    # Interactive
   bash install.sh --all                              # Install everything
+  bash install.sh --preset agent                     # Install a preset bundle
   bash install.sh --components shell,node,docker     # Specific components
   bash install.sh --all --gh-proxy https://gh-proxy.org
   bash install.sh update                             # Update installed components
@@ -497,6 +522,99 @@ show_checkbox_menu() {
     done
 
     printf "${SHOW_CURSOR}"; CURSOR_HIDDEN=0
+}
+
+# Preset selection menu — shown before the checkbox menu in interactive mode.
+# Returns 0 if a preset was selected (COMP_SELECTED populated),
+# Returns 1 if the user chose "custom" (caller should show checkbox menu).
+show_preset_menu() {
+    local total=${#PRESET_ORDER[@]}
+    local custom_idx=$total
+    local cursor=0
+    local menu_height=$((total + 5))
+
+    printf "${HIDE_CURSOR}"
+    CURSOR_HIDDEN=1
+
+    # Reserve space
+    for ((i = 0; i < menu_height; i++)); do
+        printf "\n"
+    done
+
+    _render_preset_menu() {
+        local c=$1
+        printf "\033[%dA" "$menu_height"
+
+        printf "${CLEAR_LINE}\n"
+        printf "${CLEAR_LINE}  ${DIM}↑↓${NC} navigate  ${DIM}enter${NC} select  ${DIM}q${NC} quit\n"
+
+        for i in $(seq 0 $((total - 1))); do
+            printf "${CLEAR_LINE}"
+            if [[ $i -eq $c ]]; then
+                printf "  ${SYM_ARROW} ${BOLD}${WHITE}%-14s${NC} ${DIM}%s${NC}\n" \
+                    "${PRESET_ORDER[$i]}" "${PRESET_DESCS[${PRESET_ORDER[$i]}]}"
+            else
+                printf "    ${BOLD}%-14s${NC} ${DIM}%s${NC}\n" \
+                    "${PRESET_ORDER[$i]}" "${PRESET_DESCS[${PRESET_ORDER[$i]}]}"
+            fi
+        done
+
+        # Custom option
+        printf "${CLEAR_LINE}"
+        if [[ $c -eq $custom_idx ]]; then
+            printf "  ${SYM_ARROW} ${BOLD}${WHITE}%-14s${NC} ${DIM}%s${NC}\n" \
+                "custom" "Pick individual components"
+        else
+            printf "    ${BOLD}%-14s${NC} ${DIM}%s${NC}\n" \
+                "custom" "Pick individual components"
+        fi
+
+        printf "${CLEAR_LINE}\n"
+        printf "${CLEAR_LINE}\n"
+    }
+
+    _render_preset_menu $cursor
+
+    while true; do
+        local key
+        key=$(read_key)
+
+        case "$key" in
+            UP)
+                ((cursor > 0)) && ((cursor--))
+                ;;
+            DOWN)
+                ((cursor < custom_idx)) && ((cursor++))
+                ;;
+            ENTER)
+                break
+                ;;
+            Q)
+                printf "${SHOW_CURSOR}"; CURSOR_HIDDEN=0
+                printf "\n  ${DIM}Aborted.${NC}\n\n"
+                exit 0
+                ;;
+        esac
+
+        _render_preset_menu $cursor
+    done
+
+    printf "${SHOW_CURSOR}"; CURSOR_HIDDEN=0
+
+    # Apply preset or fall through to custom
+    if [[ $cursor -lt $total ]]; then
+        local selected_preset="${PRESET_ORDER[$cursor]}"
+        for comp_id in ${PRESETS[$selected_preset]}; do
+            for i in "${!COMP_IDS[@]}"; do
+                if [[ "${COMP_IDS[$i]}" == "$comp_id" ]]; then
+                    COMP_SELECTED[$i]=1
+                fi
+            done
+        done
+        return 0
+    fi
+
+    return 1
 }
 
 # --- [F] Dependency Resolver --------------------------------------------------
@@ -906,6 +1024,44 @@ run_all_selected() {
     return "$failed"
 }
 
+# --- [H2] Rig CLI Install ----------------------------------------------------
+
+install_rig_cli() {
+    local src="${BASH_SOURCE[0]%/*}/rig"
+    local dest="$HOME/.local/bin/rig"
+
+    # If running from a temp dir (curl pipe), download the rig script
+    if [[ ! -f "$src" ]]; then
+        local url
+        if [[ -n "$GH_PROXY" ]]; then
+            url="${GH_PROXY%/}/${BASE_URL}/rig"
+        else
+            url="${BASE_URL}/rig"
+        fi
+        src=$(mktemp)
+        if ! curl -fsSL --retry 3 --retry-delay 2 -o "$src" "$url"; then
+            printf "  ${SYM_CROSS} ${RED}Failed to download rig CLI${NC}\n"
+            rm -f "$src"
+            return 1
+        fi
+    fi
+
+    mkdir -p "$HOME/.local/bin"
+    cp -f "$src" "$dest"
+    chmod +x "$dest"
+
+    printf "  ${SYM_CHECK} ${GREEN}Installed rig CLI to ${CYAN}%s${NC}\n" "$dest"
+
+    # Warn if ~/.local/bin is not in PATH
+    case ":${PATH}:" in
+        *":$HOME/.local/bin:"*) ;;
+        *)
+            printf "  ${SYM_WARN} ${YELLOW}%s is not in your PATH${NC}\n" "$HOME/.local/bin"
+            printf "  ${DIM}Add to your shell profile:${NC} ${CYAN}export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}\n"
+            ;;
+    esac
+}
+
 # --- [I] Argument Parser -----------------------------------------------------
 
 parse_args() {
@@ -917,6 +1073,23 @@ parse_args() {
                 done
                 NON_INTERACTIVE=1
                 shift
+                ;;
+            --preset)
+                local preset_name="$2"
+                if [[ -z "${PRESETS[$preset_name]+_}" ]]; then
+                    printf "${RED}Unknown preset: %s${NC}\n" "$preset_name"
+                    printf "Available presets: %s\n" "${PRESET_ORDER[*]}"
+                    exit 1
+                fi
+                for comp_id in ${PRESETS[$preset_name]}; do
+                    for i in "${!COMP_IDS[@]}"; do
+                        if [[ "${COMP_IDS[$i]}" == "$comp_id" ]]; then
+                            COMP_SELECTED[$i]=1
+                        fi
+                    done
+                done
+                NON_INTERACTIVE=1
+                shift 2
                 ;;
             --components)
                 IFS=',' read -ra REQUESTED <<< "$2"
@@ -997,7 +1170,9 @@ main() {
 
     # Interactive selection or validate non-interactive
     if [[ "$INTERACTIVE" -eq 1 ]]; then
-        show_checkbox_menu
+        if ! show_preset_menu; then
+            show_checkbox_menu
+        fi
     fi
 
     # Check that at least one component is selected
@@ -1049,6 +1224,9 @@ main() {
     # Execute
     run_all_selected "$ordered"
     local result=$?
+
+    # Install rig CLI to ~/.local/bin
+    install_rig_cli
 
     # Final message (post-install hints are already in the summary box)
     if [[ $result -eq 0 ]]; then
