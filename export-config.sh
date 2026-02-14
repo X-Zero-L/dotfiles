@@ -35,6 +35,15 @@ while [[ $# -gt 0 ]]; do
             echo "  --output-dir DIR  Output directory (default: ~/.rig)"
             echo "  --no-secrets      Skip exporting API keys and tokens"
             echo "  --json            Print JSON to stdout only (no files written)"
+            echo ""
+            echo "Exported data:"
+            echo "  rig-config.json   - Component list and user/email (imported by rig)"
+            echo "  secrets.env       - API keys/tokens (imported by rig)"
+            echo ""
+            echo "Informational only (not imported):"
+            echo "  - Node/Go versions (detected at import time)"
+            echo "  - Docker registry mirrors (requires manual setup)"
+            echo "  - Model preferences (preserved if already configured)"
             exit 0
             ;;
         *) shift ;;
@@ -156,6 +165,7 @@ detect_installed() {
 
 extract_config() {
     local json="{\n"
+    json+='  "_comment": "Non-sensitive config exported by Rig. Node/Go versions, Docker mirrors, and model fields are informational only and not imported.",\n'
     json+='  "rig_version": "0.1.0",\n'
     json+="  \"exported_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\n"
 
@@ -185,21 +195,21 @@ extract_config() {
     json+="$(json_kv "user_email" "${git_email}")"
     json+='\n    },\n'
 
-    # Node
+    # Node (informational only)
     local node_version="N/A"
     command -v node &>/dev/null && node_version=$(node --version 2>/dev/null | sed 's/^v//')
     json+='    "node": {\n'
     json+="$(json_kv "version" "$node_version")"
     json+='\n    },\n'
 
-    # Go
+    # Go (informational only)
     local go_version="N/A"
     command -v go &>/dev/null && go_version=$(go version 2>/dev/null | sed 's/go version go//' | awk '{print $1}')
     json+='    "go": {\n'
     json+="$(json_kv "version" "$go_version")"
     json+='\n    },\n'
 
-    # Docker
+    # Docker (informational only)
     local docker_mirrors=""
     if [[ -f /etc/docker/daemon.json ]]; then
         docker_mirrors=$(grep -o '"registry-mirrors"[[:space:]]*:[[:space:]]*\[[^]]*\]' /etc/docker/daemon.json 2>/dev/null || true)
@@ -212,7 +222,7 @@ extract_config() {
     fi
     json+='\n    },\n'
 
-    # Claude Code (non-sensitive)
+    # Claude Code (informational only)
     local claude_model=""
     if [[ -f "$HOME/.claude/settings.json" ]]; then
         claude_model=$(grep -o '"model"[[:space:]]*:[[:space:]]*"[^"]*"' "$HOME/.claude/settings.json" 2>/dev/null | head -1 | sed 's/.*: *"//;s/"//' || true)
@@ -221,7 +231,7 @@ extract_config() {
     json+="$(json_kv "model" "${claude_model}")"
     json+='\n    },\n'
 
-    # Codex (non-sensitive)
+    # Codex (informational only)
     local codex_model="" codex_effort=""
     if [[ -f "$HOME/.codex/config.toml" ]]; then
         codex_model=$(grep '^model[[:space:]]*=' "$HOME/.codex/config.toml" 2>/dev/null | head -1 | sed 's/.*=[[:space:]]*"//;s/".*//' || true)
@@ -233,7 +243,7 @@ extract_config() {
     json+="$(json_kv "reasoning_effort" "${codex_effort}")"
     json+='\n    },\n'
 
-    # Gemini (non-sensitive)
+    # Gemini (informational only)
     local gemini_model=""
     if [[ -f "$HOME/.gemini/.env" ]]; then
         gemini_model=$(grep '^GEMINI_MODEL=' "$HOME/.gemini/.env" 2>/dev/null | cut -d= -f2- || true)
@@ -326,17 +336,23 @@ main() {
         secrets=$(extract_secrets)
         if [[ -n "$secrets" ]]; then
             local secrets_file="$OUTPUT_DIR/secrets.env"
+            # Pre-create the file with restrictive permissions (mode 600) before
+            # writing any secrets. This closes the TOCTOU window where the file
+            # could be world-readable under a permissive umask.
+            install -m 600 /dev/null "$secrets_file"
             printf "# Rig secrets — exported %s\n" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$secrets_file"
             printf "# WARNING: This file contains sensitive API keys. Do NOT commit to git.\n\n" >> "$secrets_file"
             printf '%b' "$secrets" >> "$secrets_file"
-            chmod 600 "$secrets_file"
             printf "  ${SYM_CHECK} ${GREEN}Secrets written to ${CYAN}%s${NC} ${DIM}(chmod 600)${NC}\n" "$secrets_file"
 
-            # Auto-generate .gitignore
+            # Auto-generate .gitignore (preserve existing rules)
             local gitignore="$OUTPUT_DIR/.gitignore"
-            if [[ ! -f "$gitignore" ]] || ! grep -qF 'secrets.env' "$gitignore" 2>/dev/null; then
+            if [[ ! -f "$gitignore" ]]; then
                 printf 'secrets.env\n*.env\n' > "$gitignore"
                 printf "  ${SYM_CHECK} ${GREEN}Created ${CYAN}%s${NC}\n" "$gitignore"
+            elif ! grep -qF 'secrets.env' "$gitignore" 2>/dev/null; then
+                printf 'secrets.env\n' >> "$gitignore"
+                printf "  ${SYM_CHECK} ${GREEN}Updated ${CYAN}%s${NC}\n" "$gitignore"
             fi
 
             printf "\n"
