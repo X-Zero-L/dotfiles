@@ -1,13 +1,37 @@
 # setup-docker.sh
 
-安装 Docker Engine、Compose 插件，配置守护进程（镜像加速、日志轮转、地址池、代理）。需要 `sudo`。
+安装 Docker、Compose 插件，配置守护进程（镜像加速、日志轮转、地址池、代理）。
+
+## 操作系统特定行为
+
+| 操作系统 | Docker 版本 | 安装方式 | systemd |
+|---------|------------|---------|---------|
+| Debian/Ubuntu | Docker Engine | [get.docker.com](https://get.docker.com) + apt | ✓ |
+| CentOS/RHEL | Docker Engine | [get.docker.com](https://get.docker.com) + yum/dnf | ✓ |
+| Fedora | Docker Engine | [get.docker.com](https://get.docker.com) + dnf | ✓ |
+| Arch Linux | Docker Engine | [get.docker.com](https://get.docker.com) + pacman | ✓ |
+| macOS | Docker Desktop | Homebrew (`brew install --cask docker`) | ✗ |
+
+**macOS 注意事项：**
+- 通过 Homebrew Cask 安装 Docker Desktop 而非 Docker Engine
+- 无 systemd 服务配置（macOS 不使用 systemd）
+- Docker Desktop 管理 daemon.json 的方式不同 - 可能需要手动配置
+- 初次安装需要 `sudo`，但 Homebrew 操作不需要
 
 ## 安装内容
+
+### Linux (Docker Engine)
 
 | 工具 | 来源 | 说明 |
 |------|------|------|
 | Docker Engine | [get.docker.com](https://get.docker.com) | 容器运行时 |
-| docker-compose-plugin | apt | `docker compose` 命令 |
+| docker-compose-plugin | 包管理器 | `docker compose` 命令 |
+
+### macOS (Docker Desktop)
+
+| 工具 | 来源 | 说明 |
+|------|------|------|
+| Docker Desktop | Homebrew Cask | 带 GUI 的容器运行时 |
 
 ## 执行步骤
 

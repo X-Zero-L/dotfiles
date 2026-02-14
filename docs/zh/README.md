@@ -4,6 +4,33 @@
 
 每个脚本的详细文档。快速上手请查看[主 README](../../README_CN.md)。
 
+## 操作系统兼容性
+
+所有脚本自动检测操作系统并使用适当的包管理器：
+
+| 组件 | Debian/Ubuntu | CentOS/RHEL | Fedora | Arch Linux | macOS |
+|------|---------------|-------------|--------|------------|-------|
+| Shell (zsh, Oh My Zsh, Starship) | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Tmux | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Git | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 基础工具 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Clash 代理 | ✓ | ✓ | ✓ | ✓ | ✗ (仅限 Linux) |
+| Docker | ✓ (Engine) | ✓ (Engine) | ✓ (Engine) | ✓ (Engine) | ✓ (Desktop) |
+| Tailscale | ✓ | ✓ | ✓ | ✓ | ✓ |
+| SSH | ✓ | ✓ | ✓ | ✓ | ✓ (Remote Login) |
+| Node.js (nvm) | ✓ | ✓ | ✓ | ✓ | ✓ |
+| uv + Python | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Go (goenv) | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Claude Code | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Codex CLI | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Gemini CLI | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 代理技能 | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+**注意事项：**
+- macOS 上的 Docker 使用 Docker Desktop（通过 Homebrew 安装）而非 Docker Engine
+- macOS 上的 SSH 配置 Remote Login 而非通过 systemd 配置 OpenSSH 服务器
+- Clash 代理仅支持 Linux 系统
+
 ## 脚本列表
 
 ### 基础环境

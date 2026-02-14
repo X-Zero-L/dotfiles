@@ -1,12 +1,28 @@
 # setup-ssh.sh
 
-配置 OpenSSH 服务器：自定义端口、密钥登录和 GitHub SSH 代理。
+配置 SSH 服务器：自定义端口、密钥登录和 GitHub SSH 代理。
+
+## 操作系统特定行为
+
+| 操作系统 | SSH 服务器 | 服务管理 | 配置文件 |
+|---------|-----------|---------|---------|
+| Debian/Ubuntu | openssh-server | systemctl | /etc/ssh/sshd_config |
+| CentOS/RHEL | openssh-server | systemctl | /etc/ssh/sshd_config |
+| Fedora | openssh-server | systemctl | /etc/ssh/sshd_config |
+| Arch Linux | openssh | systemctl | /etc/ssh/sshd_config |
+| macOS | 内置 | Remote Login (系统偏好设置) | /etc/ssh/sshd_config |
+
+**macOS 注意事项：**
+- SSH 服务器为内置（无需安装包）
+- 通过系统偏好设置中的 Remote Login 启用而非 systemctl
+- 配置文件位置与 Linux 相同：`/etc/ssh/sshd_config`
+- 通过 `sudo launchctl stop/start com.openssh.sshd` 重启
 
 ## 配置内容
 
 | 项目 | 说明 |
 |------|------|
-| openssh-server | 缺失时自动安装 |
+| SSH 服务器 | 缺失时安装/启用 |
 | 端口 | 自定义 SSH 端口（可选） |
 | 私钥 | 导入到 `~/.ssh/`，用于对外 SSH（如 GitHub） |
 | 公钥 | 添加到 `~/.ssh/authorized_keys`，用于被连入 |

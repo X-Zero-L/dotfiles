@@ -2,9 +2,19 @@
 
 [English](README.md)
 
-Debian/Ubuntu 系统自动化配置脚本。
+Linux 和 macOS 系统自动化配置脚本。
 
-> 所有脚本均支持**重复运行** — 已安装的组件会自动跳过，配置变更时自动更新。需要 `curl`、`git` 和 `sudo`。
+## 支持的操作系统
+
+| 操作系统 | 包管理器 | 状态 |
+|---------|---------|------|
+| Debian/Ubuntu | `apt` | ✓ 完全支持 |
+| CentOS/RHEL | `yum`/`dnf` | ✓ 完全支持 |
+| Fedora | `dnf` | ✓ 完全支持 |
+| Arch Linux | `pacman` | ✓ 完全支持 |
+| macOS | `brew` | ✓ 完全支持（见 [macOS 注意事项](#macos-注意事项)） |
+
+> 所有脚本均支持**重复运行** — 已安装的组件会自动跳过，配置变更时自动更新。需要 `curl`、`git` 和 `sudo`（部分 macOS 操作除外）。
 
 ## 快速开始
 
@@ -600,10 +610,21 @@ curl -fsSL https://raw.githubusercontent.com/X-Zero-L/rig/master/install.sh | ba
 
 ## 详细文档
 
-查看 [docs/zh/](docs/zh/) 目录获取每个脚本的详细文档 — 安装内容、创建/修改的文件、重复运行行为等。
+查看 [docs/zh/](docs/zh/) 目录获取每个脚本的详细文档 — 安装内容、创建/修改的文件、重复运行行为以及特定操作系统的注意事项。
+
+## macOS 注意事项
+
+macOS 支持有以下差异：
+
+- **Docker**: 使用 Docker Desktop 而非 Docker Engine。`setup-docker.sh` 脚本通过 Homebrew 安装，不配置 systemd 服务（macOS 不使用 systemd）。
+- **SSH**: 使用 macOS Remote Login 而非通过 `systemctl` 配置 OpenSSH 服务器。
+- **Clash 代理**: 不支持 macOS（仅限 Linux）。
+- **Homebrew**: 若未安装会自动安装。脚本会自动检测并使用 `brew` 而非 `apt`/`yum`/`dnf`/`pacman`。
+- **sudo**: 部分 Homebrew 操作不需要 sudo。脚本会自动处理。
 
 ## 注意事项
 
 - Starship 需要终端支持 [Nerd Font](https://www.nerdfonts.com/) 才能正常显示图标。
 - 如果 `gh-proxy.org` 不可用，可到 [ghproxy.link](https://ghproxy.link/) 查找其他可用代理。
 - 携带不同的 API 密钥/配置重新运行脚本，会自动更新配置而不重复安装。
+- **仅限 Linux 组件**: Clash 代理仅在 Linux 系统上可用。

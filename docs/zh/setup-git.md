@@ -2,6 +2,18 @@
 
 配置 Git 全局设置：用户身份和合理的默认值。
 
+## 操作系统支持
+
+适用于所有支持的平台。Git 缺失时通过系统包管理器安装：
+
+| 操作系统 | 包管理器 |
+|---------|---------|
+| Debian/Ubuntu | `apt` |
+| CentOS/RHEL | `yum`/`dnf` |
+| Fedora | `dnf` |
+| Arch Linux | `pacman` |
+| macOS | `brew` (或 Xcode Command Line Tools) |
+
 ## 配置内容
 
 | 项目 | 说明 |

@@ -2,6 +2,18 @@
 
 安装 [Tailscale](https://tailscale.com/) VPN 组网，可选自动连接。
 
+## 操作系统支持
+
+Tailscale 官方安装器支持所有主流平台：
+
+| 操作系统 | 安装方式 |
+|---------|---------|
+| Debian/Ubuntu | 官方脚本（添加 apt 仓库） |
+| CentOS/RHEL | 官方脚本（添加 yum/dnf 仓库） |
+| Fedora | 官方脚本（添加 dnf 仓库） |
+| Arch Linux | 官方脚本（使用 pacman） |
+| macOS | 官方脚本（使用 Homebrew 或 App Store） |
+
 ## 安装内容
 
 | 工具 | 来源 | 说明 |

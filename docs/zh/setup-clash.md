@@ -2,6 +2,18 @@
 
 安装 [clash-for-linux](https://github.com/nelvko/clash-for-linux-install) 代理，支持订阅管理。
 
+## 操作系统支持
+
+**仅限 Linux** — 此组件仅适用于 Linux 系统，不支持 macOS。
+
+| 操作系统 | 状态 |
+|---------|------|
+| Debian/Ubuntu | ✓ 支持 |
+| CentOS/RHEL | ✓ 支持 |
+| Fedora | ✓ 支持 |
+| Arch Linux | ✓ 支持 |
+| macOS | ✗ 不支持 |
+
 ## 概述
 
 配置本地代理（默认 mihomo 内核），可通过 `clashon`/`clashoff` Shell 函数切换。代理监听 `localhost:7890`，支持 HTTP/HTTPS/SOCKS5。

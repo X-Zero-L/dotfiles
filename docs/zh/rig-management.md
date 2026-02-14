@@ -4,6 +4,10 @@
 
 初始安装之后的管理工具 — 预设、状态检查、配置导出/导入和安全卸载。
 
+## 操作系统支持
+
+所有管理工具适用于所有支持的平台（Debian/Ubuntu、CentOS/RHEL、Fedora、Arch Linux 和 macOS）。工具自动检测您的操作系统并使用相应的包管理器。
+
 ## 概述
 
 除了 `install.sh` 和 `update.sh`，rig 还提供 CLI 包装器（`rig`）和多个管理脚本：

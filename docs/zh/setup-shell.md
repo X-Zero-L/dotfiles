@@ -1,13 +1,25 @@
 # setup-shell.sh
 
-安装 zsh、Oh My Zsh、插件和 Starship 提示符（Catppuccin 主题）。需要 `sudo`。
+安装 zsh、Oh My Zsh、插件和 Starship 提示符（Catppuccin 主题）。
+
+## 操作系统支持
+
+适用于所有支持的平台。脚本自动使用相应的包管理器：
+
+| 操作系统 | 包管理器 | 需要 sudo |
+|---------|---------|----------|
+| Debian/Ubuntu | `apt` | ✓ |
+| CentOS/RHEL | `yum`/`dnf` | ✓ |
+| Fedora | `dnf` | ✓ |
+| Arch Linux | `pacman` | ✓ |
+| macOS | `brew` | 仅 Homebrew 操作 |
 
 ## 安装内容
 
 | 工具 | 来源 | 说明 |
 |------|------|------|
-| zsh | apt | Z shell |
-| git, curl, wget, vim | apt | 常用工具 |
+| zsh | 包管理器 | Z shell |
+| git, curl, wget, vim | 包管理器 | 常用工具 |
 | Oh My Zsh | [ohmyzsh/ohmyzsh](https://github.com/ohmyzsh/ohmyzsh) | Zsh 框架 |
 | zsh-autosuggestions | [zsh-users/zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions) | 类似 Fish 的自动补全建议 |
 | zsh-syntax-highlighting | [zsh-users/zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting) | 命令语法高亮 |
@@ -18,13 +30,13 @@
 
 | 步骤 | 操作 |
 |------|------|
-| 1/6 | `sudo apt install -y zsh git curl wget vim` |
+| 1/6 | 通过包管理器安装 zsh、git、curl、wget、vim (apt/yum/dnf/pacman/brew) |
 | 2/6 | 无人值守安装 Oh My Zsh（`RUNZSH=no CHSH=no`） |
 | 3/6 | 克隆 autosuggestions 和 syntax-highlighting 插件到 `$ZSH_CUSTOM/plugins/` |
 | 4/6 | 编辑 `~/.zshrc` — 在 `plugins=(...)` 行中添加插件 |
 | 5/6 | 安装 Starship 二进制文件，在 `~/.zshrc` 中添加 `eval "$(starship init zsh)"` |
 | 6/6 | 应用 Catppuccin Powerline 预设到 `~/.config/starship.toml` |
-| 最后 | `sudo chsh -s $(which zsh) $USER` — 设置 zsh 为默认 Shell |
+| 最后 | 设置 zsh 为默认 Shell (Linux: `sudo chsh`, macOS: `chsh`) |
 
 ## 创建/修改的文件
 

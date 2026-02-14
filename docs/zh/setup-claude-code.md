@@ -2,6 +2,18 @@
 
 安装 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI，可选配置 API 凭据。别名：`cc`。
 
+## 操作系统支持
+
+通过 npm 在所有平台上运行（需要 Node.js）：
+
+| 操作系统 | 状态 |
+|---------|------|
+| Debian/Ubuntu | ✓ |
+| CentOS/RHEL | ✓ |
+| Fedora | ✓ |
+| Arch Linux | ✓ |
+| macOS | ✓ |
+
 ## 安装内容
 
 | 工具 | 来源 | 说明 |

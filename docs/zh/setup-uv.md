@@ -2,6 +2,18 @@
 
 安装 [uv](https://docs.astral.sh/uv/) 包管理器，可选安装 Python 版本。
 
+## 操作系统支持
+
+uv 适用于所有支持的平台（Linux 和 macOS）。无需操作系统特定的包管理器：
+
+| 操作系统 | 状态 |
+|---------|------|
+| Debian/Ubuntu | ✓ |
+| CentOS/RHEL | ✓ |
+| Fedora | ✓ |
+| Arch Linux | ✓ |
+| macOS | ✓ |
+
 ## 安装内容
 
 | 工具 | 来源 | 说明 |

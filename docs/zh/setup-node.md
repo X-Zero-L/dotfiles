@@ -2,6 +2,18 @@
 
 安装 nvm（Node 版本管理器）和 Node.js。
 
+## 操作系统支持
+
+nvm 适用于所有支持的平台（Linux 和 macOS）。无需操作系统特定的包管理器：
+
+| 操作系统 | 状态 |
+|---------|------|
+| Debian/Ubuntu | ✓ |
+| CentOS/RHEL | ✓ |
+| Fedora | ✓ |
+| Arch Linux | ✓ |
+| macOS | ✓ |
+
 ## 安装内容
 
 | 工具 | 来源 | 说明 |

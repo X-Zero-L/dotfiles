@@ -2,21 +2,43 @@
 
 安装编码代理日常依赖的核心 CLI 工具 — 快速代码搜索、JSON 处理、GitHub CLI、编译工具等。
 
+## 操作系统特定包名
+
+脚本自动检测您的操作系统并安装相应的包：
+
+| 工具 | Debian/Ubuntu | CentOS/RHEL/Fedora | Arch Linux | macOS (Homebrew) |
+|------|---------------|-------------------|------------|------------------|
+| ripgrep | `ripgrep` | `ripgrep` | `ripgrep` | `ripgrep` |
+| jq | `jq` | `jq` | `jq` | `jq` |
+| fd | `fd-find` → 符号链接到 `fd` | `fd-find` | `fd` | `fd` |
+| bat | `bat` → 符号链接到 `batcat` | `bat` | `bat` | `bat` |
+| tree | `tree` | `tree` | `tree` | `tree` |
+| gh | `gh` (通过 GitHub apt 仓库) | `gh` | `github-cli` | `gh` |
+| shellcheck | `shellcheck` | `ShellCheck` | `shellcheck` | `shellcheck` |
+| 编译工具 | `build-essential` (gcc, g++, make) | `gcc`, `gcc-c++`, `make` | `base-devel` | Xcode Command Line Tools |
+| wget | `wget` | `wget` | `wget` | `wget` |
+| unzip | `unzip` | `unzip` | `unzip` | `unzip` |
+| 剪贴板 | `xclip` | `xclip` | `xclip` | `pbcopy` (内置) |
+
+**注意事项：**
+- Debian/Ubuntu 上，`fd-find` 和 `bat` 会在 `~/.local/bin/` 中创建符号链接到 `fd` 和 `bat`
+- macOS 上，Xcode Command Line Tools 会在不存在时自动安装
+- macOS 使用内置的 `pbcopy`/`pbpaste` 命令代替 `xclip`
+
 ## 安装内容
 
-| 包名 | 二进制 | 用途 |
-|------|--------|------|
-| `ripgrep` | `rg` | 快速代码搜索（Claude Code 内部使用） |
-| `jq` | `jq` | JSON 处理 |
-| `fd-find` | `fdfind` → `fd` | 快速文件查找 |
-| `bat` | `batcat` → `bat` | 语法高亮的 cat |
-| `tree` | `tree` | 目录结构可视化 |
-| `gh` | `gh` | GitHub CLI（PR、Issue、API） |
-| `shellcheck` | `shellcheck` | Shell 脚本静态检查 |
-| `build-essential` | `gcc`、`g++`、`make` | 原生 npm 模块编译 |
-| `wget` | `wget` | HTTP 下载 |
-| `unzip` | `unzip` | 解压缩 |
-| `xclip` | `xclip` | 剪贴板（tmux 集成） |
+| 二进制 | 用途 |
+|--------|------|
+| `rg` | 快速代码搜索（Claude Code 内部使用） |
+| `jq` | JSON 处理 |
+| `fd` | 快速文件查找 |
+| `bat` | 语法高亮的 cat |
+| `tree` | 目录结构可视化 |
+| `gh` | GitHub CLI（PR、Issue、API） |
+| `shellcheck` | Shell 脚本静态检查 |
+| `gcc`, `g++`, `make` | 原生 npm 模块编译 |
+| `wget` | HTTP 下载 |
+| `unzip` | 解压缩 |
 
 ## 执行方式
 

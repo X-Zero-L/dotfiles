@@ -6,6 +6,8 @@
 
 `install.sh` 是一个调度器，提供 TUI 复选框菜单选择组件、解析依赖、收集 API 密钥、从 GitHub 下载所需的 `setup-*.sh` 脚本并按序执行。它本身不包含安装逻辑 — 每个组件的逻辑在各自的脚本中。
 
+**操作系统支持：** 适用于 Debian/Ubuntu (apt)、CentOS/RHEL (yum/dnf)、Fedora (dnf)、Arch Linux (pacman) 和 macOS (brew)。安装器自动检测操作系统并使用相应的包管理器。
+
 ## 模式
 
 ### 交互式 TUI

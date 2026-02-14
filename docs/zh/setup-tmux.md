@@ -1,12 +1,24 @@
 # setup-tmux.sh
 
-安装 tmux、TPM 插件管理器、Catppuccin 主题及常用插件，支持完整鼠标交互。需要 `sudo`。
+安装 tmux、TPM 插件管理器、Catppuccin 主题及常用插件，支持完整鼠标交互。
+
+## 操作系统支持
+
+适用于所有支持的平台：
+
+| 操作系统 | 包管理器 | 需要 sudo |
+|---------|---------|----------|
+| Debian/Ubuntu | `apt` | ✓ |
+| CentOS/RHEL | `yum`/`dnf` | ✓ |
+| Fedora | `dnf` | ✓ |
+| Arch Linux | `pacman` | ✓ |
+| macOS | `brew` | 仅 Homebrew 操作 |
 
 ## 安装内容
 
 | 工具 | 来源 | 说明 |
 |------|------|------|
-| tmux | apt | 终端复用器 |
+| tmux | 包管理器 | 终端复用器 |
 | TPM | [tmux-plugins/tpm](https://github.com/tmux-plugins/tpm) | Tmux 插件管理器 |
 | tmux-sensible | [tmux-plugins/tmux-sensible](https://github.com/tmux-plugins/tmux-sensible) | 合理默认值（ESC 延迟修复、历史记录等） |
 | Catppuccin | [catppuccin/tmux](https://github.com/catppuccin/tmux) | Catppuccin Mocha 主题 |
@@ -66,7 +78,7 @@
 
 | 步骤 | 操作 |
 |------|------|
-| 1/4 | `sudo apt install -y tmux`（已安装则跳过） |
+| 1/4 | 通过包管理器安装 tmux (apt/yum/dnf/pacman/brew) |
 | 2/4 | `git clone` TPM 到 `~/.tmux/plugins/tpm`（支持 `GH_PROXY`） |
 | 3/4 | 生成 `~/.tmux.conf` — 与现有内容比较，仅在不同时写入 |
 | 4/4 | 克隆各插件到 `~/.tmux/plugins/`（目录已存在则跳过） |

@@ -2,6 +2,18 @@
 
 为所有编码代理（Claude Code、Codex、Gemini）全局安装常用 [agent skills](https://skills.sh/)。
 
+## 操作系统支持
+
+通过 npm 在所有平台上运行（需要 Node.js）：
+
+| 操作系统 | 状态 |
+|---------|------|
+| Debian/Ubuntu | ✓ |
+| CentOS/RHEL | ✓ |
+| Fedora | ✓ |
+| Arch Linux | ✓ |
+| macOS | ✓ |
+
 ## 安装内容
 
 | 技能 | 来源 | 说明 |
