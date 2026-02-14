@@ -86,14 +86,29 @@ build_url() {
 download_and_run() {
     local script="$1"
     shift
-    local url
-    url=$(build_url "$script")
 
     if ! command -v curl &>/dev/null; then
         die "curl is required but not found"
     fi
 
-    exec bash <(curl -fsSL "$url") "$@"
+    # Download script and lib dependencies to a temp directory so that
+    # BASH_SOURCE resolves correctly and lib/ sourcing works.
+    local tmpdir
+    tmpdir=$(mktemp -d)
+    trap 'rm -rf "$tmpdir"' EXIT
+
+    # Download lib files first (scripts source these)
+    mkdir -p "$tmpdir/lib"
+    local lib_file
+    for lib_file in os-detect.sh pkg-maps.sh pkg-manager.sh; do
+        curl -fsSL "$(build_url "lib/$lib_file")" -o "$tmpdir/lib/$lib_file" 2>/dev/null || true
+    done
+
+    # Download the target script
+    curl -fsSL "$(build_url "$script")" -o "$tmpdir/$script"
+    chmod +x "$tmpdir/$script"
+
+    exec bash "$tmpdir/$script" "$@"
 }
 
 # --- Help --------------------------------------------------------------------
