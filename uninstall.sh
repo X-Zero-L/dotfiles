@@ -9,9 +9,10 @@ set -euo pipefail
 #   bash uninstall.sh docker                     # Uninstall single component
 #   bash uninstall.sh node --force               # Force (ignore dependents)
 #   bash uninstall.sh --all                      # Uninstall everything
-#   bash uninstall.sh --all --force              # Skip all prompts
+#   bash uninstall.sh --all --yes                # Headless-safe (no TTY prompts)
 #   bash uninstall.sh --components shell,tmux    # Uninstall specific components
 #   bash uninstall.sh --list                     # List installed components
+#   bash uninstall.sh docker --remove-docker-data  # Also remove Docker volumes
 # =============================================================================
 
 # --- [A] Constants -----------------------------------------------------------
@@ -22,9 +23,12 @@ INTERACTIVE=0
 VERBOSE=0
 LOG_FILE=""
 CURSOR_HIDDEN=0
+ALL_EXPLICIT=0
+YES_FLAG=0
 
 # Pre-confirmation flags (collected before execution)
-DOCKER_REMOVE_DATA=1
+# Default to preserving data — require explicit flags to remove
+DOCKER_REMOVE_DATA=0
 SSH_REMOVE_KEYS=0
 CLAUDE_REMOVE_CONFIG=0
 
@@ -153,6 +157,9 @@ print_banner() {
 
 hr() { printf "  ${DIM}──────────────────────────────────────────${NC}\n"; }
 
+# Check if a TTY is truly available (not just that /dev/tty exists as a device node)
+has_tty() { : < /dev/tty 2>/dev/null; }
+
 # Create .rig-backup before modifying a config file
 backup_file() {
     local file="$1"
@@ -214,43 +221,71 @@ Arguments:
 
 Options:
   --all                  Uninstall all installed components
-  --components LIST      Comma-separated component list
+  --components LIST      Comma-separated component list (validated against known IDs)
   --force                Skip dependency checks and confirmations
+  --yes                  Auto-confirm prompts (required for headless/no-TTY operation)
+  --remove-docker-data   Remove Docker volumes and images at /var/lib/docker
+  --remove-ssh-keys      Remove SSH keys in ~/.ssh/
+  --remove-claude-data   Remove Claude Code config and data at ~/.claude/
   --list                 List installed components and exit
   -v, --verbose          Show raw command output
   -h, --help             Show this help
 
+Data Safety:
+  By default, destructive data (Docker volumes, SSH keys, Claude config) is
+  preserved during uninstall. Use the --remove-* flags above to opt in to
+  data removal. The --force flag skips prompts but does NOT auto-remove data.
+
+  When no TTY is available (e.g., CI/scripts), --yes is required to proceed.
+
 Examples:
-  bash uninstall.sh docker                         # Uninstall Docker
+  bash uninstall.sh docker                         # Uninstall Docker (data preserved)
+  bash uninstall.sh docker --remove-docker-data    # Uninstall Docker + remove data
   bash uninstall.sh node --force                   # Force uninstall Node.js
   bash uninstall.sh --components codex,gemini      # Uninstall multiple
-  bash uninstall.sh --all                          # Uninstall everything
+  bash uninstall.sh --all --yes                    # Uninstall everything (headless-safe)
   bash uninstall.sh --list                         # Show what's installed
 HELP
 }
 
 # --- [E] Detection -----------------------------------------------------------
 
+check_shell_installed() { [[ -d "$HOME/.oh-my-zsh" ]]; }
+check_tmux_installed() { command -v tmux &>/dev/null; }
+check_git_installed() { command -v git &>/dev/null; }
+check_tools_installed() { command -v rg &>/dev/null && command -v jq &>/dev/null; }
+check_essential_tools_installed() { dpkg -s build-essential &>/dev/null; }
+check_node_installed() { command -v nvm &>/dev/null || [[ -f "$HOME/.nvm/nvm.sh" ]]; }
+check_uv_installed() { command -v uv &>/dev/null; }
+check_go_installed() { command -v goenv &>/dev/null || [[ -d "$HOME/.goenv/bin" ]]; }
+check_docker_installed() { command -v docker &>/dev/null; }
+check_tailscale_installed() { command -v tailscale &>/dev/null; }
+check_ssh_installed() { [[ -f /etc/ssh/sshd_config ]]; }
+check_claude_code_installed() { command -v claude &>/dev/null; }
+check_codex_installed() { command -v codex &>/dev/null; }
+check_gemini_installed() { command -v gemini &>/dev/null; }
+check_skills_installed() { [[ -d "$HOME/.local/share/skills" ]] || [[ -d "$HOME/.claude/skills" ]]; }
+
 detect_installed() {
     local checks=(
-        "test -d $HOME/.oh-my-zsh"
-        "command -v tmux"
-        "command -v git"
-        "command -v rg && command -v jq"
-        "dpkg -s build-essential 2>/dev/null"
-        "command -v nvm 2>/dev/null || [[ -f $HOME/.nvm/nvm.sh ]]"
-        "command -v uv"
-        "command -v goenv 2>/dev/null || [[ -d $HOME/.goenv/bin ]]"
-        "command -v docker"
-        "command -v tailscale"
-        "test -f /etc/ssh/sshd_config"
-        "command -v claude"
-        "command -v codex"
-        "command -v gemini"
-        "test -d $HOME/.local/share/skills || test -d $HOME/.claude/skills"
+        check_shell_installed
+        check_tmux_installed
+        check_git_installed
+        check_tools_installed
+        check_essential_tools_installed
+        check_node_installed
+        check_uv_installed
+        check_go_installed
+        check_docker_installed
+        check_tailscale_installed
+        check_ssh_installed
+        check_claude_code_installed
+        check_codex_installed
+        check_gemini_installed
+        check_skills_installed
     )
     for i in "${!checks[@]}"; do
-        if eval "${checks[$i]}" &>/dev/null; then
+        if "${checks[$i]}"; then
             COMP_INSTALLED[$i]=1
         fi
     done
@@ -259,8 +294,10 @@ detect_installed() {
 # --- [F] Pre-execution Confirmations ----------------------------------------
 
 collect_confirmations() {
-    [[ "$FORCE" -eq 1 ]] && { DOCKER_REMOVE_DATA=1; SSH_REMOVE_KEYS=1; CLAUDE_REMOVE_CONFIG=1; return 0; }
-    [[ ! -e /dev/tty ]] && return 0
+    # --force skips interactive prompts but does NOT auto-enable destructive data removal.
+    # Use --remove-docker-data, --remove-ssh-keys, --remove-claude-data explicitly.
+    [[ "$FORCE" -eq 1 ]] && return 0
+    has_tty || return 0
 
     local needs_confirm=0
     for i in "${!COMP_SELECTED[@]}"; do
@@ -277,10 +314,10 @@ collect_confirmations() {
         case "${COMP_IDS[$i]}" in
             docker)
                 printf "\n  ${BOLD}${WHITE}Docker${NC}\n"
-                printf "  ${YELLOW}Volumes and images at /var/lib/docker will be removed.${NC}\n"
-                printf "  ${BOLD}Remove all Docker data?${NC} ${DIM}[Y/n]${NC} "
+                printf "  ${YELLOW}Volumes and images at /var/lib/docker can be removed.${NC}\n"
+                printf "  ${BOLD}Remove all Docker data?${NC} ${DIM}[y/N]${NC} "
                 local ans; read -r ans </dev/tty
-                [[ "$ans" =~ ^[Nn] ]] && DOCKER_REMOVE_DATA=0
+                [[ "$ans" =~ ^[Yy] ]] && DOCKER_REMOVE_DATA=1
                 ;;
             ssh)
                 printf "\n  ${BOLD}${WHITE}SSH${NC}\n"
@@ -811,18 +848,48 @@ parse_args() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --all)
-                NON_INTERACTIVE=1; shift ;;
+                ALL_EXPLICIT=1; NON_INTERACTIVE=1; shift ;;
             --components)
+                [[ $# -lt 2 ]] && { printf "${RED}Error: --components requires an argument${NC}\n"; exit 1; }
                 IFS=',' read -ra REQUESTED <<< "$2"
+                local unknown_ids=()
                 for req in "${REQUESTED[@]}"; do
                     req=$(echo "$req" | tr -d ' ')
+                    [[ -z "$req" ]] && continue
+                    local found=0
                     for i in "${!COMP_IDS[@]}"; do
-                        [[ "${COMP_IDS[$i]}" == "$req" ]] && COMP_SELECTED[$i]=1
+                        if [[ "${COMP_IDS[$i]}" == "$req" ]]; then
+                            COMP_SELECTED[$i]=1; found=1; break
+                        fi
                     done
+                    if [[ $found -eq 0 ]]; then
+                        unknown_ids+=("$req")
+                    fi
                 done
+                if [[ ${#unknown_ids[@]} -gt 0 ]]; then
+                    printf "${RED}Error: Unknown component ID(s): %s${NC}\n" "$(IFS=', '; echo "${unknown_ids[*]}")"
+                    printf "Valid IDs: %s\n" "${COMP_IDS[*]}"
+                    exit 1
+                fi
+                # Verify at least one component was selected
+                local any_set=0
+                for s in "${COMP_SELECTED[@]}"; do [[ "$s" -eq 1 ]] && any_set=1 && break; done
+                if [[ $any_set -eq 0 ]]; then
+                    printf "${RED}Error: --components list is empty after parsing${NC}\n"
+                    printf "Valid IDs: %s\n" "${COMP_IDS[*]}"
+                    exit 1
+                fi
                 NON_INTERACTIVE=1; shift 2 ;;
             --force)
                 FORCE=1; shift ;;
+            --yes)
+                YES_FLAG=1; shift ;;
+            --remove-docker-data)
+                DOCKER_REMOVE_DATA=1; shift ;;
+            --remove-ssh-keys)
+                SSH_REMOVE_KEYS=1; shift ;;
+            --remove-claude-data)
+                CLAUDE_REMOVE_CONFIG=1; shift ;;
             --list)
                 setup_colors; load_env; detect_installed
                 printf "\n  ${BOLD}Installed components:${NC}\n"; hr
@@ -868,17 +935,31 @@ main() {
 
     # Determine interactive mode
     if [[ "$NON_INTERACTIVE" -eq 0 ]]; then
-        if [[ -e /dev/tty ]]; then
+        if has_tty; then
             INTERACTIVE=1
         else
             echo "Error: No terminal available. Specify a component or use --all."
-            echo "  Example: bash uninstall.sh docker"
-            echo "  Example: bash uninstall.sh --all --force"
+            echo "  When running without a TTY, --yes is required to confirm."
+            echo "  Example: bash uninstall.sh docker --yes"
+            echo "  Example: bash uninstall.sh --all --yes"
             exit 1
         fi
     fi
 
-    LOG_FILE="/tmp/rig-uninstall-$(date +%Y%m%d-%H%M%S)"
+    # In non-interactive mode without a TTY, require --yes to proceed
+    if [[ "$NON_INTERACTIVE" -eq 1 && "$YES_FLAG" -eq 0 && "$FORCE" -eq 0 ]] && ! has_tty; then
+        echo "Error: No terminal available and --yes not specified."
+        echo "  Refusing to proceed without explicit confirmation."
+        echo "  Add --yes to confirm, or run interactively with a TTY."
+        exit 1
+    fi
+
+    # Create secure log file in user's cache directory
+    local log_dir="$HOME/.cache/rig"
+    mkdir -p "$log_dir"
+    chmod 700 "$log_dir"
+    LOG_FILE=$(mktemp "$log_dir/uninstall-XXXXXX")
+    chmod 600 "$LOG_FILE"
 
     print_banner
     detect_installed
@@ -902,13 +983,19 @@ main() {
     if [[ "$INTERACTIVE" -eq 1 ]]; then
         show_checkbox_menu
     else
-        # Check if --all (no explicit selection)
+        # Check if specific components were selected
         local has_explicit=0
         for s in "${COMP_SELECTED[@]}"; do [[ "$s" -eq 1 ]] && has_explicit=1 && break; done
 
-        if [[ $has_explicit -eq 0 ]]; then
-            # --all: select all installed
+        if [[ $has_explicit -eq 0 && "$ALL_EXPLICIT" -eq 1 ]]; then
+            # --all was explicitly passed: select all installed
             for i in "${!COMP_INSTALLED[@]}"; do COMP_SELECTED[$i]=${COMP_INSTALLED[$i]}; done
+        elif [[ $has_explicit -eq 0 && "$ALL_EXPLICIT" -eq 0 ]]; then
+            # No components selected and --all not passed — error out
+            printf "  ${RED}Error: No components specified.${NC}\n"
+            printf "  ${DIM}Use --all to uninstall everything, or specify components.${NC}\n"
+            printf "  ${DIM}Example: bash uninstall.sh --components docker,node${NC}\n\n"
+            exit 1
         else
             # Warn about non-installed selections
             for i in "${!COMP_SELECTED[@]}"; do
@@ -959,7 +1046,7 @@ main() {
     printf "  ${DIM}Total: ${BOLD}%d${NC}${DIM} component(s) to remove${NC}\n\n" "${#ordered[@]}"
 
     # Confirm
-    if [[ "$FORCE" -eq 0 && -e /dev/tty ]]; then
+    if [[ "$FORCE" -eq 0 && "$YES_FLAG" -eq 0 ]] && has_tty; then
         printf "  ${RED}${BOLD}⚠ This action cannot be fully undone.${NC}\n"
         printf "  ${BOLD}Proceed with uninstall?${NC} ${DIM}[y/N]${NC} "
         local confirm_ans

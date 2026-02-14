@@ -79,6 +79,16 @@ get_version() {
     output=$("$@" 2>/dev/null) && echo "$output" | head -1 || echo "N/A"
 }
 
+# JSON-escape a string value
+json_escape() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
 # --- Detection Functions -----------------------------------------------------
 # Each function prints: status|version|config_status
 #   status:        installed / partial / not_installed
@@ -88,8 +98,9 @@ get_version() {
 detect_shell() {
     local status="not_installed" version="N/A" config="not-configured"
 
-    if resolve_cmd zsh &>/dev/null; then
-        version=$(get_version zsh --version | sed 's/zsh //' | awk '{print $1}')
+    local zsh_path
+    if zsh_path=$(resolve_cmd zsh); then
+        version=$("$zsh_path" --version 2>/dev/null | head -1 | sed 's/zsh //' | awk '{print $1}' || echo "N/A")
         status="installed"
         config="install-only"
 
@@ -105,7 +116,8 @@ detect_shell() {
 
         # Check Starship
         local has_starship=0
-        resolve_cmd starship &>/dev/null && has_starship=1
+        local starship_path
+        starship_path=$(resolve_cmd starship) && has_starship=1
 
         if [[ $is_default -eq 1 && $has_omz -eq 1 && $has_starship -eq 1 ]]; then
             config="configured"
@@ -121,8 +133,9 @@ detect_shell() {
 detect_tmux() {
     local status="not_installed" version="N/A" config="not-configured"
 
-    if resolve_cmd tmux &>/dev/null; then
-        version=$(get_version tmux -V | sed 's/tmux //')
+    local tmux_path
+    if tmux_path=$(resolve_cmd tmux); then
+        version=$("$tmux_path" -V 2>/dev/null | head -1 | sed 's/tmux //' || echo "N/A")
         status="installed"
         config="install-only"
 
@@ -152,8 +165,9 @@ detect_tmux() {
 detect_git() {
     local status="not_installed" version="N/A" config="not-configured"
 
-    if resolve_cmd git &>/dev/null; then
-        version=$(get_version git --version | sed 's/git version //')
+    local git_path
+    if git_path=$(resolve_cmd git); then
+        version=$("$git_path" --version 2>/dev/null | head -1 | sed 's/git version //' || echo "N/A")
         status="installed"
         config="install-only"
 
@@ -183,11 +197,11 @@ detect_tools() {
 
     for tool in "${tools[@]}"; do
         # Handle Debian renames: fd-find→fdfind, bat→batcat
-        if resolve_cmd "$tool" &>/dev/null; then
+        if resolve_cmd "$tool" >/dev/null 2>&1; then
             found=$((found + 1))
-        elif [[ "$tool" == "fd" ]] && resolve_cmd fdfind &>/dev/null; then
+        elif [[ "$tool" == "fd" ]] && resolve_cmd fdfind >/dev/null 2>&1; then
             found=$((found + 1))
-        elif [[ "$tool" == "bat" ]] && resolve_cmd batcat &>/dev/null; then
+        elif [[ "$tool" == "bat" ]] && resolve_cmd batcat >/dev/null 2>&1; then
             found=$((found + 1))
         else
             missing_tools+=("$tool")
@@ -222,9 +236,10 @@ detect_node() {
 
     [[ -f "$NVM_DIR/nvm.sh" ]] && has_nvm=1
 
-    if resolve_cmd node &>/dev/null; then
+    local node_path
+    if node_path=$(resolve_cmd node); then
         has_node=1
-        version=$(get_version node --version | sed 's/^v//')
+        version=$("$node_path" --version 2>/dev/null | head -1 | sed 's/^v//' || echo "N/A")
     fi
 
     if [[ $has_nvm -eq 1 && $has_node -eq 1 ]]; then
@@ -248,8 +263,9 @@ detect_uv() {
     # Add common uv location to search
     export PATH="$HOME/.local/bin:$PATH"
 
-    if resolve_cmd uv &>/dev/null; then
-        version=$(get_version uv --version | sed 's/^uv //')
+    local uv_path
+    if uv_path=$(resolve_cmd uv); then
+        version=$("$uv_path" --version 2>/dev/null | head -1 | sed 's/^uv //' || echo "N/A")
         status="installed"
         config="configured"
     fi
@@ -271,9 +287,10 @@ detect_go() {
 
     [[ -d "$HOME/.goenv" && -f "$HOME/.goenv/bin/goenv" ]] && has_goenv=1
 
-    if resolve_cmd go &>/dev/null; then
+    local go_path
+    if go_path=$(resolve_cmd go); then
         has_go=1
-        version=$(get_version go version | sed 's/go version go//' | awk '{print $1}')
+        version=$("$go_path" version 2>/dev/null | head -1 | sed 's/go version go//' | awk '{print $1}' || echo "N/A")
     fi
 
     if [[ $has_goenv -eq 1 && $has_go -eq 1 ]]; then
@@ -294,8 +311,9 @@ detect_go() {
 detect_docker() {
     local status="not_installed" version="N/A" config="not-configured"
 
-    if resolve_cmd docker &>/dev/null; then
-        version=$(get_version docker --version | sed 's/Docker version //' | cut -d, -f1)
+    local docker_path
+    if docker_path=$(resolve_cmd docker); then
+        version=$("$docker_path" --version 2>/dev/null | head -1 | sed 's/Docker version //' | cut -d, -f1 || echo "N/A")
         status="installed"
         config="install-only"
 
@@ -334,8 +352,9 @@ detect_docker() {
 detect_tailscale() {
     local status="not_installed" version="N/A" config="not-configured"
 
-    if resolve_cmd tailscale &>/dev/null; then
-        version=$(get_version tailscale version | head -1)
+    local tailscale_path
+    if tailscale_path=$(resolve_cmd tailscale); then
+        version=$("$tailscale_path" version 2>/dev/null | head -1 || echo "N/A")
         status="installed"
         config="install-only"
 
@@ -358,8 +377,9 @@ detect_tailscale() {
 detect_ssh() {
     local status="not_installed" version="N/A" config="not-configured"
 
-    if resolve_cmd ssh &>/dev/null; then
-        version=$(ssh -V 2>&1 | sed 's/,.*//' | sed 's/OpenSSH_//')
+    local ssh_path
+    if ssh_path=$(resolve_cmd ssh); then
+        version=$("$ssh_path" -V 2>&1 | head -1 | sed 's/,.*//' | sed 's/OpenSSH_//' || echo "N/A")
         status="installed"
         config="install-only"
 
@@ -396,8 +416,9 @@ detect_claude_code() {
     # shellcheck disable=SC1091
     [[ -f "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh" 2>/dev/null
 
-    if resolve_cmd claude &>/dev/null; then
-        version=$(get_version claude --version)
+    local claude_path
+    if claude_path=$(resolve_cmd claude); then
+        version=$("$claude_path" --version 2>/dev/null | head -1 || echo "N/A")
         status="installed"
         config="install-only"
 
@@ -441,8 +462,9 @@ detect_codex() {
     # shellcheck disable=SC1091
     [[ -f "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh" 2>/dev/null
 
-    if resolve_cmd codex &>/dev/null; then
-        version=$(get_version codex --version)
+    local codex_path
+    if codex_path=$(resolve_cmd codex); then
+        version=$("$codex_path" --version 2>/dev/null | head -1 || echo "N/A")
         status="installed"
         config="install-only"
 
@@ -473,8 +495,9 @@ detect_gemini() {
     # shellcheck disable=SC1091
     [[ -f "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh" 2>/dev/null
 
-    if resolve_cmd gemini &>/dev/null; then
-        version=$(get_version gemini --version)
+    local gemini_path
+    if gemini_path=$(resolve_cmd gemini); then
+        version=$("$gemini_path" --version 2>/dev/null | head -1 || echo "N/A")
         status="installed"
         config="install-only"
 
@@ -504,13 +527,10 @@ detect_gemini() {
 detect_skills() {
     local status="not_installed" version="N/A" config="not-configured"
 
-    # Load nvm for npx
-    export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
-    # shellcheck disable=SC1091
-    [[ -f "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh" 2>/dev/null
-
-    # Check if skills are installed by looking for known skill directories
-    # Skills are installed globally via npx skills add -g
+    # Check if skills are installed by looking for known skill directories.
+    # NOTE: We intentionally use filesystem-only detection here instead of
+    # `npx skills list -g` because npx can download and execute npm packages
+    # from the network. Status checks must be read-only with no network calls.
     local skill_dirs=(
         "$HOME/.claude/agent-skills"
         "$HOME/.claude/skills"
@@ -523,15 +543,49 @@ detect_skills() {
         fi
     done
 
-    # Also check via npx skills list (if npx is available)
+    # Count known skill subdirectories via filesystem inspection.
+    # Skills are installed globally and may reside under the npm global prefix
+    # or in the agent-skills/skills directories.
     local skill_count=0
-    if resolve_cmd npx &>/dev/null; then
-        local skills_output
-        skills_output=$(npx skills list -g 2>/dev/null || true)
-        if [[ -n "$skills_output" ]]; then
-            # Count non-empty, non-header lines
-            skill_count=$(echo "$skills_output" | grep -cE '^\s*(find-skills|pdf|gemini-cli|context7|writing-plans|executing-plans|codex)' 2>/dev/null) || skill_count=0
+    local known_skills=(find-skills pdf gemini-cli context7 writing-plans executing-plans codex)
+
+    # Check skill directories for known skill names
+    for d in "${skill_dirs[@]}"; do
+        [[ -d "$d" ]] || continue
+        for skill_name in "${known_skills[@]}"; do
+            [[ -d "$d/$skill_name" ]] && skill_count=$((skill_count + 1))
+        done
+    done
+
+    # Also check npm global lib for the skills CLI package itself
+    if [[ $skill_count -eq 0 ]]; then
+        local npm_prefix=""
+        # Check common global npm module locations without network calls
+        local global_dirs=(
+            "$HOME/.npm-global/lib/node_modules/@anthropic/agent-skills"
+            "$HOME/.npm-global/lib/node_modules/agent-skills"
+        )
+        # Try npm prefix if npm is available (local operation, no network)
+        local npm_path
+        if npm_path=$(resolve_cmd npm); then
+            npm_prefix=$("$npm_path" config get prefix 2>/dev/null || true)
+            if [[ -n "$npm_prefix" ]]; then
+                global_dirs+=(
+                    "$npm_prefix/lib/node_modules/@anthropic/agent-skills"
+                    "$npm_prefix/lib/node_modules/agent-skills"
+                )
+            fi
         fi
+        for gd in "${global_dirs[@]}"; do
+            if [[ -d "$gd" ]]; then
+                # Package exists globally; count skills inside if possible
+                for skill_name in "${known_skills[@]}"; do
+                    [[ -d "$gd/$skill_name" ]] && skill_count=$((skill_count + 1))
+                done
+                [[ -z "$found_dir" ]] && found_dir="$gd"
+                break
+            fi
+        done
     fi
 
     if [[ $skill_count -gt 0 ]]; then
@@ -557,21 +611,21 @@ detect_essential_tools() {
     local total=${#core_tools[@]}
 
     for tool in "${core_tools[@]}"; do
-        if resolve_cmd "$tool" &>/dev/null; then
+        if resolve_cmd "$tool" >/dev/null 2>&1; then
             found=$((found + 1))
-        elif [[ "$tool" == "fd" ]] && resolve_cmd fdfind &>/dev/null; then
+        elif [[ "$tool" == "fd" ]] && resolve_cmd fdfind >/dev/null 2>&1; then
             found=$((found + 1))
-        elif [[ "$tool" == "bat" ]] && resolve_cmd batcat &>/dev/null; then
+        elif [[ "$tool" == "bat" ]] && resolve_cmd batcat >/dev/null 2>&1; then
             found=$((found + 1))
         fi
     done
 
     # Check symlinks for Debian renames
     local symlinks_ok=1
-    if resolve_cmd fdfind &>/dev/null && ! resolve_cmd fd &>/dev/null; then
+    if resolve_cmd fdfind >/dev/null 2>&1 && ! resolve_cmd fd >/dev/null 2>&1; then
         symlinks_ok=0
     fi
-    if resolve_cmd batcat &>/dev/null && ! resolve_cmd bat &>/dev/null; then
+    if resolve_cmd batcat >/dev/null 2>&1 && ! resolve_cmd bat >/dev/null 2>&1; then
         symlinks_ok=0
     fi
 
@@ -584,8 +638,12 @@ detect_essential_tools() {
             status="partial"
         fi
         # Show gh version as representative
-        local gh_ver
-        gh_ver=$(get_version gh version | head -1 | sed 's/gh version //' | awk '{print $1}')
+        local gh_path gh_ver
+        if gh_path=$(resolve_cmd gh); then
+            gh_ver=$("$gh_path" version 2>/dev/null | head -1 | sed 's/gh version //' | awk '{print $1}' || echo "N/A")
+        else
+            gh_ver="N/A"
+        fi
         version="gh ${gh_ver}"
     elif [[ $found -gt 0 ]]; then
         status="partial"
@@ -599,12 +657,13 @@ detect_essential_tools() {
 # --- Output Formatters -------------------------------------------------------
 
 # Component registry (parallel to install.sh)
-COMP_IDS=(shell tmux git tools node uv go docker tailscale ssh claude-code codex gemini skills essential-tools)
+COMP_IDS=(shell tmux git tools essential-tools node uv go docker tailscale ssh claude-code codex gemini skills)
 COMP_NAMES=(
     "Shell Environment"
     "Tmux"
     "Git"
     "Essential Tools"
+    "Essential Tools Setup"
     "Node.js (nvm)"
     "uv + Python"
     "Go (goenv)"
@@ -615,13 +674,13 @@ COMP_NAMES=(
     "Codex CLI"
     "Gemini CLI"
     "Agent Skills"
-    "Essential Tools Setup"
 )
 COMP_DETECT=(
     detect_shell
     detect_tmux
     detect_git
     detect_tools
+    detect_essential_tools
     detect_node
     detect_uv
     detect_go
@@ -632,7 +691,6 @@ COMP_DETECT=(
     detect_codex
     detect_gemini
     detect_skills
-    detect_essential_tools
 )
 
 # Run all detections and store results
@@ -712,11 +770,11 @@ print_json() {
         IFS='|' read -r comp_status comp_version comp_config <<< "$result"
 
         printf '    {\n'
-        printf '      "id": "%s",\n' "${COMP_IDS[$i]}"
-        printf '      "name": "%s",\n' "${COMP_NAMES[$i]}"
-        printf '      "status": "%s",\n' "$comp_status"
-        printf '      "version": "%s",\n' "$comp_version"
-        printf '      "config": "%s"\n' "$comp_config"
+        printf '      "id": "%s",\n' "$(json_escape "${COMP_IDS[$i]}")"
+        printf '      "name": "%s",\n' "$(json_escape "${COMP_NAMES[$i]}")"
+        printf '      "status": "%s",\n' "$(json_escape "$comp_status")"
+        printf '      "version": "%s",\n' "$(json_escape "$comp_version")"
+        printf '      "config": "%s"\n' "$(json_escape "$comp_config")"
         if [[ $i -lt $((total - 1)) ]]; then
             printf '    },\n'
         else
