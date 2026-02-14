@@ -47,26 +47,16 @@ if [[ -n "$NVM_NODEJS_ORG_MIRROR" ]]; then
     echo "  Node mirror: $NVM_NODEJS_ORG_MIRROR"
 fi
 
-# Check if target version is already installed and active
-_current=$(nvm current 2>/dev/null || echo "none")
+# Check if target version is already installed
 _target_version=$(nvm version "$NODE_VERSION" 2>/dev/null || echo "N/A")
 
 if [[ "$_target_version" != "N/A" ]]; then
-    # Target version already installed
-    echo "  Node.js $NODE_VERSION already installed ($_target_version)"
-    if [[ "$_current" != "$_target_version" ]]; then
-        echo "  Switching to $_target_version..."
-        nvm use "$NODE_VERSION"
-    fi
+    # Target version already installed, skip
+    echo "  Node.js $NODE_VERSION already installed ($_target_version), skipping."
 else
-    # Need to install target version
-    if [[ "$_current" != "none" && "$_current" != "system" ]]; then
-        echo "  Installing Node.js $NODE_VERSION (migrating packages from $_current)..."
-        nvm install "$NODE_VERSION" --reinstall-packages-from="$_current"
-    else
-        echo "  Installing Node.js $NODE_VERSION..."
-        nvm install "$NODE_VERSION"
-    fi
+    # Install target version
+    echo "  Installing Node.js $NODE_VERSION..."
+    nvm install "$NODE_VERSION"
 fi
 
 nvm alias default "$NODE_VERSION"
