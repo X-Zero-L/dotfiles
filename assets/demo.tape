@@ -18,6 +18,25 @@ Sleep 300ms
 Enter
 Sleep 2s
 
+# Preset menu: minimal(0) agent(1) devops(2) fullstack(3) custom(4)
+# Navigate to "custom" (Down x4)
+Down
+Sleep 200ms
+Down
+Sleep 200ms
+Down
+Sleep 200ms
+Down
+Sleep 200ms
+
+# Pause to show preset menu
+Sleep 800ms
+
+# Select custom
+Enter
+Sleep 1s
+
+# Checkbox menu: shell(0) tmux(1) git(2) tools(3) essential-tools(4) node(5) uv(6) go(7) ...
 # Toggle all on with 'a'
 Type "a"
 Sleep 1.2s
@@ -26,7 +45,9 @@ Sleep 1.2s
 Type "a"
 Sleep 800ms
 
-# Navigate to uv (index 5): Down x5
+# Navigate to uv (index 6): Down x6
+Down
+Sleep 120ms
 Down
 Sleep 120ms
 Down
@@ -40,7 +61,7 @@ Sleep 120ms
 Space
 Sleep 350ms
 
-# Select go (index 6): Down x1
+# Select go (index 7): Down x1
 Down
 Sleep 120ms
 Space
