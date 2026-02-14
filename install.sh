@@ -42,6 +42,25 @@ TMPDIR_INSTALL=""
 LOG_FILE=""
 CURSOR_HIDDEN=0
 
+# --- [A1] OS Detection -------------------------------------------------------
+
+# Source OS detection library if available locally, otherwise download
+if [[ -f "${BASH_SOURCE[0]%/*}/lib/os-detect.sh" ]]; then
+    # shellcheck disable=SC1091
+    source "${BASH_SOURCE[0]%/*}/lib/os-detect.sh"
+else
+    # Download to temp location
+    _os_detect_tmp=$(mktemp)
+    if [[ -n "$GH_PROXY" ]]; then
+        curl -fsSL "${GH_PROXY%/}/${BASE_URL}/lib/os-detect.sh" -o "$_os_detect_tmp" 2>/dev/null || true
+    else
+        curl -fsSL "${BASE_URL}/lib/os-detect.sh" -o "$_os_detect_tmp" 2>/dev/null || true
+    fi
+    # shellcheck disable=SC1090
+    [[ -s "$_os_detect_tmp" ]] && source "$_os_detect_tmp"
+    rm -f "$_os_detect_tmp"
+fi
+
 # --- [B] ANSI Colors ---------------------------------------------------------
 
 setup_colors() {
@@ -145,8 +164,20 @@ COMP_DEPS=("" "" "" "" "" "" "" "" "" "" "" "5" "5" "5" "5")
 # Whether component needs API keys (2 = token-only, 1 = url+key)
 COMP_NEEDS_KEYS=(0 0 0 0 0 0 0 0 0 2 0 1 1 1 0)
 
-# Whether component needs sudo
-COMP_NEEDS_SUDO=(1 1 0 1 1 0 0 0 1 1 1 0 0 0 0)
+# Whether component needs sudo (dynamically set based on OS)
+_init_sudo_needs() {
+    # macOS with Homebrew doesn't need sudo for most components
+    if is_macos; then
+        COMP_NEEDS_SUDO=(0 0 0 0 0 0 0 0 1 1 1 0 0 0 0)
+        # shell, tmux, git, tools, essential-tools, node, uv, go: no sudo (brew installs to user dir)
+        # docker, tailscale, ssh: still need sudo (system-level services)
+        # claude-code, codex, gemini, skills: no sudo (npm global or user install)
+    else
+        # Linux: original behavior
+        COMP_NEEDS_SUDO=(1 1 0 1 1 0 0 0 1 1 1 0 0 0 0)
+    fi
+}
+_init_sudo_needs
 
 # Selection state
 COMP_SELECTED=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)

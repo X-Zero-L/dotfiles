@@ -27,6 +27,31 @@ BRANCH="master"
 BASE_URL="https://${_RAW}/${REPO}/${BRANCH}"
 
 export GH_PROXY="${GH_PROXY:-}"
+
+# --- [A.1] OS / Package-Manager Libraries -----------------------------------
+
+_load_lib() {
+    local name="$1"
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+    if [[ -f "${script_dir}/lib/${name}" ]]; then
+        # Local clone: source directly
+        # shellcheck disable=SC1090
+        source "${script_dir}/lib/${name}"
+    else
+        # Remote (curl | bash): fetch from repo
+        local url="${BASE_URL}/lib/${name}"
+        [[ -n "${GH_PROXY:-}" ]] && url="${GH_PROXY}/${url}"
+        local body
+        body="$(curl -fsSL "$url")" || { echo "Failed to fetch lib/${name}" >&2; return 1; }
+        eval "$body"
+    fi
+}
+
+_load_lib "os-detect.sh"
+_load_lib "pkg-maps.sh"
+_load_lib "pkg-manager.sh"
 NON_INTERACTIVE=0
 INTERACTIVE=0
 VERBOSE=0
@@ -354,8 +379,7 @@ update_shell() {
 }
 
 update_tmux() {
-    sudo apt-get update -qq
-    sudo apt-get install --only-upgrade -y tmux 2>/dev/null || true
+    pkg_update tmux 2>/dev/null || true
 
     # TPM plugin update
     if [[ -x "$HOME/.tmux/plugins/tpm/bin/update_plugins" ]]; then
@@ -364,15 +388,12 @@ update_tmux() {
 }
 
 update_git() {
-    sudo apt-get update -qq
-    sudo apt-get install --only-upgrade -y git 2>/dev/null || true
+    pkg_update git 2>/dev/null || true
 }
 
 update_tools() {
-    sudo apt-get update -qq
-    sudo apt-get install --only-upgrade -y \
-        ripgrep jq fd-find bat tree shellcheck build-essential wget unzip xclip 2>/dev/null || true
-    sudo apt-get install --only-upgrade -y gh 2>/dev/null || true
+    pkg_update ripgrep jq fd bat tree shellcheck build-tools wget unzip xclip 2>/dev/null || true
+    pkg_update gh 2>/dev/null || true
 }
 
 update_clash() {
@@ -439,23 +460,32 @@ update_go() {
 }
 
 update_docker() {
-    sudo apt-get update -qq
-    sudo apt-get install --only-upgrade -y \
-        docker-ce docker-ce-cli containerd.io docker-compose-plugin 2>/dev/null || true
+    if is_macos; then
+        # Docker Desktop on macOS manages its own updates
+        brew upgrade --cask docker 2>/dev/null || true
+    else
+        pkg_update docker-ce docker-ce-cli containerd.io docker-compose-plugin 2>/dev/null || true
+    fi
 }
 
 update_tailscale() {
     if command -v tailscale &>/dev/null; then
-        sudo tailscale update 2>/dev/null || {
-            sudo apt-get update -qq
-            sudo apt-get install --only-upgrade -y tailscale 2>/dev/null || true
-        }
+        if is_macos; then
+            brew upgrade --cask tailscale 2>/dev/null || true
+        else
+            sudo tailscale update 2>/dev/null || {
+                pkg_update tailscale 2>/dev/null || true
+            }
+        fi
     fi
 }
 
 update_ssh() {
-    sudo apt-get update -qq
-    sudo apt-get install --only-upgrade -y openssh-server 2>/dev/null || true
+    if is_macos; then
+        # macOS SSH is part of the OS; no package to upgrade
+        return 0
+    fi
+    pkg_update openssh-server 2>/dev/null || true
 }
 
 update_claude_code() {

@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Source library dependencies for multi-OS support
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/os-detect.sh
+source "$SCRIPT_DIR/lib/os-detect.sh"
+# shellcheck source=lib/pkg-maps.sh
+source "$SCRIPT_DIR/lib/pkg-maps.sh"
+# shellcheck source=lib/pkg-manager.sh
+source "$SCRIPT_DIR/lib/pkg-manager.sh"
+
 # =============================================================================
 # Rig Component Uninstaller
 # https://github.com/X-Zero-L/rig
@@ -85,8 +94,14 @@ COMP_DESCS=(
 # node(5) is required by claude-code(11), codex(12), gemini(13), skills(14)
 COMP_DEPENDENTS=("" "" "" "" "" "11 12 13 14" "" "" "" "" "" "" "" "" "")
 
-# Whether uninstall needs sudo
-COMP_NEEDS_SUDO=(1 1 0 1 1 0 0 0 1 1 1 0 0 0 0)
+# Whether uninstall needs sudo (indexes: shell=0 tmux=1 git=2 tools=3 essential-tools=4
+# node=5 uv=6 go=7 docker=8 tailscale=9 ssh=10 claude-code=11 codex=12 gemini=13 skills=14)
+# On macOS, brew operations do not require sudo
+if is_macos; then
+    COMP_NEEDS_SUDO=(1 0 0 0 0 0 0 0 0 0 1 0 0 0 0)
+else
+    COMP_NEEDS_SUDO=(1 1 0 1 1 0 0 0 1 1 1 0 0 0 0)
+fi
 
 # State arrays
 COMP_INSTALLED=(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
@@ -190,7 +205,11 @@ remove_rc_block() {
         [[ -f "$rc" ]] || continue
         grep -q "# ${marker} START" "$rc" || continue
         backup_file "$rc"
-        sed -i "/# ${marker} START/,/# ${marker} END/d" "$rc"
+        if is_macos; then
+            sed -i '' "/# ${marker} START/,/# ${marker} END/d" "$rc"
+        else
+            sed -i "/# ${marker} START/,/# ${marker} END/d" "$rc"
+        fi
     done
 }
 
@@ -254,7 +273,7 @@ check_shell_installed() { [[ -d "$HOME/.oh-my-zsh" ]]; }
 check_tmux_installed() { command -v tmux &>/dev/null; }
 check_git_installed() { command -v git &>/dev/null; }
 check_tools_installed() { command -v rg &>/dev/null && command -v jq &>/dev/null; }
-check_essential_tools_installed() { dpkg -s build-essential &>/dev/null; }
+check_essential_tools_installed() { pkg_check_installed build-tools; }
 check_node_installed() { command -v nvm &>/dev/null || [[ -f "$HOME/.nvm/nvm.sh" ]]; }
 check_uv_installed() { command -v uv &>/dev/null; }
 check_go_installed() { command -v goenv &>/dev/null || [[ -d "$HOME/.goenv/bin" ]]; }
@@ -388,7 +407,7 @@ uninstall_tmux() {
     echo "  Config and plugins removed."
 
     if command -v tmux &>/dev/null; then
-        sudo apt-get remove -y tmux 2>/dev/null || true
+        pkg_remove tmux 2>/dev/null || true
         echo "  tmux package removed."
     fi
 }
@@ -398,7 +417,7 @@ uninstall_git() {
     echo "  Note: ~/.gitconfig will be preserved."
 
     if command -v git &>/dev/null; then
-        sudo apt-get remove -y git 2>/dev/null || true
+        pkg_remove git 2>/dev/null || true
         echo "  Git package removed."
     fi
 }
@@ -406,28 +425,35 @@ uninstall_git() {
 uninstall_tools() {
     echo "=== Uninstalling CLI Tools ==="
 
-    # Remove convenience symlinks
-    rm -f "$HOME/.local/bin/bat" "$HOME/.local/bin/fd"
+    # Remove convenience symlinks (Debian-only; other platforms use native names)
+    if is_debian; then
+        rm -f "$HOME/.local/bin/bat" "$HOME/.local/bin/fd"
+    fi
 
-    # Remove apt packages
-    sudo apt-get remove -y \
-        ripgrep jq fd-find bat tree shellcheck xclip 2>/dev/null || true
+    # Remove packages (abstract names resolved by pkg_remove)
+    pkg_remove ripgrep jq fd bat tree shellcheck xclip 2>/dev/null || true
     echo "  CLI tools removed."
 }
 
 uninstall_essential_tools() {
     echo "=== Uninstalling Essential Tools ==="
 
-    # Remove gh CLI and its apt source
+    # Remove gh CLI and its platform-specific repo config
     if command -v gh &>/dev/null; then
-        sudo apt-get remove -y gh 2>/dev/null || true
-        sudo rm -f /etc/apt/sources.list.d/github-cli.list
-        sudo rm -f /etc/apt/keyrings/githubcli-archive-keyring.gpg
+        if is_macos; then
+            brew uninstall gh 2>/dev/null || true
+        else
+            pkg_remove gh 2>/dev/null || true
+            # Clean up apt/yum repo sources (Linux only)
+            sudo rm -f /etc/apt/sources.list.d/github-cli.list 2>/dev/null || true
+            sudo rm -f /etc/apt/keyrings/githubcli-archive-keyring.gpg 2>/dev/null || true
+            sudo rm -f /etc/yum.repos.d/github-cli.repo 2>/dev/null || true
+        fi
         echo "  GitHub CLI removed."
     fi
 
-    # Remove build tools
-    sudo apt-get remove -y build-essential wget unzip 2>/dev/null || true
+    # Remove build tools (abstract names resolved per platform)
+    pkg_remove build-tools wget unzip 2>/dev/null || true
     echo "  Essential tools removed."
 }
 
@@ -473,53 +499,101 @@ uninstall_go() {
 uninstall_docker() {
     echo "=== Uninstalling Docker ==="
 
-    # Stop services
-    sudo systemctl stop docker.socket 2>/dev/null || true
-    sudo systemctl stop docker 2>/dev/null || true
-    sudo systemctl stop containerd 2>/dev/null || true
-    echo "  Services stopped."
-
-    # Remove packages
-    sudo apt-get remove -y \
-        docker-ce docker-ce-cli containerd.io \
-        docker-compose-plugin docker-buildx-plugin 2>/dev/null || true
-    sudo apt-get autoremove -y 2>/dev/null || true
-    echo "  Packages removed."
-
-    # Remove data (conditional)
-    if [[ "$DOCKER_REMOVE_DATA" -eq 1 ]]; then
-        sudo rm -rf /var/lib/docker /var/lib/containerd
-        echo "  Docker data removed."
+    if is_macos; then
+        # macOS: Docker Desktop is a cask, no systemd
+        brew uninstall --cask docker 2>/dev/null || true
+        echo "  Docker Desktop removed."
     else
-        echo "  Docker data preserved at /var/lib/docker."
+        # Linux: stop systemd services
+        sudo systemctl stop docker.socket 2>/dev/null || true
+        sudo systemctl stop docker 2>/dev/null || true
+        sudo systemctl stop containerd 2>/dev/null || true
+        echo "  Services stopped."
+
+        # Remove packages per package manager
+        case "$PKG_MANAGER" in
+            apt)
+                sudo apt-get remove -y \
+                    docker-ce docker-ce-cli containerd.io \
+                    docker-compose-plugin docker-buildx-plugin 2>/dev/null || true
+                sudo apt-get autoremove -y 2>/dev/null || true
+                ;;
+            dnf)
+                sudo dnf remove -y \
+                    docker-ce docker-ce-cli containerd.io \
+                    docker-compose-plugin docker-buildx-plugin 2>/dev/null || true
+                ;;
+            yum)
+                sudo yum remove -y \
+                    docker-ce docker-ce-cli containerd.io \
+                    docker-compose-plugin docker-buildx-plugin 2>/dev/null || true
+                ;;
+            pacman)
+                sudo pacman -Rs --noconfirm docker docker-compose docker-buildx 2>/dev/null || true
+                ;;
+        esac
+        echo "  Packages removed."
+
+        # Remove data (conditional)
+        if [[ "$DOCKER_REMOVE_DATA" -eq 1 ]]; then
+            sudo rm -rf /var/lib/docker /var/lib/containerd
+            echo "  Docker data removed."
+        else
+            echo "  Docker data preserved at /var/lib/docker."
+        fi
+
+        # Remove config
+        sudo rm -f /etc/docker/daemon.json
+        sudo rm -rf /etc/systemd/system/docker.service.d
+        echo "  System config removed."
+
+        # Remove repo sources (Linux only)
+        sudo rm -f /etc/apt/sources.list.d/docker.list 2>/dev/null || true
+        sudo rm -f /etc/apt/keyrings/docker.asc /etc/apt/keyrings/docker.gpg 2>/dev/null || true
+        sudo rm -f /etc/yum.repos.d/docker-ce.repo 2>/dev/null || true
+        sudo systemctl daemon-reload 2>/dev/null || true
+        echo "  Repo source removed."
     fi
 
-    # Remove config
-    sudo rm -f /etc/docker/daemon.json
-    sudo rm -rf /etc/systemd/system/docker.service.d
     rm -rf "$HOME/.docker"
-    echo "  Config removed."
-
-    # Remove apt source
-    sudo rm -f /etc/apt/sources.list.d/docker.list
-    sudo rm -f /etc/apt/keyrings/docker.asc /etc/apt/keyrings/docker.gpg
-    sudo systemctl daemon-reload 2>/dev/null || true
-    echo "  Apt source removed."
+    echo "  User config removed."
 }
 
 uninstall_tailscale() {
     echo "=== Uninstalling Tailscale ==="
 
-    sudo tailscale down 2>/dev/null || true
-    sudo systemctl stop tailscaled 2>/dev/null || true
-    sudo systemctl disable tailscaled 2>/dev/null || true
-    echo "  Disconnected and stopped."
+    if is_macos; then
+        # macOS: Tailscale is a cask or App Store app; CLI disconnect only
+        tailscale logout 2>/dev/null || true
+        brew uninstall --cask tailscale 2>/dev/null || true
+        echo "  Tailscale removed."
+    else
+        # Linux: disconnect, stop systemd, remove package
+        sudo tailscale down 2>/dev/null || true
+        sudo systemctl stop tailscaled 2>/dev/null || true
+        sudo systemctl disable tailscaled 2>/dev/null || true
+        echo "  Disconnected and stopped."
 
-    sudo apt-get remove -y tailscale 2>/dev/null || true
-    sudo apt-get autoremove -y 2>/dev/null || true
-    sudo rm -rf /var/lib/tailscale
-    sudo rm -f /etc/apt/sources.list.d/tailscale*.list
-    echo "  Tailscale removed."
+        case "$PKG_MANAGER" in
+            apt)
+                sudo apt-get remove -y tailscale 2>/dev/null || true
+                sudo apt-get autoremove -y 2>/dev/null || true
+                ;;
+            dnf)
+                sudo dnf remove -y tailscale 2>/dev/null || true
+                ;;
+            yum)
+                sudo yum remove -y tailscale 2>/dev/null || true
+                ;;
+            pacman)
+                sudo pacman -Rs --noconfirm tailscale 2>/dev/null || true
+                ;;
+        esac
+        sudo rm -rf /var/lib/tailscale
+        sudo rm -f /etc/apt/sources.list.d/tailscale*.list 2>/dev/null || true
+        sudo rm -f /etc/yum.repos.d/tailscale.repo 2>/dev/null || true
+        echo "  Tailscale removed."
+    fi
 }
 
 uninstall_ssh() {

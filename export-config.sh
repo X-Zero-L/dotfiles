@@ -19,6 +19,17 @@ set -euo pipefail
 #   .gitignore        - Auto-generated to protect secrets.env
 # =============================================================================
 
+# --- OS Detection ------------------------------------------------------------
+
+# Source OS detection library if available
+if [[ -f "${BASH_SOURCE[0]%/*}/lib/os-detect.sh" ]]; then
+    # shellcheck disable=SC1091
+    source "${BASH_SOURCE[0]%/*}/lib/os-detect.sh"
+else
+    # Minimal fallback
+    is_macos() { [[ "$(uname -s)" == "Darwin" ]]; }
+fi
+
 # --- Options -----------------------------------------------------------------
 
 OUTPUT_DIR="$HOME/.rig"
@@ -211,8 +222,17 @@ extract_config() {
 
     # Docker (informational only)
     local docker_mirrors=""
-    if [[ -f /etc/docker/daemon.json ]]; then
-        docker_mirrors=$(grep -o '"registry-mirrors"[[:space:]]*:[[:space:]]*\[[^]]*\]' /etc/docker/daemon.json 2>/dev/null || true)
+    if is_macos; then
+        # macOS: Docker Desktop stores config in user directory
+        local docker_config="$HOME/.docker/daemon.json"
+        if [[ -f "$docker_config" ]]; then
+            docker_mirrors=$(grep -o '"registry-mirrors"[[:space:]]*:[[:space:]]*\[[^]]*\]' "$docker_config" 2>/dev/null || true)
+        fi
+    else
+        # Linux: Docker Engine uses /etc/docker/daemon.json
+        if [[ -f /etc/docker/daemon.json ]]; then
+            docker_mirrors=$(grep -o '"registry-mirrors"[[:space:]]*:[[:space:]]*\[[^]]*\]' /etc/docker/daemon.json 2>/dev/null || true)
+        fi
     fi
     json+='    "docker": {\n'
     if [[ -n "$docker_mirrors" ]]; then

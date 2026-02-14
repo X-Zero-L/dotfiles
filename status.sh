@@ -10,6 +10,15 @@ set -euo pipefail
 #   bash status.sh --short  # One-line summary
 # =============================================================================
 
+# --- Load OS detection libraries ---------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/os-detect.sh
+source "$SCRIPT_DIR/lib/os-detect.sh"
+# shellcheck source=lib/pkg-maps.sh
+source "$SCRIPT_DIR/lib/pkg-maps.sh"
+# shellcheck source=lib/pkg-manager.sh
+source "$SCRIPT_DIR/lib/pkg-manager.sh"
+
 # --- Options -----------------------------------------------------------------
 
 OUTPUT_FORMAT="table"
@@ -199,9 +208,9 @@ detect_tools() {
         # Handle Debian renames: fd-find→fdfind, bat→batcat
         if resolve_cmd "$tool" >/dev/null 2>&1; then
             found=$((found + 1))
-        elif [[ "$tool" == "fd" ]] && resolve_cmd fdfind >/dev/null 2>&1; then
+        elif is_debian && [[ "$tool" == "fd" ]] && resolve_cmd fdfind >/dev/null 2>&1; then
             found=$((found + 1))
-        elif [[ "$tool" == "bat" ]] && resolve_cmd batcat >/dev/null 2>&1; then
+        elif is_debian && [[ "$tool" == "bat" ]] && resolve_cmd batcat >/dev/null 2>&1; then
             found=$((found + 1))
         else
             missing_tools+=("$tool")
@@ -323,10 +332,18 @@ detect_docker() {
             daemon_running=1
         fi
 
-        # Check if user is in docker group
+        # Check if user is in docker group or Docker Desktop is running
         local in_group=0
-        if id -nG "$USER" 2>/dev/null | grep -qw docker; then
-            in_group=1
+        if is_macos; then
+            # On macOS, check if Docker Desktop is running
+            if pgrep -f "Docker Desktop" &>/dev/null || pgrep -f "com.docker.hyperkit" &>/dev/null; then
+                in_group=1
+            fi
+        else
+            # On Linux, check docker group membership
+            if id -nG "$USER" 2>/dev/null | grep -qw docker; then
+                in_group=1
+            fi
         fi
 
         # Check daemon.json exists
@@ -393,9 +410,17 @@ detect_ssh() {
         local has_authkeys=0
         [[ -f "$HOME/.ssh/authorized_keys" && -s "$HOME/.ssh/authorized_keys" ]] && has_authkeys=1
 
-        # Check if sshd is running
+        # Check if sshd is running (platform-specific)
         local sshd_running=0
-        pgrep -x sshd &>/dev/null && sshd_running=1
+        if is_macos; then
+            # On macOS, check Remote Login via System Preferences (launchd)
+            if sudo launchctl list 2>/dev/null | grep -q "com.openssh.sshd" 2>/dev/null; then
+                sshd_running=1
+            fi
+        else
+            # On Linux, check for sshd process
+            pgrep -x sshd &>/dev/null && sshd_running=1
+        fi
 
         if [[ $has_keys -eq 1 && $sshd_running -eq 1 ]]; then
             config="configured"
@@ -613,20 +638,22 @@ detect_essential_tools() {
     for tool in "${core_tools[@]}"; do
         if resolve_cmd "$tool" >/dev/null 2>&1; then
             found=$((found + 1))
-        elif [[ "$tool" == "fd" ]] && resolve_cmd fdfind >/dev/null 2>&1; then
+        elif is_debian && [[ "$tool" == "fd" ]] && resolve_cmd fdfind >/dev/null 2>&1; then
             found=$((found + 1))
-        elif [[ "$tool" == "bat" ]] && resolve_cmd batcat >/dev/null 2>&1; then
+        elif is_debian && [[ "$tool" == "bat" ]] && resolve_cmd batcat >/dev/null 2>&1; then
             found=$((found + 1))
         fi
     done
 
-    # Check symlinks for Debian renames
+    # Check symlinks for Debian renames (only on Debian)
     local symlinks_ok=1
-    if resolve_cmd fdfind >/dev/null 2>&1 && ! resolve_cmd fd >/dev/null 2>&1; then
-        symlinks_ok=0
-    fi
-    if resolve_cmd batcat >/dev/null 2>&1 && ! resolve_cmd bat >/dev/null 2>&1; then
-        symlinks_ok=0
+    if is_debian; then
+        if resolve_cmd fdfind >/dev/null 2>&1 && ! resolve_cmd fd >/dev/null 2>&1; then
+            symlinks_ok=0
+        fi
+        if resolve_cmd batcat >/dev/null 2>&1 && ! resolve_cmd bat >/dev/null 2>&1; then
+            symlinks_ok=0
+        fi
     fi
 
     if [[ $found -eq $total ]]; then

@@ -17,6 +17,21 @@ set -euo pipefail
 # and environment variables.
 # =============================================================================
 
+# --- OS Detection ------------------------------------------------------------
+
+# Source OS detection library if available
+if [[ -f "${BASH_SOURCE[0]%/*}/lib/os-detect.sh" ]]; then
+    # shellcheck disable=SC1091
+    source "${BASH_SOURCE[0]%/*}/lib/os-detect.sh"
+else
+    # Minimal fallback
+    is_debian() { [[ -f /etc/debian_version ]]; }
+    is_macos() { [[ "$(uname -s)" == "Darwin" ]]; }
+    PKG_MANAGER="apt"
+    command -v dnf &>/dev/null && PKG_MANAGER="dnf"
+    command -v brew &>/dev/null && PKG_MANAGER="brew"
+fi
+
 # --- Options -----------------------------------------------------------------
 
 CONFIG_FILE=""
@@ -131,7 +146,17 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
 fi
 
 if ! command -v jq &>/dev/null; then
-    printf "${RED}error:${NC} jq is required but not found. Install with: sudo apt install jq\n" >&2
+    install_cmd="sudo apt install jq"
+    if is_macos; then
+        install_cmd="brew install jq"
+    elif [[ "${PKG_MANAGER:-apt}" == "dnf" ]]; then
+        install_cmd="sudo dnf install jq"
+    elif [[ "${PKG_MANAGER:-apt}" == "yum" ]]; then
+        install_cmd="sudo yum install jq"
+    elif [[ "${PKG_MANAGER:-apt}" == "pacman" ]]; then
+        install_cmd="sudo pacman -S jq"
+    fi
+    printf "${RED}error:${NC} jq is required but not found. Install with: %s\n" "$install_cmd" >&2
     exit 1
 fi
 
